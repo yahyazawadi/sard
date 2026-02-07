@@ -8,6 +8,7 @@
       sdk: ^3.8.1
 
     dependencies:
+      shared_preferences: ^2.3.2  # Or latest version
       flutter_dotenv: ^6.0.0  
       flutter:
         sdk: flutter

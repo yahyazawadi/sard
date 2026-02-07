@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
-import 'package:tracker/storage/entry_model.dart';
+import 'package:tracker/models/entry_model.dart';
 
 const _storage = FlutterSecureStorage();
 const _keyName = 'hive_enc_key';

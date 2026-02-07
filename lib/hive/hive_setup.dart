@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../storage/entry_model.dart'; // Your CycleEntry & adapter
+import '../models/entry_model.dart'; // Your CycleEntry & adapter
 
 class HiveSetup {
   static Future<void> initialize() async {

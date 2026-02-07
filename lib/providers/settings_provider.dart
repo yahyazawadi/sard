@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 
-import '../l10n/app_localizations.dart'; // ← import for translations
+import '../l10n/app_localizations.dart';
 
 class AppSettingsProvider extends ChangeNotifier {
-  late Box _settingsBox;
+  final SharedPreferences _prefs;
 
   ThemeMode _themeMode = ThemeMode.system;
   Locale _locale = const Locale('en');
   double _textScale = 1.0;
   bool _hasTextScaleOverride = false;
+  set hasTextScaleOverride(bool value) {
+    _hasTextScaleOverride = value;
+    notifyListeners();
+  }
+
   FlexScheme _selectedScheme = FlexScheme.mandyRed;
 
-  AppSettingsProvider(this._settingsBox) {
+  AppSettingsProvider(this._prefs) {
     _loadSettings();
   }
 
   // ── Theme display names map ────────────────────────────────────────────────
-  // This is the source of truth for nice, translatable theme names
   static String getThemeDisplayName(BuildContext context, FlexScheme scheme) {
     final t = AppLocalizations.of(context)!;
-
-    // Map each enum value → translation key
     switch (scheme) {
       case FlexScheme.mandyRed:
         return t.themeMandyRed;
@@ -47,39 +49,33 @@ class AppSettingsProvider extends ChangeNotifier {
       case FlexScheme.purpleM3:
         return t.themePurpleM3;
       default:
-        return scheme.name; // fallback if new schemes added
+        return scheme.name;
     }
   }
 
   void _loadSettings() {
     // Theme mode
-    _themeMode =
-        ThemeMode.values[_settingsBox.get(
-          'themeMode',
-          defaultValue: ThemeMode.system.index,
-        )];
+    final modeIndex = _prefs.getInt('themeMode') ?? ThemeMode.system.index;
+    _themeMode = ThemeMode.values[modeIndex];
 
     // Locale
-    final lang = _settingsBox.get('language', defaultValue: 'en') as String?;
-    _locale = Locale(lang ?? 'en');
+    final lang = _prefs.getString('language') ?? 'en';
+    _locale = Locale(lang);
 
     // Text scale
-    _hasTextScaleOverride = _settingsBox.containsKey('textScale');
+    _hasTextScaleOverride = _prefs.containsKey('textScale');
     if (_hasTextScaleOverride) {
-      _textScale = (_settingsBox.get('textScale') as num?)?.toDouble() ?? 1.0;
+      _textScale = _prefs.getDouble('textScale') ?? 1.0;
     }
 
-    // Selected theme scheme (still saved as raw enum name string)
-    final schemeName =
-        _settingsBox.get('themeScheme', defaultValue: 'mandyRed') as String?;
-    _selectedScheme =
-        _schemeFromName(schemeName ?? 'mandyRed') ?? FlexScheme.mandyRed;
+    // Selected theme scheme
+    final schemeName = _prefs.getString('themeScheme') ?? 'mandyRed';
+    _selectedScheme = _schemeFromName(schemeName) ?? FlexScheme.mandyRed;
 
     notifyListeners();
   }
 
   // ── Getters ────────────────────────────────────────────────────────────────
-
   ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
   double get textScale => _textScale;
@@ -87,60 +83,49 @@ class AppSettingsProvider extends ChangeNotifier {
   FlexScheme get selectedScheme => _selectedScheme;
 
   // ── Setters ────────────────────────────────────────────────────────────────
-
-  set hasTextScaleOverride(bool value) {
-    _hasTextScaleOverride = value;
-    if (!value) {
-      _textScale = 1.0;
-      _settingsBox.delete('textScale');
-    }
-    notifyListeners();
-  }
-
   set themeMode(ThemeMode mode) {
     _themeMode = mode;
-    _settingsBox.put('themeMode', mode.index);
+    _prefs.setInt('themeMode', mode.index);
     notifyListeners();
   }
 
   set locale(Locale loc) {
     _locale = loc;
-    _settingsBox.put('language', loc.languageCode);
+    _prefs.setString('language', loc.languageCode);
     notifyListeners();
   }
 
   set textScale(double scale) {
     _textScale = scale.clamp(0.8, 2.0);
     _hasTextScaleOverride = true;
-    _settingsBox.put('textScale', scale);
+    _prefs.setDouble('textScale', _textScale);
     notifyListeners();
   }
 
   void resetTextScale() {
     _hasTextScaleOverride = false;
     _textScale = 1.0;
-    _settingsBox.delete('textScale');
+    _prefs.remove('textScale');
     notifyListeners();
   }
 
   void setScheme(FlexScheme scheme) {
     _selectedScheme = scheme;
-    _settingsBox.put('themeScheme', _nameFromScheme(scheme));
+    _prefs.setString('themeScheme', _nameFromScheme(scheme));
     notifyListeners();
   }
 
   Future<void> resetToDefaults() async {
-    await _settingsBox.deleteAll([
-      'themeMode',
-      'language',
-      'textScale',
-      'themeScheme',
+    await Future.wait([
+      _prefs.remove('themeMode'),
+      _prefs.remove('language'),
+      _prefs.remove('textScale'),
+      _prefs.remove('themeScheme'),
     ]);
     _loadSettings();
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-
   FlexScheme? _schemeFromName(String name) {
     const map = {
       'mandyRed': FlexScheme.mandyRed,
