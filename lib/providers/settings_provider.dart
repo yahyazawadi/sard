@@ -1,8 +1,8 @@
-// lib/custom/app_settings_provider.dart  (or wherever you prefer)
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+
+import '../l10n/app_localizations.dart'; // ← import for translations
 
 class AppSettingsProvider extends ChangeNotifier {
   late Box _settingsBox;
@@ -15,6 +15,40 @@ class AppSettingsProvider extends ChangeNotifier {
 
   AppSettingsProvider(this._settingsBox) {
     _loadSettings();
+  }
+
+  // ── Theme display names map ────────────────────────────────────────────────
+  // This is the source of truth for nice, translatable theme names
+  static String getThemeDisplayName(BuildContext context, FlexScheme scheme) {
+    final t = AppLocalizations.of(context)!;
+
+    // Map each enum value → translation key
+    switch (scheme) {
+      case FlexScheme.mandyRed:
+        return t.themeMandyRed;
+      case FlexScheme.redWine:
+        return t.themeRedWine;
+      case FlexScheme.deepPurple:
+        return t.themeDeepPurple;
+      case FlexScheme.sakura:
+        return t.themeSakura;
+      case FlexScheme.purpleBrown:
+        return t.themePurpleBrown;
+      case FlexScheme.jungle:
+        return t.themeJungle;
+      case FlexScheme.shadBlue:
+        return t.themeShadBlue;
+      case FlexScheme.sanJuanBlue:
+        return t.themeSanJuanBlue;
+      case FlexScheme.indigo:
+        return t.themeIndigo;
+      case FlexScheme.brandBlue:
+        return t.themeBrandBlue;
+      case FlexScheme.purpleM3:
+        return t.themePurpleM3;
+      default:
+        return scheme.name; // fallback if new schemes added
+    }
   }
 
   void _loadSettings() {
@@ -35,7 +69,7 @@ class AppSettingsProvider extends ChangeNotifier {
       _textScale = (_settingsBox.get('textScale') as num?)?.toDouble() ?? 1.0;
     }
 
-    // Theme scheme
+    // Selected theme scheme (still saved as raw enum name string)
     final schemeName =
         _settingsBox.get('themeScheme', defaultValue: 'mandyRed') as String?;
     _selectedScheme =
@@ -95,7 +129,6 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Optional: full reset (useful for debug / factory reset button)
   Future<void> resetToDefaults() async {
     await _settingsBox.deleteAll([
       'themeMode',
@@ -103,7 +136,7 @@ class AppSettingsProvider extends ChangeNotifier {
       'textScale',
       'themeScheme',
     ]);
-    _loadSettings(); // Reload defaults
+    _loadSettings();
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

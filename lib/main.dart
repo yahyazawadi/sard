@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:tracker/providers/theme_provider.dart';
+import 'package:tracker/l10n/app_localizations.dart';
+import 'package:tracker/providers/settings_provider.dart';
 
 import 'routes/routes.dart';
 import 'custom/app_theme.dart';
@@ -138,8 +139,9 @@ class MyApp extends StatelessWidget {
       ),
       themeMode: prov.themeMode,
       locale: prov.locale,
-      supportedLocales: const [Locale('en'), Locale('ar')],
-      localizationsDelegates: const [
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

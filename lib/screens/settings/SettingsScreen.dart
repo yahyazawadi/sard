@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:tracker/providers/theme_provider.dart';
+import 'package:tracker/l10n/app_localizations.dart';
+import 'package:tracker/providers/settings_provider.dart';
 
 import '../../custom/app_theme.dart';
 import 'SectionHeader.dart';
@@ -13,6 +14,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<AppSettingsProvider>(context);
+    final t = AppLocalizations.of(context)!;
 
     return Theme(
       data: Theme.of(context).copyWith(
@@ -23,7 +25,7 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           children: [
             // === Theme Style ===
-            const SectionHeader(title: 'Theme Style'),
+            SectionHeader(title: t.themeStyle),
             ...List.generate(AppTheme.availableSchemes.length, (index) {
               final scheme = AppTheme.availableSchemes[index];
               final cs = FlexColorScheme.light(scheme: scheme).colorScheme;
@@ -55,10 +57,10 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        scheme.name.replaceAllMapped(
-                          RegExp(r'(?<!^)(?=[A-Z])'),
-                          (m) => ' ${m.group(0)}',
-                        ),
+                        AppSettingsProvider.getThemeDisplayName(
+                          context,
+                          scheme,
+                        ), // ← translated theme name
                         style: const TextStyle(fontSize: 14),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -74,11 +76,11 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // === Appearance Mode ===
-            const SectionHeader(title: 'Appearance Mode'),
+            SectionHeader(title: t.appearanceMode),
             RadioListTile<ThemeMode>(
               value: ThemeMode.system,
               groupValue: prov.themeMode,
-              title: const Text('System (auto)'),
+              title: Text(t.systemAuto),
               onChanged: (mode) {
                 if (mode != null) prov.themeMode = mode;
               },
@@ -86,7 +88,7 @@ class SettingsScreen extends StatelessWidget {
             RadioListTile<ThemeMode>(
               value: ThemeMode.light,
               groupValue: prov.themeMode,
-              title: const Text('Light'),
+              title: Text(t.light),
               onChanged: (mode) {
                 if (mode != null) prov.themeMode = mode;
               },
@@ -94,7 +96,7 @@ class SettingsScreen extends StatelessWidget {
             RadioListTile<ThemeMode>(
               value: ThemeMode.dark,
               groupValue: prov.themeMode,
-              title: const Text('Dark'),
+              title: Text(t.dark),
               onChanged: (mode) {
                 if (mode != null) prov.themeMode = mode;
               },
@@ -103,11 +105,11 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // === Language ===
-            const SectionHeader(title: 'Language'),
+            SectionHeader(title: t.language),
             RadioListTile<String>(
               value: 'en',
               groupValue: prov.locale.languageCode,
-              title: const Text('English'),
+              title: Text(t.english),
               onChanged: (code) {
                 if (code != null) prov.locale = Locale(code);
               },
@@ -115,7 +117,7 @@ class SettingsScreen extends StatelessWidget {
             RadioListTile<String>(
               value: 'ar',
               groupValue: prov.locale.languageCode,
-              title: const Text('العربية'),
+              title: Text(t.arabic),
               onChanged: (code) {
                 if (code != null) prov.locale = Locale(code);
               },
@@ -124,7 +126,7 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // === Text Size ===
-            const SectionHeader(title: 'Text Size'),
+            SectionHeader(title: t.textSize),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -133,11 +135,11 @@ class SettingsScreen extends StatelessWidget {
                   Text(
                     prov.hasTextScaleOverride
                         ? '${prov.textScale.toStringAsFixed(1)}×'
-                        : 'Using system size',
+                        : t.usingSystemSize,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w300,
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontFamily: 'DG Sahabah',
                     ),
                   ),
@@ -157,9 +159,9 @@ class SettingsScreen extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: OutlinedButton(
                       onPressed: prov.resetTextScale,
-                      child: const Text(
-                        'Reset to System',
-                        style: TextStyle(
+                      child: Text(
+                        t.resetToSystem,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w300,
                           fontFamily: 'DG Sahabah',
                         ),
