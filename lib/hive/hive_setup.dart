@@ -40,4 +40,6 @@ class HiveSetup {
 
     return {'cyclesBox': cyclesBox, 'settingsBox': settingsBox};
   }
+
+  static Future<void> openCyclesBox(Uint8List encryptionKey) async {}
 }
