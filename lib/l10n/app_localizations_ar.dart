@@ -118,4 +118,133 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tracker => 'حاسبتي';
+
+  @override
+  String get menstruation => 'الحيض';
+
+  @override
+  String get follicular => 'الجريبي';
+
+  @override
+  String get ovulation => 'الإباضة';
+
+  @override
+  String get luteal => 'اللوتيال';
+
+  @override
+  String get legend => 'الدليل';
+
+  @override
+  String get selectPhase => 'اختر المرحلة';
+
+  @override
+  String get apply => 'تطبيق';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get cycleStats => 'إحصائيات الدورة';
+
+  @override
+  String get currentCycleDay => 'يوم الدورة الحالي';
+
+  @override
+  String get daysUntilPeriod => 'أيام حتى الحيض';
+
+  @override
+  String get averageCycleLength => 'متوسط طول الدورة';
+
+  @override
+  String get noEntry => 'لا إدخال لهذا اليوم';
+
+  @override
+  String get noNotes => 'لا ملاحظات';
+
+  @override
+  String get noPhase => 'لا مرحلة';
+
+  @override
+  String get emptyStateMessage => 'اضغط على أي يوم لتبدأ تتبع دورك';
+
+  @override
+  String get editAdd => 'تحرير / إضافة';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get gotIt => 'حسنا';
+
+  @override
+  String get flow => 'التدفق';
+
+  @override
+  String get feeling => 'الشعور';
+
+  @override
+  String get sundayShort => 'أحد';
+
+  @override
+  String get mondayShort => 'إثنين';
+
+  @override
+  String get tuesdayShort => 'ثلاثاء';
+
+  @override
+  String get wednesdayShort => 'أربعاء';
+
+  @override
+  String get thursdayShort => 'خميس';
+
+  @override
+  String get fridayShort => 'جمعة';
+
+  @override
+  String get saturdayShort => 'سبت';
+
+  @override
+  String get calendarFormatMonth => 'شهر';
+
+  @override
+  String get calendarFormatWeek => 'أسبوع';
+
+  @override
+  String get calendarFormatTwoWeeks => 'أسبوعين';
+
+  @override
+  String get january => 'يناير';
+
+  @override
+  String get february => 'فبراير';
+
+  @override
+  String get march => 'مارس';
+
+  @override
+  String get april => 'أبريل';
+
+  @override
+  String get may => 'مايو';
+
+  @override
+  String get june => 'يونيو';
+
+  @override
+  String get july => 'يوليو';
+
+  @override
+  String get august => 'أغسطس';
+
+  @override
+  String get september => 'سبتمبر';
+
+  @override
+  String get october => 'أكتوبر';
+
+  @override
+  String get november => 'نوفمبر';
+
+  @override
+  String get december => 'ديسمبر';
 }

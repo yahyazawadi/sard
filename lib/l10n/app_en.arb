@@ -39,5 +39,54 @@
   "settings":"settings",
   "phase":"phase",
 
-  "tracker": "tracker"
-}
+  "tracker": "tracker",
+  
+  "menstruation": "Menstruation",
+  "follicular": "Follicular",
+  "ovulation": "Ovulation",
+  "luteal": "Luteal",
+  "legend": "Legend",
+  "selectPhase": "Select Phase",
+  "apply": "Apply",
+  "cancel": "Cancel",
+  "cycleStats": "Cycle Stats",
+  "currentCycleDay": "Current Cycle Day",
+  "daysUntilPeriod": "Days Until Period",
+  "averageCycleLength": "Average Cycle Length",
+  "noEntry": "No entry for this day",
+  "noNotes": "No notes",
+  "noPhase": "No phase",
+  "emptyStateMessage": "Tap any day to start tracking your cycle",
+  "editAdd": "Edit / Add",
+  "close": "Close",
+  "gotIt": "Got it"
+
+,
+  "flow": "Flow",
+  "feeling": "Feeling",
+
+
+"sundayShort": "Sun",
+  "mondayShort": "Mon",
+  "tuesdayShort": "Tue",
+  "wednesdayShort": "Wed",
+  "thursdayShort": "Thu",
+  "fridayShort": "Fri",
+  "saturdayShort": "Sat",
+
+  "calendarFormatMonth": "Month",
+  "calendarFormatWeek": "Week",
+  "calendarFormatTwoWeeks": "2 Weeks",
+
+  "january": "January",
+  "february": "February",
+  "march": "March",
+  "april": "April",
+  "may": "May",
+  "june": "June",
+  "july": "July",
+  "august": "August",
+  "september": "September",
+  "october": "October",
+  "november": "November",
+  "december": "December"}

@@ -41,5 +41,15 @@ class HiveSetup {
     return {'cyclesBox': cyclesBox, 'settingsBox': settingsBox};
   }
 
-  static Future<void> openCyclesBox(Uint8List encryptionKey) async {}
+  static Future<void> openCyclesBox(Uint8List encryptionKey) async {
+    await Hive.openBox<CycleEntry>(
+      'cycles',
+      encryptionCipher: HiveAesCipher(encryptionKey),
+    );
+
+    await Hive.openBox(
+      'settings',
+      encryptionCipher: HiveAesCipher(encryptionKey),
+    );
+  }
 }

@@ -41,4 +41,53 @@
   "phase":"مرحلتي",
 
   "tracker": "حاسبتي"
+  ,
+  "menstruation": "الحيض",
+  "follicular": "الجريبي",
+  "ovulation": "الإباضة",
+  "luteal": "اللوتيال",
+  "legend": "الدليل",
+  "selectPhase": "اختر المرحلة",
+  "apply": "تطبيق",
+  "cancel": "إلغاء",
+  "cycleStats": "إحصائيات الدورة",
+  "currentCycleDay": "يوم الدورة الحالي",
+  "daysUntilPeriod": "أيام حتى الحيض",
+  "averageCycleLength": "متوسط طول الدورة",
+  "noEntry": "لا إدخال لهذا اليوم",
+  "noNotes": "لا ملاحظات",
+  "noPhase": "لا مرحلة",
+  "emptyStateMessage": "اضغط على أي يوم لتبدأ تتبع دورك",
+  "editAdd": "تحرير / إضافة",
+  "close": "إغلاق",
+  "gotIt": "حسنا",
+   "flow": "التدفق",
+  "feeling": "الشعور",
+
+"sundayShort": "أحد",
+  "mondayShort": "إثنين",
+  "tuesdayShort": "ثلاثاء",
+  "wednesdayShort": "أربعاء",
+  "thursdayShort": "خميس",
+  "fridayShort": "جمعة",
+  "saturdayShort": "سبت",
+
+  "calendarFormatMonth": "شهر",
+  "calendarFormatWeek": "أسبوع",
+  "calendarFormatTwoWeeks": "أسبوعين",
+
+  "january": "يناير",
+  "february": "فبراير",
+  "march": "مارس",
+  "april": "أبريل",
+  "may": "مايو",
+  "june": "يونيو",
+  "july": "يوليو",
+  "august": "أغسطس",
+  "september": "سبتمبر",
+  "october": "أكتوبر",
+  "november": "نوفمبر",
+  "december": "ديسمبر"
 }
+
+

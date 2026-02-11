@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:tracker/models/entry_model.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class CycleProvider extends ChangeNotifier {
   late Box<CycleEntry> _cyclesBox;
   Map<DateTime, CycleEntry> _entries = {};
-
+  Map<DateTime, CycleEntry> get entries =>
+      Map.unmodifiable(_entries); // Add this getter (unmodifiable for safety)
   CycleProvider() {
     _init();
   }
@@ -83,5 +85,61 @@ class CycleProvider extends ChangeNotifier {
     return 28.0; // Default
   }
 
-  // More methods as needed (deleteEntry, searchBySymptom, etc.)
+  List<DateRange> getDateRanges() {
+    final ranges = <DateRange>[];
+    final sorted = entries.values.toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    if (sorted.isEmpty) return ranges;
+
+    DateTime? currentStart = sorted.first.date;
+    String? currentPhase = sorted.first.phase;
+    Color currentColor = getPhaseColor(currentPhase);
+
+    for (int i = 1; i < sorted.length; i++) {
+      final entry = sorted[i];
+      if (entry.phase == currentPhase &&
+          entry.date.difference(sorted[i - 1].date).inDays == 1) {
+        // Consecutive same phase
+        continue; // Extend range
+      } else {
+        // End current range, start new
+        ranges.add(
+          DateRange(
+            start: currentStart!,
+            end: sorted[i - 1].date,
+            color: currentColor,
+            phase: currentPhase,
+          ),
+        );
+        currentStart = entry.date;
+        currentPhase = entry.phase;
+        currentColor = getPhaseColor(currentPhase);
+      }
+    }
+    // Add last range
+    ranges.add(
+      DateRange(
+        start: currentStart!,
+        end: sorted.last.date,
+        color: currentColor,
+        phase: currentPhase,
+      ),
+    );
+    return ranges;
+  }
+
+  Color _getPhaseColor(String? phase) {
+    switch (phase) {
+      case 'menstruation':
+        return Colors.red[300]!;
+      case 'follicular':
+        return Colors.pink[200]!;
+      case 'ovulation':
+        return Colors.yellow[300]!;
+      case 'luteal':
+        return Colors.purple[300]!;
+      default:
+        return Colors.grey[400]!;
+    }
+  }
 }

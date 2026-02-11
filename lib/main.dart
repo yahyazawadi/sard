@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // For prefs
 import 'package:tracker/l10n/app_localizations.dart';
+import 'package:tracker/providers/cycle_provider.dart';
 import 'package:tracker/providers/settings_provider.dart';
 
 import 'routes/routes.dart';
@@ -44,8 +45,13 @@ void main() async {
   }
 
   runApp(
-    ChangeNotifierProvider<AppSettingsProvider>(
-      create: (_) => appSettingsProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AppSettingsProvider>(
+          create: (_) => appSettingsProvider,
+        ),
+        ChangeNotifierProvider<CycleProvider>(create: (_) => CycleProvider()),
+      ],
       child: const MyApp(),
     ),
   );

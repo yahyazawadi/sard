@@ -118,4 +118,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tracker => 'tracker';
+
+  @override
+  String get menstruation => 'Menstruation';
+
+  @override
+  String get follicular => 'Follicular';
+
+  @override
+  String get ovulation => 'Ovulation';
+
+  @override
+  String get luteal => 'Luteal';
+
+  @override
+  String get legend => 'Legend';
+
+  @override
+  String get selectPhase => 'Select Phase';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get cycleStats => 'Cycle Stats';
+
+  @override
+  String get currentCycleDay => 'Current Cycle Day';
+
+  @override
+  String get daysUntilPeriod => 'Days Until Period';
+
+  @override
+  String get averageCycleLength => 'Average Cycle Length';
+
+  @override
+  String get noEntry => 'No entry for this day';
+
+  @override
+  String get noNotes => 'No notes';
+
+  @override
+  String get noPhase => 'No phase';
+
+  @override
+  String get emptyStateMessage => 'Tap any day to start tracking your cycle';
+
+  @override
+  String get editAdd => 'Edit / Add';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String get flow => 'Flow';
+
+  @override
+  String get feeling => 'Feeling';
+
+  @override
+  String get sundayShort => 'Sun';
+
+  @override
+  String get mondayShort => 'Mon';
+
+  @override
+  String get tuesdayShort => 'Tue';
+
+  @override
+  String get wednesdayShort => 'Wed';
+
+  @override
+  String get thursdayShort => 'Thu';
+
+  @override
+  String get fridayShort => 'Fri';
+
+  @override
+  String get saturdayShort => 'Sat';
+
+  @override
+  String get calendarFormatMonth => 'Month';
+
+  @override
+  String get calendarFormatWeek => 'Week';
+
+  @override
+  String get calendarFormatTwoWeeks => '2 Weeks';
+
+  @override
+  String get january => 'January';
+
+  @override
+  String get february => 'February';
+
+  @override
+  String get march => 'March';
+
+  @override
+  String get april => 'April';
+
+  @override
+  String get may => 'May';
+
+  @override
+  String get june => 'June';
+
+  @override
+  String get july => 'July';
+
+  @override
+  String get august => 'August';
+
+  @override
+  String get september => 'September';
+
+  @override
+  String get october => 'October';
+
+  @override
+  String get november => 'November';
+
+  @override
+  String get december => 'December';
 }

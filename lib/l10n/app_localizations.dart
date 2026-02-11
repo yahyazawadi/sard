@@ -316,6 +316,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'tracker'**
   String get tracker;
+
+  /// No description provided for @menstruation.
+  ///
+  /// In en, this message translates to:
+  /// **'Menstruation'**
+  String get menstruation;
+
+  /// No description provided for @follicular.
+  ///
+  /// In en, this message translates to:
+  /// **'Follicular'**
+  String get follicular;
+
+  /// No description provided for @ovulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Ovulation'**
+  String get ovulation;
+
+  /// No description provided for @luteal.
+  ///
+  /// In en, this message translates to:
+  /// **'Luteal'**
+  String get luteal;
+
+  /// No description provided for @legend.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend'**
+  String get legend;
+
+  /// No description provided for @selectPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Phase'**
+  String get selectPhase;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @cycleStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle Stats'**
+  String get cycleStats;
+
+  /// No description provided for @currentCycleDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Cycle Day'**
+  String get currentCycleDay;
+
+  /// No description provided for @daysUntilPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Days Until Period'**
+  String get daysUntilPeriod;
+
+  /// No description provided for @averageCycleLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Average Cycle Length'**
+  String get averageCycleLength;
+
+  /// No description provided for @noEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'No entry for this day'**
+  String get noEntry;
+
+  /// No description provided for @noNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes'**
+  String get noNotes;
+
+  /// No description provided for @noPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'No phase'**
+  String get noPhase;
+
+  /// No description provided for @emptyStateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any day to start tracking your cycle'**
+  String get emptyStateMessage;
+
+  /// No description provided for @editAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit / Add'**
+  String get editAdd;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// No description provided for @flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Flow'**
+  String get flow;
+
+  /// No description provided for @feeling.
+  ///
+  /// In en, this message translates to:
+  /// **'Feeling'**
+  String get feeling;
+
+  /// No description provided for @sundayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get sundayShort;
+
+  /// No description provided for @mondayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get mondayShort;
+
+  /// No description provided for @tuesdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get tuesdayShort;
+
+  /// No description provided for @wednesdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get wednesdayShort;
+
+  /// No description provided for @thursdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get thursdayShort;
+
+  /// No description provided for @fridayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get fridayShort;
+
+  /// No description provided for @saturdayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get saturdayShort;
+
+  /// No description provided for @calendarFormatMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get calendarFormatMonth;
+
+  /// No description provided for @calendarFormatWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get calendarFormatWeek;
+
+  /// No description provided for @calendarFormatTwoWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'2 Weeks'**
+  String get calendarFormatTwoWeeks;
+
+  /// No description provided for @january.
+  ///
+  /// In en, this message translates to:
+  /// **'January'**
+  String get january;
+
+  /// No description provided for @february.
+  ///
+  /// In en, this message translates to:
+  /// **'February'**
+  String get february;
+
+  /// No description provided for @march.
+  ///
+  /// In en, this message translates to:
+  /// **'March'**
+  String get march;
+
+  /// No description provided for @april.
+  ///
+  /// In en, this message translates to:
+  /// **'April'**
+  String get april;
+
+  /// No description provided for @may.
+  ///
+  /// In en, this message translates to:
+  /// **'May'**
+  String get may;
+
+  /// No description provided for @june.
+  ///
+  /// In en, this message translates to:
+  /// **'June'**
+  String get june;
+
+  /// No description provided for @july.
+  ///
+  /// In en, this message translates to:
+  /// **'July'**
+  String get july;
+
+  /// No description provided for @august.
+  ///
+  /// In en, this message translates to:
+  /// **'August'**
+  String get august;
+
+  /// No description provided for @september.
+  ///
+  /// In en, this message translates to:
+  /// **'September'**
+  String get september;
+
+  /// No description provided for @october.
+  ///
+  /// In en, this message translates to:
+  /// **'October'**
+  String get october;
+
+  /// No description provided for @november.
+  ///
+  /// In en, this message translates to:
+  /// **'November'**
+  String get november;
+
+  /// No description provided for @december.
+  ///
+  /// In en, this message translates to:
+  /// **'December'**
+  String get december;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
