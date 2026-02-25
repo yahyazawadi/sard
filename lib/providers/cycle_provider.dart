@@ -38,7 +38,12 @@ class CycleProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addOrUpdatePhaseRange(DateTime start, DateTime end, String phase) {
+  void addOrUpdatePhaseRange(
+    DateTime start,
+    DateTime end,
+    String phase, {
+    Color? color,
+  }) {
     for (
       var d = start;
       d.isBefore(end.add(const Duration(days: 1)));

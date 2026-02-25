@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tracker/routes/app_routes.dart';
 
 class InfoScreen extends StatelessWidget {
   const InfoScreen({super.key});

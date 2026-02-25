@@ -87,7 +87,9 @@
   "september": "سبتمبر",
   "october": "أكتوبر",
   "november": "نوفمبر",
-  "december": "ديسمبر"
+  "december": "ديسمبر",
+"weekendDays" :"عطلة الأسبوع",
+"confirm":"تأكيد"
 }
 
 

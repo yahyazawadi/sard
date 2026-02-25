@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:intl/intl.dart';
@@ -67,7 +66,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final t = AppLocalizations.of(context)!;
     String selectedPhase = 'menstruation'; // Default
     Color? selectedColor = Colors.red[300]; // Default color (customizable)
-
     showDialog(
       context: context,
       builder: (context) {
@@ -103,7 +101,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   // Add 'custom' option if you want full control
                   DropdownMenuItem(
                     value: 'custom',
-                    child: Text('Custom Phase'),
+                    child: Text(
+                      'Custom Phase',
+                    ), // TODO: Localize if needed (t.customPhase)
                   ),
                 ],
               ),
@@ -135,11 +135,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             TextButton(
               onPressed: () {
-                cycleProvider.addOrUpdatePhaseRange(start, end, selectedPhase);
+                // Modified to pass color (fix for custom phases)
+                // TODO: Update CycleProvider.addOrUpdatePhaseRange to accept optional Color? color
+                cycleProvider.addOrUpdatePhaseRange(
+                  start,
+                  end,
+                  selectedPhase,
+                  color: selectedColor,
+                );
                 Navigator.pop(context);
                 setState(() {}); // Refresh calendar
               },
-              child: Text("confirm"),
+              child: Text(t.confirm), // Localized
             ),
           ],
         );
@@ -151,15 +158,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final t = AppLocalizations.of(context)!;
     final cycleProvider = Provider.of<CycleProvider>(context, listen: false);
     final entry = cycleProvider.getEntry(day);
-
     showBottomSheet(
       context: context,
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -265,12 +271,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final cycleProvider = Provider.of<CycleProvider>(context);
-    final entries = cycleProvider.entries;
-
     if (_showLegendTutorial) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _showLegend());
     }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(t.calendar),
@@ -326,20 +329,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       setState(() => _calendarFormat = format);
                     }
                   },
-                  daysOfWeekHeight:
-                      (Theme.of(context).textTheme.bodyMedium?.fontSize ??
-                          14.0) *
-                      1.7,
                   onPageChanged: (focusedDay) {
                     _focusedDay = focusedDay;
                   },
                 ),
                 if (cycleProvider.entries.isEmpty)
-                  Center(
-                    child: Text(
-                      t.emptyStateMessage,
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
-                      textAlign: TextAlign.center,
+                  IgnorePointer(
+                    child: Center(
+                      child: Text(
+                        t.emptyStateMessage,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
               ],

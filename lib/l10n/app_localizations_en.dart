@@ -247,4 +247,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get december => 'December';
+
+  @override
+  String get weekendDays => 'weekend days';
+
+  @override
+  String get confirm => 'تأكيد';
 }

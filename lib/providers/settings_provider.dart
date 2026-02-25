@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -17,6 +19,17 @@ class AppSettingsProvider extends ChangeNotifier {
   }
 
   FlexScheme _selectedScheme = FlexScheme.mandyRed;
+
+  Set<int> _weekendDays = {DateTime.friday, DateTime.saturday};
+
+  static const Map<String, bool> _defaultExpansionStates = {
+    'themeStyle': true,
+    'appearanceMode': false,
+    'language': false,
+    'weekendDays': false,
+  };
+  Map<String, bool> _expansionStates =
+      Map<String, bool>.from(_defaultExpansionStates);
 
   AppSettingsProvider(this._prefs) {
     _loadSettings();
@@ -72,6 +85,40 @@ class AppSettingsProvider extends ChangeNotifier {
     final schemeName = _prefs.getString('themeScheme') ?? 'mandyRed';
     _selectedScheme = _schemeFromName(schemeName) ?? FlexScheme.mandyRed;
 
+    final savedDays = _prefs.getString('weekendDays');
+    if (savedDays == null) {
+      _weekendDays = _locale.languageCode == 'ar'
+          ? {DateTime.friday, DateTime.saturday}
+          : {DateTime.saturday, DateTime.sunday};
+    } else {
+      _weekendDays = savedDays
+          .split(',')
+          .where((s) => s.isNotEmpty)
+          .map(int.parse)
+          .toSet();
+    }
+
+    final savedExpansion = _prefs.getString('expansion_states');
+    if (savedExpansion != null) {
+      try {
+        final decoded = jsonDecode(savedExpansion);
+        if (decoded is Map) {
+          final map = decoded.map(
+            (key, value) =>
+                MapEntry(key.toString(), value == true),
+          );
+          _expansionStates = {
+            ..._defaultExpansionStates,
+            ...map,
+          };
+        }
+      } catch (_) {
+        _expansionStates = Map<String, bool>.from(_defaultExpansionStates);
+      }
+    } else {
+      _expansionStates = Map<String, bool>.from(_defaultExpansionStates);
+    }
+
     notifyListeners();
   }
 
@@ -81,6 +128,9 @@ class AppSettingsProvider extends ChangeNotifier {
   double get textScale => _textScale;
   bool get hasTextScaleOverride => _hasTextScaleOverride;
   FlexScheme get selectedScheme => _selectedScheme;
+  Set<int> get weekendDays => _weekendDays;
+  List<int> get weekendDaysList => _weekendDays.toList();
+  bool isSectionExpanded(String key) => _expansionStates[key] ?? false;
 
   // ── Setters ────────────────────────────────────────────────────────────────
   set themeMode(ThemeMode mode) {
@@ -115,14 +165,33 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleWeekendDay(int day) {
+    if (_weekendDays.contains(day)) {
+      _weekendDays.remove(day);
+    } else {
+      _weekendDays.add(day);
+    }
+    _saveWeekendDays();
+    notifyListeners();
+  }
+
   Future<void> resetToDefaults() async {
     await Future.wait([
       _prefs.remove('themeMode'),
       _prefs.remove('language'),
       _prefs.remove('textScale'),
       _prefs.remove('themeScheme'),
+      _prefs.remove('weekendDays'),
+      _prefs.remove('expansion_states'),
     ]);
     _loadSettings();
+  }
+
+  void setSectionExpanded(String key, bool expanded) {
+    if (_expansionStates[key] == expanded) return;
+    _expansionStates[key] = expanded;
+    _saveExpansionStates();
+    notifyListeners();
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -158,5 +227,14 @@ class AppSettingsProvider extends ChangeNotifier {
       FlexScheme.purpleM3: 'purpleM3',
     };
     return reverseMap[scheme] ?? 'mandyRed';
+  }
+
+  void _saveWeekendDays() {
+    final saved = _weekendDays.join(',');
+    _prefs.setString('weekendDays', saved);
+  }
+
+  void _saveExpansionStates() {
+    _prefs.setString('expansion_states', jsonEncode(_expansionStates));
   }
 }

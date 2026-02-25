@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tracker/l10n/app_localizations.dart';
 import 'package:tracker/screens/InfoScreen.dart';
 import 'package:tracker/screens/calendar/calendar_screen.dart';
-import 'package:tracker/screens/settings/SettingsScreen.dart';
+import 'package:tracker/screens/settings/settings_screen.dart';
 
 import '../routes/app_routes.dart';
 
@@ -67,12 +67,12 @@ final GoRouter router = GoRouter(
       routes: [
         GoRoute(
           path: AppRoutes.home,
-          builder: (_, __) => const CalendarScreen(),
+          builder: (_, _) => const CalendarScreen(),
         ),
-        GoRoute(path: AppRoutes.phase, builder: (_, __) => const InfoScreen()),
+        GoRoute(path: AppRoutes.phase, builder: (_, _) => const InfoScreen()),
         GoRoute(
           path: AppRoutes.settings,
-          builder: (_, __) => const SettingsScreen(),
+          builder: (_, _) => const SettingsScreen(),
         ),
         // Add more like:
         // GoRoute(path: AppRoutes.newNote, builder: (_, __) => const EntryScreen()),

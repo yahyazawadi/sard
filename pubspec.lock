@@ -958,8 +958,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: exported_date_range
-      resolved-ref: cf3c16214669f1ae638d5a2bc9bb5fdb615ba1fd
+      ref: bordr-radius
+      resolved-ref: "010cad29a4e570d539ce26c1f3b5b0d92968d943"
       url: "https://github.com/yahyazawadi/table_calendar.git"
     source: git
     version: "3.2.0"

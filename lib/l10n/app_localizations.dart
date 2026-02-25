@@ -574,6 +574,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'December'**
   String get december;
+
+  /// No description provided for @weekendDays.
+  ///
+  /// In en, this message translates to:
+  /// **'weekend days'**
+  String get weekendDays;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'تأكيد'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
