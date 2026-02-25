@@ -13,9 +13,20 @@ class StatItem extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
-        Text(label, style: const TextStyle(fontSize: 8, color: Colors.grey)),
+
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 8,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ],
     );
   }

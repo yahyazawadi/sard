@@ -66,6 +66,29 @@ class PhaseCalendar extends StatelessWidget {
       multiRanges: ranges,
       isRtl: Directionality.of(context) == TextDirection.rtl,
       calendarStyle: styleBuilder.buildCalendarStyle(),
+
+      // ── Also fix days-of-week headers (Mon, Tue, ...) ──
+      daysOfWeekStyle: DaysOfWeekStyle(
+        weekdayStyle:
+            theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ) ??
+            TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+        weekendStyle:
+            theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.error,
+              fontWeight: FontWeight.w600,
+            ) ??
+            TextStyle(
+              color: theme.colorScheme.error,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+
       calendarBuilders: dayBuilders.build(),
       availableCalendarFormats: CalendarStyleBuilder.buildFormatMap(t),
       headerStyle: styleBuilder.buildHeaderStyle(t),

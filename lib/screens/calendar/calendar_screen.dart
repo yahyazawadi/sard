@@ -49,10 +49,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
         setState(() => _rangeStart = selectedDay);
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✓ First day selected — now tap the ending day'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: const Text(
+              '✓ First day selected — now tap the ending day',
+            ),
+            duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.tertiaryContainer, // theme-aware
           ),
         );
       } else {
@@ -109,15 +114,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     groupValue: selectedPhase,
                     dense: true,
                     onChanged: (v) => setDialogState(() => selectedPhase = v),
-                    title: const Row(
+                    title: Row(
                       children: [
                         Icon(
                           Icons.circle_outlined,
-                          color: Colors.grey,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.outline, // theme-aware
                           size: 20,
                         ),
-                        SizedBox(width: 12),
-                        Text('None (Clear)', style: TextStyle(fontSize: 15)),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'None (Clear)',
+                          style: TextStyle(fontSize: 15),
+                        ),
                       ],
                     ),
                   ),
@@ -177,7 +187,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: previewColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: selectedPhase == null
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Colors.white, // theme-aware
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -323,7 +335,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // Range mode toggle
           IconButton(
             icon: Icon(_isRangeMode ? Icons.check_circle : Icons.edit_calendar),
-            color: _isRangeMode ? Colors.greenAccent : null,
+            color: _isRangeMode
+                ? Theme.of(context).colorScheme.primary
+                : null, // theme-aware
             tooltip: _isRangeMode
                 ? 'Exit edit mode'
                 : 'Edit mode (mark ranges)',
@@ -351,9 +365,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text(
+                      child: Text(
                         'Clear',
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ), // theme-aware
                       ),
                     ),
                   ],
@@ -428,7 +444,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     left: 16,
                     right: 16,
                     child: Material(
-                      color: Colors.green.withOpacity(0.95),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primaryContainer, // theme-aware
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
@@ -436,8 +454,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           _rangeStart == null
                               ? 'Edit mode ON • Tap first day'
                               : 'Tap ending day (or same day for single-day)',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer, // theme-aware
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -450,9 +470,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     child: Center(
                       child: Text(
                         t.emptyStateMessage,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
-                          color: Colors.grey,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant, // theme-aware
                         ),
                         textAlign: TextAlign.center,
                       ),

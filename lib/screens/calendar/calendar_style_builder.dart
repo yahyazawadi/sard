@@ -3,18 +3,45 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:tracker/l10n/app_localizations.dart';
 import 'calendar_localization.dart';
 
-/// Builder class for calendar style and header configuration.
 class CalendarStyleBuilder {
   final ThemeData theme;
   final bool isRangeMode;
 
   const CalendarStyleBuilder({required this.theme, required this.isRangeMode});
 
-  /// Builds the CalendarStyle for the TableCalendar.
   CalendarStyle buildCalendarStyle() {
+    final colorScheme = theme.colorScheme;
+
     return CalendarStyle(
       outsideDaysVisible: false,
-      weekendTextStyle: TextStyle(color: theme.colorScheme.error),
+
+      // ── All day numbers (including inside colored ranges) ──
+      defaultTextStyle: TextStyle(
+        color: colorScheme.onSurface,
+        fontSize: 14.0,
+        fontWeight: FontWeight.w500,
+      ),
+      weekendTextStyle: TextStyle(
+        color: colorScheme.error.withOpacity(0.85),
+        fontSize: 14.0,
+        fontWeight: FontWeight.w500,
+      ),
+      selectedTextStyle: TextStyle(
+        // ← Fixed: now uses onSurface (border-only)
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.bold,
+        fontSize: 14.5,
+      ),
+      todayTextStyle: TextStyle(
+        color: colorScheme.primary,
+        fontWeight: FontWeight.bold,
+        fontSize: 14.0,
+      ),
+      outsideTextStyle: TextStyle(
+        color: colorScheme.onSurface.withOpacity(0.38),
+        fontSize: 14.0,
+      ),
+
       rangeHighlightColor: Colors.transparent,
       selectedDecoration: _buildSelectedDecoration(),
       todayDecoration: const BoxDecoration(
@@ -39,8 +66,9 @@ class CalendarStyleBuilder {
     );
   }
 
-  /// Builds the HeaderStyle for the TableCalendar.
   HeaderStyle buildHeaderStyle(AppLocalizations t) {
+    final colorScheme = theme.colorScheme;
+
     return HeaderStyle(
       formatButtonVisible: true,
       titleCentered: true,
@@ -48,10 +76,25 @@ class CalendarStyleBuilder {
         final monthName = CalendarLocalization.getMonthName(date.month, t);
         return '$monthName ${date.year}';
       },
+      // FIXED: Month name ("February 2026")
+      titleTextStyle: TextStyle(
+        color: colorScheme.onSurface,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+      ),
+      // FIXED: Format button ("2 Weeks", "Month", etc.)
+      formatButtonTextStyle: TextStyle(
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w600,
+        fontSize: 14,
+      ),
+      formatButtonDecoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outline),
+        borderRadius: BorderRadius.circular(20),
+      ),
     );
   }
 
-  /// Builds the available calendar format map.
   static Map<CalendarFormat, String> buildFormatMap(AppLocalizations t) {
     return {
       CalendarFormat.month: t.calendarFormatMonth,

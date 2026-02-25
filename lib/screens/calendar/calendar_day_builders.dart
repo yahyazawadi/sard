@@ -4,7 +4,6 @@ import 'package:tracker/l10n/app_localizations.dart';
 import 'package:tracker/providers/settings_provider.dart';
 import 'calendar_localization.dart';
 
-/// Builder class for calendar day cell widgets.
 class CalendarDayBuilders {
   final ThemeData theme;
   final AppLocalizations t;
@@ -20,7 +19,6 @@ class CalendarDayBuilders {
     this.rangeStart,
   });
 
-  /// Builds the CalendarBuilders for the TableCalendar.
   CalendarBuilders build() {
     return CalendarBuilders(
       dowBuilder: _buildDayOfWeek,
@@ -41,9 +39,11 @@ class CalendarDayBuilders {
         padding: const EdgeInsets.only(bottom: 4.0),
         child: Text(
           text,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
+          style: TextStyle(
+            // more explicit
             color: color,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
           ),
         ),
       ),
@@ -59,14 +59,21 @@ class CalendarDayBuilders {
         isRangeMode && rangeStart != null && isSameDay(day, rangeStart);
     final isToday = isSameDay(day, DateTime.now());
 
-    final baseWidget = Center(
-      child: Text(
-        '${day.day}',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: isToday ? theme.colorScheme.primary : null,
-        ),
+    // Force text color — this is the key fix for numbers inside colored ranges
+    final textColor = isToday
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurface;
+
+    final baseText = Text(
+      '${day.day}',
+      style: TextStyle(
+        color: textColor,
+        fontSize: 14.0,
+        fontWeight: FontWeight.w500,
       ),
     );
+
+    final baseWidget = Center(child: baseText);
 
     if (isTempFirstDay) {
       return Stack(
@@ -97,8 +104,10 @@ class CalendarDayBuilders {
       children: [
         Text(
           '${day.day}',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.primary,
+          style: TextStyle(
+            // explicit style
+            color: theme.colorScheme.onSurface,
+            fontSize: 14.0,
             fontWeight: FontWeight.w600,
           ),
         ),
