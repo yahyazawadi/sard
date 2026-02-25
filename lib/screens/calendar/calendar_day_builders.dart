@@ -10,6 +10,7 @@ class CalendarDayBuilders {
   final AppSettingsProvider settingsProvider;
   final bool isRangeMode;
   final DateTime? rangeStart;
+  final TextStyle dayTextStyle;
 
   const CalendarDayBuilders({
     required this.theme,
@@ -17,7 +18,7 @@ class CalendarDayBuilders {
     required this.settingsProvider,
     required this.isRangeMode,
     this.rangeStart,
-    required TextStyle dayTextStyle,
+    required this.dayTextStyle,
   });
 
   CalendarBuilders build() {
@@ -59,20 +60,14 @@ class CalendarDayBuilders {
         isRangeMode && rangeStart != null && isSameDay(day, rangeStart);
     final isToday = isSameDay(day, DateTime.now());
 
-    final textColor = isToday
-        ? theme.colorScheme.primary
-        : theme.colorScheme.onSurface;
-
-    final baseWidget = Center(
-      child: Text(
-        '${day.day}',
-        style: TextStyle(
-          color: textColor,
-          fontSize: 14.5,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    // Use the provided dayTextStyle but ensure proper color
+    final effectiveStyle = dayTextStyle.copyWith(
+      color: theme.colorScheme.onSurface,
+      fontSize: 14.5,
+      fontWeight: FontWeight.w600,
     );
+
+    final baseWidget = Center(child: Text('${day.day}', style: effectiveStyle));
 
     if (isTempFirstDay) {
       return Stack(
@@ -98,17 +93,17 @@ class CalendarDayBuilders {
   Widget _buildTodayCell(BuildContext context, DateTime day, DateTime focused) {
     final indicatorColor = theme.colorScheme.secondary;
 
+    // Use the provided dayTextStyle but ensure proper color for today
+    final effectiveStyle = dayTextStyle.copyWith(
+      color: theme.colorScheme.onSurface,
+      fontSize: 14.5,
+      fontWeight: FontWeight.w600,
+    );
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          '${day.day}',
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontSize: 14.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Text('${day.day}', style: effectiveStyle),
         Container(
           margin: const EdgeInsets.only(top: 4),
           width: 6,

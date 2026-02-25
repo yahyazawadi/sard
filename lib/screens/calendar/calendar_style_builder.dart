@@ -42,6 +42,13 @@ class CalendarStyleBuilder {
         fontSize: 14.0,
       ),
 
+      // ── Fix for numbers inside colored ranges (multiRanges) ──
+      withinRangeTextStyle: TextStyle(
+        color: colorScheme.onSurface,
+        fontSize: 14.0,
+        fontWeight: FontWeight.w500,
+      ),
+
       rangeHighlightColor: Colors.transparent,
       selectedDecoration: _buildSelectedDecoration(),
       todayDecoration: const BoxDecoration(
