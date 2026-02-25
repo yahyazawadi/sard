@@ -38,12 +38,7 @@ class CycleProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addOrUpdatePhaseRange(
-    DateTime start,
-    DateTime end,
-    String phase, {
-    Color? color,
-  }) {
+  void addOrUpdatePhaseRange(DateTime start, DateTime end, String? phase) {
     for (
       var d = start;
       d.isBefore(end.add(const Duration(days: 1)));
@@ -51,12 +46,13 @@ class CycleProvider extends ChangeNotifier {
     ) {
       final existing = getEntry(d);
       if (existing != null) {
-        existing.phase = phase;
+        existing.phase = phase; // can be null now
         addOrUpdateEntry(d, existing);
-      } else {
+      } else if (phase != null) {
         addOrUpdateEntry(d, CycleEntry(date: d, phase: phase));
       }
     }
+    notifyListeners();
   }
 
   Color getPhaseColor(String? phase) {
@@ -70,7 +66,7 @@ class CycleProvider extends ChangeNotifier {
       case 'luteal':
         return Colors.purple[300]!;
       default:
-        return Colors.grey;
+        return Colors.grey[400]!;
     }
   }
 
@@ -102,6 +98,7 @@ class CycleProvider extends ChangeNotifier {
 
     for (int i = 1; i < sorted.length; i++) {
       final entry = sorted[i];
+      if (entry.phase == null) continue; // Skip cleared days
       if (entry.phase == currentPhase &&
           entry.date.difference(sorted[i - 1].date).inDays == 1) {
         // Consecutive same phase
@@ -146,5 +143,11 @@ class CycleProvider extends ChangeNotifier {
       default:
         return Colors.grey[400]!;
     }
+  }
+
+  void clearAllEntries() async {
+    await _cyclesBox.clear();
+    _entries.clear();
+    notifyListeners();
   }
 }

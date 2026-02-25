@@ -9,10 +9,9 @@ class PhaseCalendar extends StatelessWidget {
   final DateTime focusedDay;
   final DateTime? selectedDay;
   final DateTime? rangeStart;
-  final DateTime? rangeEnd;
   final CalendarFormat calendarFormat;
+  final bool isRangeMode;
   final Function(DateTime, DateTime) onDaySelected;
-  final Function(DateTime?, DateTime?, DateTime) onRangeSelected;
   final Function(CalendarFormat) onFormatChanged;
   final Function(DateTime) onPageChanged;
 
@@ -21,10 +20,9 @@ class PhaseCalendar extends StatelessWidget {
     required this.focusedDay,
     this.selectedDay,
     this.rangeStart,
-    this.rangeEnd,
     required this.calendarFormat,
+    required this.isRangeMode,
     required this.onDaySelected,
-    required this.onRangeSelected,
     required this.onFormatChanged,
     required this.onPageChanged,
   });
@@ -56,32 +54,36 @@ class PhaseCalendar extends StatelessWidget {
           (Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14.0) *
           Provider.of<AppSettingsProvider>(context).textScale *
           1.8, // base multiplier – tune 1.6–2.0
-      selectedDayPredicate: (day) => isSameDay(selectedDay, day),
-        rangeSelectionMode: RangeSelectionMode.toggledOff,
+      selectedDayPredicate: isRangeMode
+          ? (day) =>
+                isSameDay(rangeStart, day) // Highlight first tap in range mode
+          : (day) => isSameDay(selectedDay, day),
+      rangeSelectionMode: RangeSelectionMode.disabled, // We handle manually
+      rangeStartDay: null,
+      rangeEndDay: null,
       multiRanges: ranges,
       isRtl: Directionality.of(context) == TextDirection.rtl,
       calendarStyle: CalendarStyle(
         outsideDaysVisible: false,
-        weekendTextStyle: TextStyle(color: Colors.red),
-        rangeHighlightColor: Colors.blue.withOpacity(
-          0.3,
-        ), // Visible range highlight
+        weekendTextStyle: const TextStyle(color: Colors.red),
+        rangeHighlightColor:
+            Colors.transparent, // We don't need package highlight
         selectedDecoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.5),
+          border: Border.all(
+            color: isRangeMode
+                ? Colors.green.withOpacity(0.9)
+                : Colors.blue.withOpacity(0.6),
+            width: isRangeMode ? 3.5 : 2.5,
+          ),
           shape: BoxShape.circle,
         ),
         todayDecoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.5),
           shape: BoxShape.circle,
+          color: Colors.transparent, // no background
         ),
-        rangeStartDecoration: BoxDecoration(
-          color: Colors.green,
-          shape: BoxShape.circle,
-        ),
-        rangeEndDecoration: BoxDecoration(
-          color: Colors.green,
-          shape: BoxShape.circle,
-        ),
+        rangeStartDecoration:
+            const BoxDecoration(), // Empty to disable package's own green
+        rangeEndDecoration: const BoxDecoration(),
         cellMargin: EdgeInsets.zero,
       ),
 
@@ -122,6 +124,78 @@ class PhaseCalendar extends StatelessWidget {
             ),
           );
         },
+
+        // Custom day builder for temp green highlight in edit mode
+        defaultBuilder: (context, day, focusedDay) {
+          final isTempFirstDay =
+              isRangeMode && rangeStart != null && isSameDay(day, rangeStart);
+
+          final baseWidget = Center(
+            child: Text(
+              '${day.day}',
+              style: TextStyle(
+                color: isSameDay(day, DateTime.now())
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+            ),
+          );
+
+          if (isTempFirstDay) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                baseWidget,
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.green.withOpacity(0.9),
+                      width: 3.5,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return baseWidget;
+        },
+
+        // Today builder with small dot below + subtle glow
+        todayBuilder: (context, day, focusedDay) {
+          final text = '${day.day}';
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                text,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Colors.tealAccent,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.tealAccent.withOpacity(0.5),
+                      blurRadius: 4,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
 
       // Format button text from your l10n
@@ -156,7 +230,6 @@ class PhaseCalendar extends StatelessWidget {
       ),
 
       onDaySelected: onDaySelected,
-      onRangeSelected: onRangeSelected,
       onFormatChanged: onFormatChanged,
       onPageChanged: onPageChanged,
       startingDayOfWeek: t.localeName == 'ar'

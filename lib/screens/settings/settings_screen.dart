@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tracker/l10n/app_localizations.dart';
 import 'sections/ThemeSectionWidget.dart';
 import 'sections/ModeSectionWidget.dart';
 import 'sections/LanguageSectionWidget.dart';
@@ -10,6 +11,8 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     final items = <Widget>[
       const ThemeSectionWidget(),
       const SizedBox(height: 8),
@@ -28,6 +31,7 @@ class SettingsScreen extends StatelessWidget {
         textTheme: Theme.of(context).textTheme.apply(fontFamily: 'DG Sahabah'),
       ),
       child: Scaffold(
+        appBar: AppBar(title: Text(t.settings)),
         body: ListView.builder(
           padding: const EdgeInsets.all(16.0),
           itemCount: items.length,

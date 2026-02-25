@@ -25,10 +25,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  DateTime? _rangeStart;
-  DateTime? _rangeEnd;
+  DateTime? _rangeStart; // Only used in range mode now
   bool _showStats = true;
   bool _showLegendTutorial = true;
+  bool _isRangeMode = false;
 
   @override
   void initState() {
@@ -41,114 +41,156 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    setState(() {
-      _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
-      _rangeStart = null;
-      _rangeEnd = null;
-    });
-    _showDayDetails(selectedDay);
-  }
+    setState(() => _focusedDay = focusedDay);
 
-  void _onRangeSelected(DateTime? start, DateTime? end, DateTime focusDay) {
-    setState(() {
-      _selectedDay = null;
-      _focusedDay = focusDay;
-      _rangeStart = start;
-      _rangeEnd = end;
-    });
-    if (start != null && end != null) {
-      _promptPhaseForRange(start, end);
+    if (_isRangeMode) {
+      if (_rangeStart == null) {
+        // First tap
+        setState(() => _rangeStart = selectedDay);
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ First day selected — now tap the ending day'),
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        // Second tap → create range (mode STAYS ON)
+        final start = _rangeStart!;
+        final end = selectedDay.isBefore(start) ? start : selectedDay;
+        final realStart = selectedDay.isBefore(start) ? selectedDay : start;
+
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        _promptPhaseForRange(realStart, end);
+
+        // Clear temp highlight immediately (mode stays on for more ranges)
+        setState(() => _rangeStart = null);
+      }
+    } else {
+      // Normal mode
+      setState(() => _selectedDay = selectedDay);
+      _showDayDetails(selectedDay);
     }
   }
 
   void _promptPhaseForRange(DateTime start, DateTime end) {
     final t = AppLocalizations.of(context)!;
-    String selectedPhase = 'menstruation'; // Default
-    Color? selectedColor = Colors.red[300]; // Default color (customizable)
+    final cycleProvider = Provider.of<CycleProvider>(context, listen: false);
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(
-            '${t.selectPhase} for ${DateFormat.yMd().format(start)} - ${DateFormat.yMd().format(end)}',
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButton<String>(
-                value: selectedPhase,
-                onChanged: (value) {
-                  selectedPhase = value ?? 'menstruation';
-                  selectedColor = cycleProvider.getPhaseColor(
-                    selectedPhase,
-                  ); // Sync color from provider
-                },
-                items: [
-                  DropdownMenuItem(
-                    value: 'menstruation',
-                    child: Text(t.menstruation),
+        String? selectedPhase = 'menstruation'; // null = None/Clear
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final previewColor = selectedPhase == null
+                ? Colors.grey[400]!
+                : cycleProvider.getPhaseColor(selectedPhase);
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+              title: Text(
+                '${t.selectPhase}\n${DateFormat.yMd().format(start)} – ${DateFormat.yMd().format(end)}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 17, height: 1.3),
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(8, 8, 8, 20),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // None / Clear (first option)
+                  RadioListTile<String?>(
+                    value: null,
+                    groupValue: selectedPhase,
+                    dense: true,
+                    onChanged: (v) => setDialogState(() => selectedPhase = v),
+                    title: const Row(
+                      children: [
+                        Icon(
+                          Icons.circle_outlined,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        SizedBox(width: 12),
+                        Text('None (Clear)', style: TextStyle(fontSize: 15)),
+                      ],
+                    ),
                   ),
-                  DropdownMenuItem(
-                    value: 'follicular',
-                    child: Text(t.follicular),
-                  ),
-                  DropdownMenuItem(
-                    value: 'ovulation',
-                    child: Text(t.ovulation),
-                  ),
-                  DropdownMenuItem(value: 'luteal', child: Text(t.luteal)),
-                  // Add 'custom' option if you want full control
-                  DropdownMenuItem(
-                    value: 'custom',
-                    child: Text(
-                      'Custom Phase',
-                    ), // TODO: Localize if needed (t.customPhase)
+                  const Divider(height: 4),
+                  // 4 phases
+                  ...['menstruation', 'follicular', 'ovulation', 'luteal'].map((
+                    phase,
+                  ) {
+                    final color = cycleProvider.getPhaseColor(phase);
+                    final label = switch (phase) {
+                      'menstruation' => t.menstruation,
+                      'follicular' => t.follicular,
+                      'ovulation' => t.ovulation,
+                      'luteal' => t.luteal,
+                      _ => '',
+                    };
+                    return RadioListTile<String>(
+                      value: phase,
+                      groupValue: selectedPhase,
+                      dense: true,
+                      onChanged: (v) => setDialogState(() => selectedPhase = v),
+                      title: Row(
+                        children: [
+                          Icon(Icons.circle, color: color, size: 20),
+                          const SizedBox(width: 12),
+                          Text(label, style: const TextStyle(fontSize: 15)),
+                        ],
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 24),
+                  // Tiny preview bar (no big text, minimal space)
+                  Container(
+                    height: 8,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: previewColor,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                   ),
                 ],
               ),
-              if (selectedPhase ==
-                  'custom') // Optional: Custom color picker for full control
-                ColorPicker(
-                  // Use flutter_colorpicker package; add to pubspec if needed
-                  pickerColor: selectedColor ?? Colors.grey,
-                  onColorChanged: (color) => selectedColor = color,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(t.cancel, style: const TextStyle(fontSize: 16)),
                 ),
-              SizedBox(height: 8),
-              // Preview what will be applied
-              Container(
-                height: 20,
-                color: selectedColor,
-                child: Center(
-                  child: Text(
-                    'Preview: $selectedPhase',
-                    style: TextStyle(color: Colors.white),
+                ElevatedButton(
+                  onPressed: () {
+                    cycleProvider.addOrUpdatePhaseRange(
+                      start,
+                      end,
+                      selectedPhase,
+                    );
+                    Navigator.pop(context);
+                    setState(() {});
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: previewColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 14,
+                    ),
                   ),
+                  child: Text(selectedPhase == null ? 'Clear' : t.confirm),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(t.cancel),
-            ),
-            TextButton(
-              onPressed: () {
-                // Modified to pass color (fix for custom phases)
-                // TODO: Update CycleProvider.addOrUpdatePhaseRange to accept optional Color? color
-                cycleProvider.addOrUpdatePhaseRange(
-                  start,
-                  end,
-                  selectedPhase,
-                  color: selectedColor,
-                );
-                Navigator.pop(context);
-                setState(() {}); // Refresh calendar
-              },
-              child: Text(t.confirm), // Localized
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );
@@ -278,6 +320,53 @@ class _CalendarScreenState extends State<CalendarScreen> {
       appBar: AppBar(
         title: Text(t.calendar),
         actions: [
+          // Range mode toggle
+          IconButton(
+            icon: Icon(_isRangeMode ? Icons.check_circle : Icons.edit_calendar),
+            color: _isRangeMode ? Colors.greenAccent : null,
+            tooltip: _isRangeMode
+                ? 'Exit edit mode'
+                : 'Edit mode (mark ranges)',
+            onPressed: () => setState(() {
+              _isRangeMode = !_isRangeMode;
+              if (!_isRangeMode) _rangeStart = null; // Clear leftover highlight
+            }),
+          ),
+          // Temp Clear button
+          IconButton(
+            icon: const Icon(Icons.delete_sweep),
+            tooltip: 'Clear all (temp test)',
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Clear Calendar?'),
+                  content: const Text(
+                    'This will delete ALL entries.\nOnly for testing!',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text(t.cancel),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Clear',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                cycleProvider.clearAllEntries();
+                setState(() {
+                  _selectedDay = _rangeStart = null;
+                });
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.help_outline),
             onPressed: _showLegend,
@@ -320,10 +409,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   focusedDay: _focusedDay,
                   selectedDay: _selectedDay,
                   rangeStart: _rangeStart,
-                  rangeEnd: _rangeEnd,
                   calendarFormat: _calendarFormat,
+                  isRangeMode: _isRangeMode,
                   onDaySelected: _onDaySelected,
-                  onRangeSelected: _onRangeSelected,
                   onFormatChanged: (format) {
                     if (_calendarFormat != format) {
                       setState(() => _calendarFormat = format);
@@ -333,6 +421,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     _focusedDay = focusedDay;
                   },
                 ),
+                // Range mode banner
+                if (_isRangeMode)
+                  Positioned(
+                    top: 8,
+                    left: 16,
+                    right: 16,
+                    child: Material(
+                      color: Colors.green.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          _rangeStart == null
+                              ? 'Edit mode ON • Tap first day'
+                              : 'Tap ending day (or same day for single-day)',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
                 if (cycleProvider.entries.isEmpty)
                   IgnorePointer(
                     child: Center(

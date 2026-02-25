@@ -13,17 +13,6 @@ final GoRouter router = GoRouter(
   routes: [
     ShellRoute(
       builder: (context, state, child) => Scaffold(
-        appBar: AppBar(
-          title: Text(
-            state.uri.path == AppRoutes.home
-                ? AppLocalizations.of(context)!.home
-                : state.uri.path == AppRoutes.phase
-                ? AppLocalizations.of(context)!.phase
-                : state.uri.path == AppRoutes.settings
-                ? AppLocalizations.of(context)!.settings
-                : AppLocalizations.of(context)!.tracker,
-          ),
-        ),
         body: child,
         bottomNavigationBar: Directionality(
           textDirection: TextDirection.ltr,
