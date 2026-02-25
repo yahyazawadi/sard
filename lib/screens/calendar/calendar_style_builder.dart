@@ -15,7 +15,7 @@ class CalendarStyleBuilder {
     return CalendarStyle(
       outsideDaysVisible: false,
 
-      // ── All day numbers (including inside colored ranges) ──
+      // Day numbers (already perfect)
       defaultTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 14.0,
@@ -27,7 +27,6 @@ class CalendarStyleBuilder {
         fontWeight: FontWeight.w500,
       ),
       selectedTextStyle: TextStyle(
-        // ← Fixed: now uses onSurface (border-only)
         color: colorScheme.onSurface,
         fontWeight: FontWeight.bold,
         fontSize: 14.5,
@@ -42,14 +41,16 @@ class CalendarStyleBuilder {
         fontSize: 14.0,
       ),
 
-      // ── Fix for numbers inside colored ranges (multiRanges) ──
+      // ── FINAL FIX for the white border around colored ranges ──
       withinRangeTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 14.0,
         fontWeight: FontWeight.w500,
       ),
+      rangeHighlightColor: colorScheme.primary.withOpacity(
+        0.08,
+      ), // subtle theme border (no white!)
 
-      rangeHighlightColor: Colors.transparent,
       selectedDecoration: _buildSelectedDecoration(),
       todayDecoration: const BoxDecoration(
         shape: BoxShape.circle,
@@ -58,6 +59,8 @@ class CalendarStyleBuilder {
       rangeStartDecoration: const BoxDecoration(),
       rangeEndDecoration: const BoxDecoration(),
       cellMargin: EdgeInsets.zero,
+      rangeBorderColor: colorScheme.outline.withOpacity(0.3),
+      rangeBorderWidth: 1.2,
     );
   }
 
@@ -83,13 +86,11 @@ class CalendarStyleBuilder {
         final monthName = CalendarLocalization.getMonthName(date.month, t);
         return '$monthName ${date.year}';
       },
-      // FIXED: Month name ("February 2026")
       titleTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 18,
         fontWeight: FontWeight.w600,
       ),
-      // FIXED: Format button ("2 Weeks", "Month", etc.)
       formatButtonTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontWeight: FontWeight.w600,
