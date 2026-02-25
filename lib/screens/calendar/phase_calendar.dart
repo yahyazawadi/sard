@@ -49,6 +49,7 @@ class PhaseCalendar extends StatelessWidget {
       settingsProvider: settingsProvider,
       isRangeMode: isRangeMode,
       rangeStart: rangeStart,
+      dayTextStyle: theme.textTheme.bodyMedium!,
     );
 
     return TableCalendar(

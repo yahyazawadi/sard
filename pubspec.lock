@@ -958,8 +958,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: bordr-radius
-      resolved-ref: "010cad29a4e570d539ce26c1f3b5b0d92968d943"
+      ref: lightmode-days
+      resolved-ref: "1f2b3d69c586e81b91907e43537bb1e3ca04821b"
       url: "https://github.com/yahyazawadi/table_calendar.git"
     source: git
     version: "3.2.0"

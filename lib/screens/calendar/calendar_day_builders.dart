@@ -17,6 +17,7 @@ class CalendarDayBuilders {
     required this.settingsProvider,
     required this.isRangeMode,
     this.rangeStart,
+    required TextStyle dayTextStyle,
   });
 
   CalendarBuilders build() {
@@ -40,10 +41,9 @@ class CalendarDayBuilders {
         child: Text(
           text,
           style: TextStyle(
-            // more explicit
             color: color,
-            fontWeight: FontWeight.w500,
             fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
@@ -59,21 +59,20 @@ class CalendarDayBuilders {
         isRangeMode && rangeStart != null && isSameDay(day, rangeStart);
     final isToday = isSameDay(day, DateTime.now());
 
-    // Force text color — this is the key fix for numbers inside colored ranges
     final textColor = isToday
         ? theme.colorScheme.primary
         : theme.colorScheme.onSurface;
 
-    final baseText = Text(
-      '${day.day}',
-      style: TextStyle(
-        color: textColor,
-        fontSize: 14.0,
-        fontWeight: FontWeight.w500,
+    final baseWidget = Center(
+      child: Text(
+        '${day.day}',
+        style: TextStyle(
+          color: textColor,
+          fontSize: 14.5,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
-
-    final baseWidget = Center(child: baseText);
 
     if (isTempFirstDay) {
       return Stack(
@@ -105,9 +104,8 @@ class CalendarDayBuilders {
         Text(
           '${day.day}',
           style: TextStyle(
-            // explicit style
             color: theme.colorScheme.onSurface,
-            fontSize: 14.0,
+            fontSize: 14.5,
             fontWeight: FontWeight.w600,
           ),
         ),
