@@ -4,11 +4,10 @@ class StatItem extends StatelessWidget {
   final String label;
   final String value;
 
-  StatItem(this.label, this.value, {super.key});
+  const StatItem(this.label, this.value, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('StatItem fontSize value: 12, label: 8');
     return Column(
       children: [
         Text(

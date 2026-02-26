@@ -168,7 +168,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get emptyStateMessage => 'اضغط على أي يوم لتبدأ تتبع دورك';
 
   @override
-  String get editAdd => 'تحرير / إضافة';
+  String get editAdd => 'تعديل / إضافة';
 
   @override
   String get close => 'إغلاق';
@@ -253,4 +253,52 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get confirm => 'تأكيد';
+
+  @override
+  String get firstDaySelectedMessage => '✓ تم تحديد اليوم الأول — الآن اضغط على اليوم النهائي';
+
+  @override
+  String get noneClear => 'لا شيء (مسح)';
+
+  @override
+  String get clear => 'مسح';
+
+  @override
+  String get notAvailable => 'غير متوفر';
+
+  @override
+  String get exitEditMode => 'إنهاء وضع التعديل';
+
+  @override
+  String get editModeRanges => 'وضع التعديل (تحديد النطاقات)';
+
+  @override
+  String get clearAllTest => 'مسح الكل (اختبار مؤقت)';
+
+  @override
+  String get clearCalendar => 'مسح التقويم؟';
+
+  @override
+  String get clearCalendarWarning => 'سيؤدي هذا إلى حذف جميع الإدخالات.\nللاختبار فقط!';
+
+  @override
+  String get editModeOnTapFirst => 'وضع التعديل مفعّل • اضغط على اليوم الأول';
+
+  @override
+  String get tapEndingDay => 'اضغط على اليوم النهائي (أو نفس اليوم ليوم واحد)';
+
+  @override
+  String get days => 'أيام';
+
+  @override
+  String get flowLight => 'Light';
+
+  @override
+  String get flowMedium => 'Medium';
+
+  @override
+  String get flowHeavy => 'Heavy';
+
+  @override
+  String get flowSpotting => 'Spotting';
 }

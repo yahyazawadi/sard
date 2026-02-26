@@ -584,8 +584,104 @@ abstract class AppLocalizations {
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
-  /// **'تأكيد'**
+  /// **'confirm'**
   String get confirm;
+
+  /// SnackBar message after selecting the first day in range edit mode
+  ///
+  /// In en, this message translates to:
+  /// **'✓ First day selected — now tap the ending day'**
+  String get firstDaySelectedMessage;
+
+  /// Option in phase selection dialog to remove/clear the phase from selected range
+  ///
+  /// In en, this message translates to:
+  /// **'None (Clear)'**
+  String get noneClear;
+
+  /// Button text when user chooses to clear/remove the phase
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// Placeholder text when a value (mood, pain, etc.) is not available
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get notAvailable;
+
+  /// Tooltip for the edit mode toggle button when mode is currently active
+  ///
+  /// In en, this message translates to:
+  /// **'Exit edit mode'**
+  String get exitEditMode;
+
+  /// Tooltip for the edit mode toggle button when mode is inactive
+  ///
+  /// In en, this message translates to:
+  /// **'Edit mode (mark ranges)'**
+  String get editModeRanges;
+
+  /// Tooltip for the temporary clear-all entries button
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all (temp test)'**
+  String get clearAllTest;
+
+  /// Title of confirmation dialog for clearing all calendar entries
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Calendar?'**
+  String get clearCalendar;
+
+  /// Warning message in the clear-all confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This will delete ALL entries.\nOnly for testing!'**
+  String get clearCalendarWarning;
+
+  /// Banner text shown when edit/range mode is active but no start day selected
+  ///
+  /// In en, this message translates to:
+  /// **'Edit mode ON • Tap first day'**
+  String get editModeOnTapFirst;
+
+  /// Banner text after first day is selected in edit mode
+  ///
+  /// In en, this message translates to:
+  /// **'Tap ending day (or same day for single-day)'**
+  String get tapEndingDay;
+
+  /// Unit label appended to average cycle length value
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get days;
+
+  /// No description provided for @flowLight.
+  ///
+  /// In en, this message translates to:
+  /// **'خفيف'**
+  String get flowLight;
+
+  /// No description provided for @flowMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'متوسط'**
+  String get flowMedium;
+
+  /// No description provided for @flowHeavy.
+  ///
+  /// In en, this message translates to:
+  /// **'كثيف'**
+  String get flowHeavy;
+
+  /// No description provided for @flowSpotting.
+  ///
+  /// In en, this message translates to:
+  /// **'بقع'**
+  String get flowSpotting;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

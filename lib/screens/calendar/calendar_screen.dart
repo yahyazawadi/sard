@@ -41,6 +41,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    final t = AppLocalizations.of(context)!;
     setState(() => _focusedDay = focusedDay);
 
     if (_isRangeMode) {
@@ -50,9 +51,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
-              '✓ First day selected — now tap the ending day',
-            ),
+            content: Text(t.firstDaySelectedMessage),
             duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(
@@ -124,10 +123,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           size: 20,
                         ),
                         const SizedBox(width: 12),
-                        const Text(
-                          'None (Clear)',
-                          style: TextStyle(fontSize: 15),
-                        ),
+                        Text(t.noneClear, style: const TextStyle(fontSize: 15)),
                       ],
                     ),
                   ),
@@ -198,7 +194,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       vertical: 14,
                     ),
                   ),
-                  child: Text(selectedPhase == null ? 'Clear' : t.confirm),
+                  child: Text(selectedPhase == null ? t.clear : t.confirm),
                 ),
               ],
             );
@@ -234,11 +230,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
               const SizedBox(height: 8),
               if (entry != null) ...[
-                Text('${t.phase}: ${entry.phase ?? t.noPhase}'),
-                Text('${t.flow}: ${entry.flowIntensity}'),
-                Text('${t.mood}: ${entry.moodRating ?? 'N/A'}'),
-                Text('${t.pain}: ${entry.painLevel ?? 'N/A'}'),
-                Text('${t.feeling}: ${entry.overallFeeling ?? 'N/A'}'),
+                Text('${t.phase}: ${_translatePhase(entry.phase, t)}'),
+                Text('${t.flow}: ${_flowLabel(entry.flowIntensity, t)}'),
+                Text('${t.mood}: ${entry.moodRating ?? t.notAvailable}'),
+                Text('${t.pain}: ${entry.painLevel ?? t.notAvailable}'),
+                Text('${t.feeling}: ${entry.overallFeeling ?? t.notAvailable}'),
                 if (entry.photoPaths.isNotEmpty)
                   SizedBox(
                     height: 50,
@@ -287,6 +283,32 @@ class _CalendarScreenState extends State<CalendarScreen> {
         );
       },
     );
+  }
+
+  // Helper function (put it in the same file or in an extension)
+  String _flowLabel(String? intensity, AppLocalizations t) {
+    if (intensity == null) return t.notAvailable;
+
+    return switch (intensity.toLowerCase()) {
+      'light' => t.flowLight,
+      'medium' => t.flowMedium,
+      'heavy' => t.flowHeavy,
+      'spotting' => t.flowSpotting,
+      _ => t.notAvailable, // fallback: show raw value
+    };
+  }
+
+  // Helper function (add it in the same file or in a utils file)
+  String _translatePhase(String? phase, AppLocalizations t) {
+    if (phase == null) return t.notAvailable;
+
+    return switch (phase.toLowerCase()) {
+      'menstruation' => t.menstruation,
+      'follicular' => t.follicular,
+      'ovulation' => t.ovulation,
+      'luteal' => t.luteal,
+      _ => phase, // fallback: show the raw value if unknown
+    };
   }
 
   void _showLegend() {
@@ -338,9 +360,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             color: _isRangeMode
                 ? Theme.of(context).colorScheme.primary
                 : null, // theme-aware
-            tooltip: _isRangeMode
-                ? 'Exit edit mode'
-                : 'Edit mode (mark ranges)',
+            tooltip: _isRangeMode ? t.exitEditMode : t.editModeRanges,
             onPressed: () => setState(() {
               _isRangeMode = !_isRangeMode;
               if (!_isRangeMode) _rangeStart = null; // Clear leftover highlight
@@ -349,15 +369,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // Temp Clear button
           IconButton(
             icon: const Icon(Icons.delete_sweep),
-            tooltip: 'Clear all (temp test)',
+            tooltip: t.clearAllTest,
             onPressed: () async {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Clear Calendar?'),
-                  content: const Text(
-                    'This will delete ALL entries.\nOnly for testing!',
-                  ),
+                  title: Text(t.clearCalendar),
+                  content: Text(t.clearCalendarWarning),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, false),
@@ -366,7 +384,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, true),
                       child: Text(
-                        'Clear',
+                        t.clear,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ), // theme-aware
@@ -413,7 +431,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                   StatItem(
                     t.averageCycleLength,
-                    '${cycleProvider.averageCycleLength} days',
+                    '${cycleProvider.averageCycleLength} ${t.days}',
                   ),
                 ],
               ),
@@ -452,8 +470,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         padding: const EdgeInsets.all(12),
                         child: Text(
                           _rangeStart == null
-                              ? 'Edit mode ON • Tap first day'
-                              : 'Tap ending day (or same day for single-day)',
+                              ? t.editModeOnTapFirst
+                              : t.tapEndingDay,
                           style: TextStyle(
                             color: Theme.of(
                               context,

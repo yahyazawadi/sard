@@ -58,9 +58,7 @@ class CalendarDayBuilders {
   ) {
     final isTempFirstDay =
         isRangeMode && rangeStart != null && isSameDay(day, rangeStart);
-    final isToday = isSameDay(day, DateTime.now());
 
-    // Use the provided dayTextStyle but ensure proper color
     final effectiveStyle = dayTextStyle.copyWith(
       color: theme.colorScheme.onSurface,
       fontSize: 14.5,
@@ -93,7 +91,6 @@ class CalendarDayBuilders {
   Widget _buildTodayCell(BuildContext context, DateTime day, DateTime focused) {
     final indicatorColor = theme.colorScheme.secondary;
 
-    // Use the provided dayTextStyle but ensure proper color for today
     final effectiveStyle = dayTextStyle.copyWith(
       color: theme.colorScheme.onSurface,
       fontSize: 14.5,

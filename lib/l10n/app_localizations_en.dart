@@ -252,5 +252,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekendDays => 'weekend days';
 
   @override
-  String get confirm => 'تأكيد';
+  String get confirm => 'confirm';
+
+  @override
+  String get firstDaySelectedMessage => '✓ First day selected — now tap the ending day';
+
+  @override
+  String get noneClear => 'None (Clear)';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get notAvailable => 'N/A';
+
+  @override
+  String get exitEditMode => 'Exit edit mode';
+
+  @override
+  String get editModeRanges => 'Edit mode (mark ranges)';
+
+  @override
+  String get clearAllTest => 'Clear all (temp test)';
+
+  @override
+  String get clearCalendar => 'Clear Calendar?';
+
+  @override
+  String get clearCalendarWarning => 'This will delete ALL entries.\nOnly for testing!';
+
+  @override
+  String get editModeOnTapFirst => 'Edit mode ON • Tap first day';
+
+  @override
+  String get tapEndingDay => 'Tap ending day (or same day for single-day)';
+
+  @override
+  String get days => 'days';
+
+  @override
+  String get flowLight => 'خفيف';
+
+  @override
+  String get flowMedium => 'متوسط';
+
+  @override
+  String get flowHeavy => 'كثيف';
+
+  @override
+  String get flowSpotting => 'بقع';
 }

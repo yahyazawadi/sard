@@ -62,13 +62,9 @@ class PhaseCalendar extends StatelessWidget {
       daysOfWeekHeight: _calcDaysOfWeekHeight(theme, settingsProvider),
       selectedDayPredicate: _buildSelectedPredicate,
       rangeSelectionMode: RangeSelectionMode.disabled,
-      rangeStartDay: null,
-      rangeEndDay: null,
       multiRanges: ranges,
       isRtl: Directionality.of(context) == TextDirection.rtl,
       calendarStyle: styleBuilder.buildCalendarStyle(),
-
-      // ── Also fix days-of-week headers (Mon, Tue, ...) ──
       daysOfWeekStyle: DaysOfWeekStyle(
         weekdayStyle:
             theme.textTheme.bodyMedium?.copyWith(

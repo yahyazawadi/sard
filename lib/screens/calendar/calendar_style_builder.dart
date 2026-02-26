@@ -14,11 +14,6 @@ class CalendarStyleBuilder {
 
     return CalendarStyle(
       outsideDaysVisible: false,
-      // rangeBorderColor: theme.colorScheme.outline.withOpacity(
-      //   0.28,
-      // ), // ← never white
-
-      // Day numbers (already perfect)
       defaultTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 14.0,
@@ -43,28 +38,22 @@ class CalendarStyleBuilder {
         color: colorScheme.onSurface.withOpacity(0.38),
         fontSize: 14.0,
       ),
-
-      // ── FINAL FIX for the white border around colored ranges ──
       withinRangeTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 14.0,
         fontWeight: FontWeight.w500,
       ),
       rangeHighlightColor: Colors.transparent,
-      // ── FIX for single days + range edges (start/end) ──
       rangeStartTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 14.0,
-        fontWeight: FontWeight.w600, // or bold if you prefer
+        fontWeight: FontWeight.w600,
       ),
       rangeEndTextStyle: TextStyle(
         color: colorScheme.onSurface,
         fontSize: 14.0,
         fontWeight: FontWeight.w600,
       ),
-      // (optional but nice) also fix selected range text if you ever use single-range mode
-
-      // subtle theme border (no white!)
       selectedDecoration: _buildSelectedDecoration(),
       todayDecoration: const BoxDecoration(
         shape: BoxShape.circle,

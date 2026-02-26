@@ -58,7 +58,7 @@
   "noNotes": "لا ملاحظات",
   "noPhase": "لا مرحلة",
   "emptyStateMessage": "اضغط على أي يوم لتبدأ تتبع دورك",
-  "editAdd": "تحرير / إضافة",
+  "editAdd": "تعديل / إضافة",
   "close": "إغلاق",
   "gotIt": "حسنا",
    "flow": "التدفق",
@@ -89,7 +89,72 @@
   "november": "نوفمبر",
   "december": "ديسمبر",
 "weekendDays" :"عطلة الأسبوع",
-"confirm":"تأكيد"
-}
+"confirm":"تأكيد",
+  "firstDaySelectedMessage": "✓ تم تحديد اليوم الأول — الآن اضغط على اليوم النهائي",
+  "@firstDaySelectedMessage": {
+    "description": "SnackBar message after selecting the first day in range edit mode"
+  },
 
+  "noneClear": "لا شيء (مسح)",
+  "@noneClear": {
+    "description": "Option in phase selection dialog to remove/clear the phase from selected range"
+  },
 
+  "clear": "مسح",
+  "@clear": {
+    "description": "Button text when user chooses to clear/remove the phase"
+  },
+
+  "notAvailable": "غير متوفر",
+  "@notAvailable": {
+    "description": "Placeholder text when a value (mood, pain, etc.) is not available"
+  },
+
+  "exitEditMode": "إنهاء وضع التعديل",
+  "@exitEditMode": {
+    "description": "Tooltip for the edit mode toggle button when mode is currently active"
+  },
+
+  "editModeRanges": "وضع التعديل (تحديد النطاقات)",
+  "@editModeRanges": {
+    "description": "Tooltip for the edit mode toggle button when mode is inactive"
+  },
+
+  "clearAllTest": "مسح الكل (اختبار مؤقت)",
+  "@clearAllTest": {
+    "description": "Tooltip for the temporary clear-all entries button"
+  },
+
+  "clearCalendar": "مسح التقويم؟",
+  "@clearCalendar": {
+    "description": "Title of confirmation dialog for clearing all calendar entries"
+  },
+
+  "clearCalendarWarning": "سيؤدي هذا إلى حذف جميع الإدخالات.\nللاختبار فقط!",
+  "@clearCalendarWarning": {
+    "description": "Warning message in the clear-all confirmation dialog"
+  },
+
+  "editModeOnTapFirst": "وضع التعديل مفعّل • اضغط على اليوم الأول",
+  "@editModeOnTapFirst": {
+    "description": "Banner text shown when edit/range mode is active but no start day selected"
+  },
+
+  "tapEndingDay": "اضغط على اليوم النهائي (أو نفس اليوم ليوم واحد)",
+  "@tapEndingDay": {
+    "description": "Banner text after first day is selected in edit mode"
+  },
+
+  "days": "أيام",
+  "@days": {
+    "description": "Unit label appended to average cycle length value"
+  
+},
+  
+  
+  "flowLight":    "Light",
+"flowMedium":   "Medium",
+"flowHeavy":    "Heavy",
+"flowSpotting": "Spotting"
+
+  }

@@ -20,7 +20,7 @@ class CycleEntryAdapter extends TypeAdapter<CycleEntry> {
       date: fields[0] as DateTime,
       notes: fields[1] as String?,
       photoPaths: (fields[2] as List).cast<String>(),
-      flowIntensity: fields[3] as String,
+      flowIntensity: fields[3] as String?,
       flowDescription: fields[4] as String?,
       phase: fields[5] as String?,
       symptoms: (fields[6] as Map).cast<String, bool>(),

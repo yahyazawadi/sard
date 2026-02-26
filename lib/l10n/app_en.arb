@@ -91,4 +91,71 @@
   "november": "November",
   "december": "December",
   "weekendDays" :"weekend days",
-  "confirm":"confirm"}
+  "confirm":"confirm",
+    "firstDaySelectedMessage": "✓ First day selected — now tap the ending day",
+  "@firstDaySelectedMessage": {
+    "description": "SnackBar message after selecting the first day in range edit mode"
+  },
+
+  "noneClear": "None (Clear)",
+  "@noneClear": {
+    "description": "Option in phase selection dialog to remove/clear the phase from selected range"
+  },
+
+  "clear": "Clear",
+  "@clear": {
+    "description": "Button text when user chooses to clear/remove the phase"
+  },
+
+  "notAvailable": "N/A",
+  "@notAvailable": {
+    "description": "Placeholder text when a value (mood, pain, etc.) is not available"
+  },
+
+  "exitEditMode": "Exit edit mode",
+  "@exitEditMode": {
+    "description": "Tooltip for the edit mode toggle button when mode is currently active"
+  },
+
+  "editModeRanges": "Edit mode (mark ranges)",
+  "@editModeRanges": {
+    "description": "Tooltip for the edit mode toggle button when mode is inactive"
+  },
+
+  "clearAllTest": "Clear all (temp test)",
+  "@clearAllTest": {
+    "description": "Tooltip for the temporary clear-all entries button"
+  },
+
+  "clearCalendar": "Clear Calendar?",
+  "@clearCalendar": {
+    "description": "Title of confirmation dialog for clearing all calendar entries"
+  },
+
+  "clearCalendarWarning": "This will delete ALL entries.\nOnly for testing!",
+  "@clearCalendarWarning": {
+    "description": "Warning message in the clear-all confirmation dialog"
+  },
+
+  "editModeOnTapFirst": "Edit mode ON • Tap first day",
+  "@editModeOnTapFirst": {
+    "description": "Banner text shown when edit/range mode is active but no start day selected"
+  },
+
+  "tapEndingDay": "Tap ending day (or same day for single-day)",
+  "@tapEndingDay": {
+    "description": "Banner text after first day is selected in edit mode"
+  },
+
+  "days": "days",
+  "@days": {
+    "description": "Unit label appended to average cycle length value"
+  },
+  
+  
+  "flowLight":    "خفيف",
+"flowMedium":   "متوسط",
+"flowHeavy":    "كثيف",
+"flowSpotting": "بقع"
+
+  }

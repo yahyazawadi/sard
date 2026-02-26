@@ -38,7 +38,7 @@ class CalendarStatsSection extends StatelessWidget {
                 StatItem(t.daysUntilPeriod, '${cycleProvider.daysUntilPeriod}'),
                 StatItem(
                   t.averageCycleLength,
-                  '${cycleProvider.averageCycleLength} days',
+                  '${cycleProvider.averageCycleLength} ${t.days}',
                 ),
               ],
             ),

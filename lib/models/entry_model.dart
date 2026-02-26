@@ -14,7 +14,7 @@ class CycleEntry {
   List<String> photoPaths; // Paths to photos (unencrypted files in private dir)
 
   @HiveField(3)
-  String flowIntensity; // 'light', 'medium', 'heavy', 'spotting', 'none'
+  String? flowIntensity; // 'light', 'medium', 'heavy', 'spotting', 'none'
 
   @HiveField(4)
   String? flowDescription; // "bright red", "brown", "clots", "stringy", etc.
@@ -41,7 +41,7 @@ class CycleEntry {
     required this.date,
     this.notes,
     this.photoPaths = const [],
-    this.flowIntensity = 'none',
+    this.flowIntensity,
     this.flowDescription,
     this.phase,
     this.symptoms = const {},
