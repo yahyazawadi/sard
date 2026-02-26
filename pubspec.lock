@@ -958,8 +958,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: lightmode-border-days
-      resolved-ref: "9ab0dd972ab737bdf21d6fae96a11afd6508fd1d"
+      ref: border-days
+      resolved-ref: "42bd1c9406ec3bcb886774667b840eb6a198e476"
       url: "https://github.com/yahyazawadi/table_calendar.git"
     source: git
     version: "3.2.0"
