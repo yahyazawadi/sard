@@ -662,26 +662,266 @@ abstract class AppLocalizations {
   /// No description provided for @flowLight.
   ///
   /// In en, this message translates to:
-  /// **'خفيف'**
+  /// **'light'**
   String get flowLight;
 
   /// No description provided for @flowMedium.
   ///
   /// In en, this message translates to:
-  /// **'متوسط'**
+  /// **'medium'**
   String get flowMedium;
 
   /// No description provided for @flowHeavy.
   ///
   /// In en, this message translates to:
-  /// **'كثيف'**
+  /// **'heavy'**
   String get flowHeavy;
 
   /// No description provided for @flowSpotting.
   ///
   /// In en, this message translates to:
-  /// **'بقع'**
+  /// **'spotting'**
   String get flowSpotting;
+
+  /// No description provided for @newEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'New Entry'**
+  String get newEntry;
+
+  /// No description provided for @editEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Entry'**
+  String get editEntry;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get update;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @deleteEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Entry?'**
+  String get deleteEntry;
+
+  /// No description provided for @deleteEntryConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this entry? This cannot be undone.'**
+  String get deleteEntryConfirm;
+
+  /// No description provided for @everythingOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything here is optional — you can save with just the date if you want 💕'**
+  String get everythingOptional;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get none;
+
+  /// No description provided for @flowDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Flow Description'**
+  String get flowDescription;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @addPhotosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos of your day or symptoms 💕'**
+  String get addPhotosHint;
+
+  /// No description provided for @photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get photos;
+
+  /// No description provided for @notesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your notes here...'**
+  String get notesHint;
+
+  /// No description provided for @entrySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry saved successfully'**
+  String get entrySaved;
+
+  /// No description provided for @entryUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry updated successfully'**
+  String get entryUpdated;
+
+  /// No description provided for @moodSad.
+  ///
+  /// In en, this message translates to:
+  /// **'Sad'**
+  String get moodSad;
+
+  /// No description provided for @moodNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral'**
+  String get moodNeutral;
+
+  /// No description provided for @moodOkay.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay'**
+  String get moodOkay;
+
+  /// No description provided for @moodHappy.
+  ///
+  /// In en, this message translates to:
+  /// **'Happy'**
+  String get moodHappy;
+
+  /// No description provided for @moodAmazing.
+  ///
+  /// In en, this message translates to:
+  /// **'Amazing'**
+  String get moodAmazing;
+
+  /// No description provided for @energyVeryLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Very Low'**
+  String get energyVeryLow;
+
+  /// No description provided for @energyLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get energyLow;
+
+  /// No description provided for @energyMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get energyMedium;
+
+  /// No description provided for @energyHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get energyHigh;
+
+  /// No description provided for @energyVeryHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Very High'**
+  String get energyVeryHigh;
+
+  /// No description provided for @noPain.
+  ///
+  /// In en, this message translates to:
+  /// **'No Pain'**
+  String get noPain;
+
+  /// No description provided for @cramps.
+  ///
+  /// In en, this message translates to:
+  /// **'Cramps'**
+  String get cramps;
+
+  /// No description provided for @bloating.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloating'**
+  String get bloating;
+
+  /// No description provided for @headache.
+  ///
+  /// In en, this message translates to:
+  /// **'Headache'**
+  String get headache;
+
+  /// No description provided for @breastTenderness.
+  ///
+  /// In en, this message translates to:
+  /// **'Breast Tenderness'**
+  String get breastTenderness;
+
+  /// No description provided for @fatigue.
+  ///
+  /// In en, this message translates to:
+  /// **'Fatigue'**
+  String get fatigue;
+
+  /// No description provided for @nausea.
+  ///
+  /// In en, this message translates to:
+  /// **'Nausea'**
+  String get nausea;
+
+  /// No description provided for @moodSwings.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Swings'**
+  String get moodSwings;
+
+  /// No description provided for @acne.
+  ///
+  /// In en, this message translates to:
+  /// **'Acne'**
+  String get acne;
+
+  /// No description provided for @backPain.
+  ///
+  /// In en, this message translates to:
+  /// **'Back Pain'**
+  String get backPain;
+
+  /// No description provided for @cravings.
+  ///
+  /// In en, this message translates to:
+  /// **'Cravings'**
+  String get cravings;
+
+  /// No description provided for @permissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied. Please enable camera or photo access in settings.'**
+  String get permissionDenied;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

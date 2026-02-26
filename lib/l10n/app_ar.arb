@@ -140,10 +140,10 @@
     "description": "Banner text shown when edit/range mode is active but no start day selected"
   },
 
-  "tapEndingDay": "اضغط على اليوم النهائي (أو نفس اليوم ليوم واحد)",
-  "@tapEndingDay": {
-    "description": "Banner text after first day is selected in edit mode"
-  },
+"tapEndingDay": "حددتِ أول يوم! لا تنسي تسجلي آخر يوم من فترتك",
+"@tapEndingDay": {
+  "description": "رسالة البنر بعد اختيار اليوم الأول في وضع التعديل"
+},
 
   "days": "أيام",
   "@days": {
@@ -155,6 +155,49 @@
   "flowLight":    "Light",
 "flowMedium":   "Medium",
 "flowHeavy":    "Heavy",
-"flowSpotting": "Spotting"
+"flowSpotting": "Spotting",
 
+  "newEntry": "إدخال جديد",
+  "editEntry": "تعديل الإدخال",
+  "save": "حفظ",
+  "update": "تحديث",
+  "delete": "حذف",
+  "deleteEntry": "حذف الإدخال؟",
+  "deleteEntryConfirm": "هل أنتِ متأكدة من حذف هذا الإدخال؟ لا يمكن التراجع.",
+  "everythingOptional": "كل شيء هنا اختياري — يمكنك الحفظ بتاريخ اليوم فقط إذا أردتِ ",
+  "today": "اليوم",
+  "none": "لا يوجد",
+  "flowDescription": "وصف التدفق",
+  "camera": "الكاميرا",
+  "gallery": "المعرض",
+  "addPhotosHint": "أضيفي صور ليومك أو أعراضك ",
+  "photos": "الصور",
+  "notesHint": "اكتبي ملاحظاتك هنا...",
+  "entrySaved": "تم حفظ الإدخال بنجاح",
+  "entryUpdated": "تم تحديث الإدخال بنجاح",
+
+  "moodSad": "حزينة",
+  "moodNeutral": "عادي",
+  "moodOkay": "بخير",
+  "moodHappy": "سعيدة",
+  "moodAmazing": "رائعة",
+
+  "energyVeryLow": "منخفضة جدًا",
+  "energyLow": "منخفضة",
+  "energyMedium": "متوسطة",
+  "energyHigh": "عالية",
+  "energyVeryHigh": "عالية جدًا",
+
+  "noPain": "لا ألم",
+  "cramps": "تشنجات",
+  "bloating": "انتفاخ",
+  "headache": "صداع",
+  "breastTenderness": "ألم الثدي",
+  "fatigue": "إرهاق",
+  "nausea": "غثيان",
+  "moodSwings": "تقلبات مزاجية",
+  "acne": "حب الشباب",
+  "backPain": "ألم الظهر",
+  "cravings": "رغبة شديدة في الأكل",
+  "permissionDenied": "تم رفض الإذن. يرجى تفعيل الوصول إلى الكاميرا أو الصور في الإعدادات."
   }

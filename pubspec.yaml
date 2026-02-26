@@ -13,6 +13,7 @@
       flutter:
         sdk: flutter
       hive: ^2.2.3
+      transparent_image: ^2.0.1
       hive_flutter: ^1.1.0
       flutter_secure_storage: ^10.0.0
       flex_color_scheme: ^8.4.0

@@ -285,7 +285,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get editModeOnTapFirst => 'وضع التعديل مفعّل • اضغط على اليوم الأول';
 
   @override
-  String get tapEndingDay => 'اضغط على اليوم النهائي (أو نفس اليوم ليوم واحد)';
+  String get tapEndingDay => 'حددتِ أول يوم! لا تنسي تسجلي آخر يوم من فترتك';
 
   @override
   String get days => 'أيام';
@@ -301,4 +301,124 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get flowSpotting => 'Spotting';
+
+  @override
+  String get newEntry => 'إدخال جديد';
+
+  @override
+  String get editEntry => 'تعديل الإدخال';
+
+  @override
+  String get save => 'حفظ';
+
+  @override
+  String get update => 'تحديث';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get deleteEntry => 'حذف الإدخال؟';
+
+  @override
+  String get deleteEntryConfirm => 'هل أنتِ متأكدة من حذف هذا الإدخال؟ لا يمكن التراجع.';
+
+  @override
+  String get everythingOptional => 'كل شيء هنا اختياري — يمكنك الحفظ بتاريخ اليوم فقط إذا أردتِ ';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get none => 'لا يوجد';
+
+  @override
+  String get flowDescription => 'وصف التدفق';
+
+  @override
+  String get camera => 'الكاميرا';
+
+  @override
+  String get gallery => 'المعرض';
+
+  @override
+  String get addPhotosHint => 'أضيفي صور ليومك أو أعراضك ';
+
+  @override
+  String get photos => 'الصور';
+
+  @override
+  String get notesHint => 'اكتبي ملاحظاتك هنا...';
+
+  @override
+  String get entrySaved => 'تم حفظ الإدخال بنجاح';
+
+  @override
+  String get entryUpdated => 'تم تحديث الإدخال بنجاح';
+
+  @override
+  String get moodSad => 'حزينة';
+
+  @override
+  String get moodNeutral => 'عادي';
+
+  @override
+  String get moodOkay => 'بخير';
+
+  @override
+  String get moodHappy => 'سعيدة';
+
+  @override
+  String get moodAmazing => 'رائعة';
+
+  @override
+  String get energyVeryLow => 'منخفضة جدًا';
+
+  @override
+  String get energyLow => 'منخفضة';
+
+  @override
+  String get energyMedium => 'متوسطة';
+
+  @override
+  String get energyHigh => 'عالية';
+
+  @override
+  String get energyVeryHigh => 'عالية جدًا';
+
+  @override
+  String get noPain => 'لا ألم';
+
+  @override
+  String get cramps => 'تشنجات';
+
+  @override
+  String get bloating => 'انتفاخ';
+
+  @override
+  String get headache => 'صداع';
+
+  @override
+  String get breastTenderness => 'ألم الثدي';
+
+  @override
+  String get fatigue => 'إرهاق';
+
+  @override
+  String get nausea => 'غثيان';
+
+  @override
+  String get moodSwings => 'تقلبات مزاجية';
+
+  @override
+  String get acne => 'حب الشباب';
+
+  @override
+  String get backPain => 'ألم الظهر';
+
+  @override
+  String get cravings => 'رغبة شديدة في الأكل';
+
+  @override
+  String get permissionDenied => 'تم رفض الإذن. يرجى تفعيل الوصول إلى الكاميرا أو الصور في الإعدادات.';
 }

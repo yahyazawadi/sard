@@ -17,11 +17,11 @@ class HiveSetup {
     String? keyString = await secureStorage.read(key: 'hive_key');
 
     if (keyString == null) {
-      // Generate a random 32-byte key (AES-256)
-      keyString = base64Url.encode(
-        List<int>.generate(32, (i) => DateTime.now().microsecond % 256),
-      );
+      // ✅ PROPER secure key (this was the main crash cause)
+      final key = Hive.generateSecureKey();
+      keyString = base64Url.encode(key);
       await secureStorage.write(key: 'hive_key', value: keyString);
+      print('✅ New secure Hive key generated');
     }
 
     return base64Url.decode(keyString);

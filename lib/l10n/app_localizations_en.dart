@@ -291,14 +291,134 @@ class AppLocalizationsEn extends AppLocalizations {
   String get days => 'days';
 
   @override
-  String get flowLight => 'خفيف';
+  String get flowLight => 'light';
 
   @override
-  String get flowMedium => 'متوسط';
+  String get flowMedium => 'medium';
 
   @override
-  String get flowHeavy => 'كثيف';
+  String get flowHeavy => 'heavy';
 
   @override
-  String get flowSpotting => 'بقع';
+  String get flowSpotting => 'spotting';
+
+  @override
+  String get newEntry => 'New Entry';
+
+  @override
+  String get editEntry => 'Edit Entry';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get deleteEntry => 'Delete Entry?';
+
+  @override
+  String get deleteEntryConfirm => 'Are you sure you want to delete this entry? This cannot be undone.';
+
+  @override
+  String get everythingOptional => 'Everything here is optional — you can save with just the date if you want 💕';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get none => 'None';
+
+  @override
+  String get flowDescription => 'Flow Description';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get addPhotosHint => 'Add photos of your day or symptoms 💕';
+
+  @override
+  String get photos => 'Photos';
+
+  @override
+  String get notesHint => 'Write your notes here...';
+
+  @override
+  String get entrySaved => 'Entry saved successfully';
+
+  @override
+  String get entryUpdated => 'Entry updated successfully';
+
+  @override
+  String get moodSad => 'Sad';
+
+  @override
+  String get moodNeutral => 'Neutral';
+
+  @override
+  String get moodOkay => 'Okay';
+
+  @override
+  String get moodHappy => 'Happy';
+
+  @override
+  String get moodAmazing => 'Amazing';
+
+  @override
+  String get energyVeryLow => 'Very Low';
+
+  @override
+  String get energyLow => 'Low';
+
+  @override
+  String get energyMedium => 'Medium';
+
+  @override
+  String get energyHigh => 'High';
+
+  @override
+  String get energyVeryHigh => 'Very High';
+
+  @override
+  String get noPain => 'No Pain';
+
+  @override
+  String get cramps => 'Cramps';
+
+  @override
+  String get bloating => 'Bloating';
+
+  @override
+  String get headache => 'Headache';
+
+  @override
+  String get breastTenderness => 'Breast Tenderness';
+
+  @override
+  String get fatigue => 'Fatigue';
+
+  @override
+  String get nausea => 'Nausea';
+
+  @override
+  String get moodSwings => 'Mood Swings';
+
+  @override
+  String get acne => 'Acne';
+
+  @override
+  String get backPain => 'Back Pain';
+
+  @override
+  String get cravings => 'Cravings';
+
+  @override
+  String get permissionDenied => 'Permission denied. Please enable camera or photo access in settings.';
 }

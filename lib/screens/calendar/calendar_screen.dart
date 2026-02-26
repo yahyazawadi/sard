@@ -1,15 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:tracker/l10n/app_localizations.dart';
-import 'package:tracker/models/entry_model.dart';
 import 'package:tracker/providers/cycle_provider.dart';
 import 'package:tracker/screens/calendar/phase_calendar.dart';
-import 'package:tracker/screens/entry_screen.dart'; // Your entry form
+import 'package:tracker/screens/entries/entry_screen.dart'; // Your entry form
 import './stat_item.dart'; // Separate widget
 import './legend_row.dart'; // Separate widget
 
@@ -41,7 +39,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    final t = AppLocalizations.of(context)!;
     setState(() => _focusedDay = focusedDay);
 
     if (_isRangeMode) {
@@ -49,16 +46,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         // First tap
         setState(() => _rangeStart = selectedDay);
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(t.firstDaySelectedMessage),
-            duration: const Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.tertiaryContainer, // theme-aware
-          ),
-        );
       } else {
         // Second tap → create range (mode STAYS ON)
         final start = _rangeStart!;
