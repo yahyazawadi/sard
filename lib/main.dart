@@ -3,7 +3,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // For prefs
 import 'package:tracker/l10n/app_localizations.dart';
-import 'package:tracker/providers/cycle_provider.dart';
 import 'package:tracker/providers/settings_provider.dart';
 
 import 'routes/routes.dart';
@@ -37,7 +36,7 @@ class _HiveLoadingAppState extends State<HiveLoadingApp> {
     try {
       await HiveSetup.initialize();
       final encryptionKey = await HiveSetup.getEncryptionKey();
-      await HiveSetup.openCyclesBox(encryptionKey);
+      await HiveSetup.openSettingsBox(encryptionKey);
       print('✅ Hive fully ready');
       setState(() => _hiveReady = true);
     } catch (e) {
@@ -91,9 +90,6 @@ class _HiveLoadingAppState extends State<HiveLoadingApp> {
             ChangeNotifierProvider<AppSettingsProvider>(
               create: (_) => appSettingsProvider,
             ),
-            ChangeNotifierProvider<CycleProvider>(
-              create: (_) => CycleProvider(),
-            ),
           ],
           child: const MyApp(),
         );
@@ -109,87 +105,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final prov = Provider.of<AppSettingsProvider>(context);
 
-    // final baseLight = AppTheme.lightTheme(prov.selectedScheme);
-    // final baseDark = AppTheme.darkTheme(prov.selectedScheme);
-
     return MaterialApp.router(
-      title: 'Tracker',
-      // theme: baseLight.copyWith(
-      //   textTheme: baseLight.textTheme
-      //       .apply(fontFamily: 'DG Sahabah')
-      //       .copyWith(
-      //         displayLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         displayMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         displaySmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         headlineLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         headlineMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         headlineSmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         titleLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         titleMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         titleSmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         bodyLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         bodyMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         bodySmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         labelLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         labelMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         labelSmall: const TextStyle(fontWeight: FontWeight.w300),
-      //       ),
-      //   appBarTheme: baseLight.appBarTheme.copyWith(
-      //     titleTextStyle: baseLight.textTheme.titleLarge?.copyWith(
-      //       fontFamily: 'DG Sahabah',
-      //       fontWeight: FontWeight.w300,
-      //       fontSize: 20,
-      //     ),
-      //   ),
-      //   bottomNavigationBarTheme: baseLight.bottomNavigationBarTheme.copyWith(
-      //     selectedLabelStyle: baseLight.textTheme.labelMedium?.copyWith(
-      //       fontFamily: 'DG Sahabah',
-      //       fontWeight: FontWeight.w300,
-      //     ),
-      //     unselectedLabelStyle: baseLight.textTheme.labelMedium?.copyWith(
-      //       fontFamily: 'DG Sahabah',
-      //       fontWeight: FontWeight.w300,
-      //     ),
-      //   ),
-      // ),
-      // darkTheme: baseDark.copyWith(
-      //   textTheme: baseDark.textTheme
-      //       .apply(fontFamily: 'DG Sahabah')
-      //       .copyWith(
-      //         displayLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         displayMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         displaySmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         headlineLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         headlineMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         headlineSmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         titleLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         titleMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         titleSmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         bodyLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         bodyMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         bodySmall: const TextStyle(fontWeight: FontWeight.w300),
-      //         labelLarge: const TextStyle(fontWeight: FontWeight.w300),
-      //         labelMedium: const TextStyle(fontWeight: FontWeight.w300),
-      //         labelSmall: const TextStyle(fontWeight: FontWeight.w300),
-      //       ),
-      //   appBarTheme: baseDark.appBarTheme.copyWith(
-      //     titleTextStyle: baseDark.textTheme.titleLarge?.copyWith(
-      //       fontFamily: 'DG Sahabah',
-      //       fontWeight: FontWeight.w300,
-      //       fontSize: 20,
-      //     ),
-      //   ),
-      //   bottomNavigationBarTheme: baseDark.bottomNavigationBarTheme.copyWith(
-      //     selectedLabelStyle: baseDark.textTheme.labelMedium?.copyWith(
-      //       fontFamily: 'DG Sahabah',
-      //       fontWeight: FontWeight.w300,
-      //     ),
-      //     unselectedLabelStyle: baseDark.textTheme.labelMedium?.copyWith(
-      //       fontFamily: 'DG Sahabah',
-      //       fontWeight: FontWeight.w300,
-      //     ),
-      //   ),
-      // ),
+      title: 'Flutter Boilerplate',
       theme: AppTheme.lightTheme(prov.selectedScheme).copyWith(
         textTheme: AppTheme.lightTheme(
           prov.selectedScheme,
@@ -203,7 +120,7 @@ class MyApp extends StatelessWidget {
       themeMode: prov.themeMode,
       locale: prov.locale,
       supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: [
+      localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

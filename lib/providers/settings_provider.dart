@@ -20,13 +20,10 @@ class AppSettingsProvider extends ChangeNotifier {
 
   FlexScheme _selectedScheme = FlexScheme.mandyRed;
 
-  Set<int> _weekendDays = {DateTime.friday, DateTime.saturday};
-
   static const Map<String, bool> _defaultExpansionStates = {
     'themeStyle': true,
     'appearanceMode': false,
     'language': false,
-    'weekendDays': false,
   };
   Map<String, bool> _expansionStates = Map<String, bool>.from(
     _defaultExpansionStates,
@@ -86,19 +83,6 @@ class AppSettingsProvider extends ChangeNotifier {
     final schemeName = _prefs.getString('themeScheme') ?? 'mandyRed';
     _selectedScheme = _schemeFromName(schemeName) ?? FlexScheme.mandyRed;
 
-    final savedDays = _prefs.getString('weekendDays');
-    if (savedDays == null) {
-      _weekendDays = _locale.languageCode == 'ar'
-          ? {DateTime.friday, DateTime.saturday}
-          : {DateTime.saturday, DateTime.sunday};
-    } else {
-      _weekendDays = savedDays
-          .split(',')
-          .where((s) => s.isNotEmpty)
-          .map(int.parse)
-          .toSet();
-    }
-
     final savedExpansion = _prefs.getString('expansion_states');
     if (savedExpansion != null) {
       try {
@@ -116,32 +100,6 @@ class AppSettingsProvider extends ChangeNotifier {
       _expansionStates = Map<String, bool>.from(_defaultExpansionStates);
     }
 
-    // Load flow options
-    final savedFlows = _prefs.getString('flowOptions');
-    if (savedFlows != null) {
-      try {
-        final decoded = jsonDecode(savedFlows);
-        if (decoded is List) {
-          _flowOptions = List<String>.from(decoded);
-        }
-      } catch (_) {
-        // Keep defaults
-      }
-    }
-
-    // Load symptom options
-    final savedSymptoms = _prefs.getString('symptomOptions');
-    if (savedSymptoms != null) {
-      try {
-        final decoded = jsonDecode(savedSymptoms);
-        if (decoded is List) {
-          _symptomOptions = List<String>.from(decoded);
-        }
-      } catch (_) {
-        // Keep defaults
-      }
-    }
-
     notifyListeners();
   }
 
@@ -151,8 +109,6 @@ class AppSettingsProvider extends ChangeNotifier {
   double get textScale => _textScale;
   bool get hasTextScaleOverride => _hasTextScaleOverride;
   FlexScheme get selectedScheme => _selectedScheme;
-  Set<int> get weekendDays => _weekendDays;
-  List<int> get weekendDaysList => _weekendDays.toList();
   bool isSectionExpanded(String key) => _expansionStates[key] ?? false;
 
   // ── Setters ────────────────────────────────────────────────────────────────
@@ -188,26 +144,13 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleWeekendDay(int day) {
-    if (_weekendDays.contains(day)) {
-      _weekendDays.remove(day);
-    } else {
-      _weekendDays.add(day);
-    }
-    _saveWeekendDays();
-    notifyListeners();
-  }
-
   Future<void> resetToDefaults() async {
     await Future.wait([
       _prefs.remove('themeMode'),
       _prefs.remove('language'),
       _prefs.remove('textScale'),
       _prefs.remove('themeScheme'),
-      _prefs.remove('weekendDays'),
       _prefs.remove('expansion_states'),
-      _prefs.remove('flowOptions'),
-      _prefs.remove('symptomOptions'),
     ]);
     _loadSettings();
   }
@@ -254,61 +197,7 @@ class AppSettingsProvider extends ChangeNotifier {
     return reverseMap[scheme] ?? 'mandyRed';
   }
 
-  void _saveWeekendDays() {
-    final saved = _weekendDays.join(',');
-    _prefs.setString('weekendDays', saved);
-  }
-
   void _saveExpansionStates() {
     _prefs.setString('expansion_states', jsonEncode(_expansionStates));
-  }
-
-  // ── Flow Options (ديناميكي) ───────────────────────────────────────────────
-  List<String> _flowOptions = ['light', 'medium', 'heavy', 'spotting'];
-
-  List<String> get flowOptions => List.unmodifiable(_flowOptions);
-
-  void addFlowOption(String value) {
-    final trimmed = value.trim().toLowerCase();
-    if (trimmed.isEmpty || _flowOptions.contains(trimmed)) return;
-    _flowOptions.add(trimmed);
-    _prefs.setString('flowOptions', jsonEncode(_flowOptions));
-    notifyListeners();
-  }
-
-  void removeFlowOption(String value) {
-    _flowOptions.remove(value);
-    _prefs.setString('flowOptions', jsonEncode(_flowOptions));
-    notifyListeners();
-  }
-
-  // ── Symptoms (ديناميكي) ───────────────────────────────────────────────────
-  List<String> _symptomOptions = [
-    'cramps',
-    'bloating',
-    'headache',
-    'breastTenderness',
-    'fatigue',
-    'nausea',
-    'moodSwings',
-    'acne',
-    'backPain',
-    'cravings',
-  ];
-
-  List<String> get symptomOptions => List.unmodifiable(_symptomOptions);
-
-  void addSymptomOption(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty || _symptomOptions.contains(trimmed)) return;
-    _symptomOptions.add(trimmed);
-    _prefs.setString('symptomOptions', jsonEncode(_symptomOptions));
-    notifyListeners();
-  }
-
-  void removeSymptomOption(String value) {
-    _symptomOptions.remove(value);
-    _prefs.setString('symptomOptions', jsonEncode(_symptomOptions));
-    notifyListeners();
   }
 }
