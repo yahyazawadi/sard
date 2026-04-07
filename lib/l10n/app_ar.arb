@@ -1,8 +1,7 @@
 {
   "@@locale": "ar",
-  "appTitle": "المتتبع",
-  "calendar": "التقويم",
-  "info": "معلومات",
+  "appTitle": "قالب فلاتر",
+  "home": "الرئيسية",
   "settings": "الإعدادات",
   "themeStyle": "نمط الثيم",
   "appearanceMode": "وضع المظهر",
@@ -15,15 +14,6 @@
   "textSize": "حجم النص",
   "usingSystemSize": "استخدام حجم النظام",
   "resetToSystem": "إعادة ضبط",
-  "addEntry": "إضافة إدخال",
-  "notes": "ملاحظات",
-  "flowIntensity": "شدة التدفق",
-  "symptoms": "الأعراض",
-  "mood": "المزاج",
-  "energy": "الطاقة",
-  "pain": "الألم",
-  "overallFeeling": "الشعور العام",
-
   "themeMandyRed": "أحمر مندي",
   "themeRedWine": "نبيذ أحمر",
   "themeDeepPurple": "بنفسجي عميق",
@@ -34,170 +24,5 @@
   "themeSanJuanBlue": "أزرق سان خوان",
   "themeIndigo": "نيلي",
   "themeBrandBlue": "أزرق",
-  "themePurpleM3": "بنفسجي",
-
-  "home":"الرئيسية",
-  "settings":"إعدادات",
-  "phase":"مرحلتي",
-
-  "tracker": "حاسبتي"
-  ,
-  "menstruation": "الحيض",
-  "follicular": "الجريبي",
-  "ovulation": "الإباضة",
-  "luteal": "اللوتيال",
-  "legend": "الدليل",
-  "selectPhase": "اختر المرحلة",
-  "apply": "تطبيق",
-  "cancel": "إلغاء",
-  "cycleStats": "إحصائيات الدورة",
-  "currentCycleDay": "يوم الدورة الحالي",
-  "daysUntilPeriod": "أيام حتى الحيض",
-  "averageCycleLength": "متوسط طول الدورة",
-  "noEntry": "لا إدخال لهذا اليوم",
-  "noNotes": "لا ملاحظات",
-  "noPhase": "لا مرحلة",
-  "emptyStateMessage": "اضغط على أي يوم لتبدأ تتبع دورك",
-  "editAdd": "تعديل / إضافة",
-  "close": "إغلاق",
-  "gotIt": "حسنا",
-   "flow": "التدفق",
-  "feeling": "الشعور",
-
-"sundayShort": "أحد",
-  "mondayShort": "إثنين",
-  "tuesdayShort": "ثلاثاء",
-  "wednesdayShort": "أربعاء",
-  "thursdayShort": "خميس",
-  "fridayShort": "جمعة",
-  "saturdayShort": "سبت",
-
-  "calendarFormatMonth": "شهر",
-  "calendarFormatWeek": "أسبوع",
-  "calendarFormatTwoWeeks": "أسبوعين",
-
-  "january": "يناير",
-  "february": "فبراير",
-  "march": "مارس",
-  "april": "أبريل",
-  "may": "مايو",
-  "june": "يونيو",
-  "july": "يوليو",
-  "august": "أغسطس",
-  "september": "سبتمبر",
-  "october": "أكتوبر",
-  "november": "نوفمبر",
-  "december": "ديسمبر",
-"weekendDays" :"عطلة الأسبوع",
-"confirm":"تأكيد",
-  "firstDaySelectedMessage": "✓ تم تحديد اليوم الأول — الآن اضغط على اليوم النهائي",
-  "@firstDaySelectedMessage": {
-    "description": "SnackBar message after selecting the first day in range edit mode"
-  },
-
-  "noneClear": "لا شيء (مسح)",
-  "@noneClear": {
-    "description": "Option in phase selection dialog to remove/clear the phase from selected range"
-  },
-
-  "clear": "مسح",
-  "@clear": {
-    "description": "Button text when user chooses to clear/remove the phase"
-  },
-
-  "notAvailable": "غير متوفر",
-  "@notAvailable": {
-    "description": "Placeholder text when a value (mood, pain, etc.) is not available"
-  },
-
-  "exitEditMode": "إنهاء وضع التعديل",
-  "@exitEditMode": {
-    "description": "Tooltip for the edit mode toggle button when mode is currently active"
-  },
-
-  "editModeRanges": "وضع التعديل (تحديد النطاقات)",
-  "@editModeRanges": {
-    "description": "Tooltip for the edit mode toggle button when mode is inactive"
-  },
-
-  "clearAllTest": "مسح الكل (اختبار مؤقت)",
-  "@clearAllTest": {
-    "description": "Tooltip for the temporary clear-all entries button"
-  },
-
-  "clearCalendar": "مسح التقويم؟",
-  "@clearCalendar": {
-    "description": "Title of confirmation dialog for clearing all calendar entries"
-  },
-
-  "clearCalendarWarning": "سيؤدي هذا إلى حذف جميع الإدخالات.\nللاختبار فقط!",
-  "@clearCalendarWarning": {
-    "description": "Warning message in the clear-all confirmation dialog"
-  },
-
-  "editModeOnTapFirst": "وضع التعديل مفعّل • اضغط على اليوم الأول",
-  "@editModeOnTapFirst": {
-    "description": "Banner text shown when edit/range mode is active but no start day selected"
-  },
-
-"tapEndingDay": "حددتِ أول يوم! لا تنسي تسجلي آخر يوم من فترتك",
-"@tapEndingDay": {
-  "description": "رسالة البنر بعد اختيار اليوم الأول في وضع التعديل"
-},
-
-  "days": "أيام",
-  "@days": {
-    "description": "Unit label appended to average cycle length value"
-  
-},
-  
-  
-  "flowLight":    "Light",
-"flowMedium":   "Medium",
-"flowHeavy":    "Heavy",
-"flowSpotting": "Spotting",
-
-  "newEntry": "إدخال جديد",
-  "editEntry": "تعديل الإدخال",
-  "save": "حفظ",
-  "update": "تحديث",
-  "delete": "حذف",
-  "deleteEntry": "حذف الإدخال؟",
-  "deleteEntryConfirm": "هل أنتِ متأكدة من حذف هذا الإدخال؟ لا يمكن التراجع.",
-  "everythingOptional": "كل شيء هنا اختياري — يمكنك الحفظ بتاريخ اليوم فقط إذا أردتِ ",
-  "today": "اليوم",
-  "none": "لا يوجد",
-  "flowDescription": "وصف التدفق",
-  "camera": "الكاميرا",
-  "gallery": "المعرض",
-  "addPhotosHint": "أضيفي صور ليومك أو أعراضك ",
-  "photos": "الصور",
-  "notesHint": "اكتبي ملاحظاتك هنا...",
-  "entrySaved": "تم حفظ الإدخال بنجاح",
-  "entryUpdated": "تم تحديث الإدخال بنجاح",
-
-  "moodSad": "حزينة",
-  "moodNeutral": "عادي",
-  "moodOkay": "بخير",
-  "moodHappy": "سعيدة",
-  "moodAmazing": "رائعة",
-
-  "energyVeryLow": "منخفضة جدًا",
-  "energyLow": "منخفضة",
-  "energyMedium": "متوسطة",
-  "energyHigh": "عالية",
-  "energyVeryHigh": "عالية جدًا",
-
-  "noPain": "لا ألم",
-  "cramps": "تشنجات",
-  "bloating": "انتفاخ",
-  "headache": "صداع",
-  "breastTenderness": "ألم الثدي",
-  "fatigue": "إرهاق",
-  "nausea": "غثيان",
-  "moodSwings": "تقلبات مزاجية",
-  "acne": "حب الشباب",
-  "backPain": "ألم الظهر",
-  "cravings": "رغبة شديدة في الأكل",
-  "permissionDenied": "تم رفض الإذن. يرجى تفعيل الوصول إلى الكاميرا أو الصور في الإعدادات."
-  }
+  "themePurpleM3": "بنفسجي"
+}

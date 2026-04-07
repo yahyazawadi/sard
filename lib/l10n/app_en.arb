@@ -1,8 +1,7 @@
 {
   "@@locale": "en",
-  "appTitle": "Tracker",
-  "calendar": "Calendar",
-  "info": "Info",
+  "appTitle": "Flutter Boilerplate",
+  "home": "Home",
   "settings": "Settings",
   "themeStyle": "Theme Style",
   "appearanceMode": "Appearance Mode",
@@ -15,14 +14,6 @@
   "textSize": "Text Size",
   "usingSystemSize": "Using system size",
   "resetToSystem": "Reset to System",
-  "addEntry": "Add Entry",
-  "notes": "Notes",
-  "flowIntensity": "Flow Intensity",
-  "symptoms": "Symptoms",
-  "mood": "Mood",
-  "energy": "Energy",
-  "pain": "Pain",
-  "overallFeeling": "Overall Feeling",
   "themeMandyRed": "Mandy Red",
   "themeRedWine": "Red Wine",
   "themeDeepPurple": "Deep Purple",
@@ -33,171 +24,5 @@
   "themeSanJuanBlue": "San Juan Blue",
   "themeIndigo": "Indigo",
   "themeBrandBlue": "Brand Blue",
-  "themePurpleM3": "Purple M3",
-
-  "home":"home",
-  "settings":"settings",
-  "phase":"phase",
-
-  "tracker": "tracker",
-  
-  "menstruation": "Menstruation",
-  "follicular": "Follicular",
-  "ovulation": "Ovulation",
-  "luteal": "Luteal",
-  "legend": "Legend",
-  "selectPhase": "Select Phase",
-  "apply": "Apply",
-  "cancel": "Cancel",
-  "cycleStats": "Cycle Stats",
-  "currentCycleDay": "Current Cycle Day",
-  "daysUntilPeriod": "Days Until Period",
-  "averageCycleLength": "Average Cycle Length",
-  "noEntry": "No entry for this day",
-  "noNotes": "No notes",
-  "noPhase": "No phase",
-  "emptyStateMessage": "Tap any day to start tracking your cycle",
-  "editAdd": "Edit / Add",
-  "close": "Close",
-  "gotIt": "Got it"
-
-,
-  "flow": "Flow",
-  "feeling": "Feeling",
-
-
-"sundayShort": "Sun",
-  "mondayShort": "Mon",
-  "tuesdayShort": "Tue",
-  "wednesdayShort": "Wed",
-  "thursdayShort": "Thu",
-  "fridayShort": "Fri",
-  "saturdayShort": "Sat",
-
-  "calendarFormatMonth": "Month",
-  "calendarFormatWeek": "Week",
-  "calendarFormatTwoWeeks": "2 Weeks",
-
-  "january": "January",
-  "february": "February",
-  "march": "March",
-  "april": "April",
-  "may": "May",
-  "june": "June",
-  "july": "July",
-  "august": "August",
-  "september": "September",
-  "october": "October",
-  "november": "November",
-  "december": "December",
-  "weekendDays" :"weekend days",
-  "confirm":"confirm",
-    "firstDaySelectedMessage": "✓ First day selected — now tap the ending day",
-  "@firstDaySelectedMessage": {
-    "description": "SnackBar message after selecting the first day in range edit mode"
-  },
-
-  "noneClear": "None (Clear)",
-  "@noneClear": {
-    "description": "Option in phase selection dialog to remove/clear the phase from selected range"
-  },
-
-  "clear": "Clear",
-  "@clear": {
-    "description": "Button text when user chooses to clear/remove the phase"
-  },
-
-  "notAvailable": "N/A",
-  "@notAvailable": {
-    "description": "Placeholder text when a value (mood, pain, etc.) is not available"
-  },
-
-  "exitEditMode": "Exit edit mode",
-  "@exitEditMode": {
-    "description": "Tooltip for the edit mode toggle button when mode is currently active"
-  },
-
-  "editModeRanges": "Edit mode (mark ranges)",
-  "@editModeRanges": {
-    "description": "Tooltip for the edit mode toggle button when mode is inactive"
-  },
-
-  "clearAllTest": "Clear all (temp test)",
-  "@clearAllTest": {
-    "description": "Tooltip for the temporary clear-all entries button"
-  },
-
-  "clearCalendar": "Clear Calendar?",
-  "@clearCalendar": {
-    "description": "Title of confirmation dialog for clearing all calendar entries"
-  },
-
-  "clearCalendarWarning": "This will delete ALL entries.\nOnly for testing!",
-  "@clearCalendarWarning": {
-    "description": "Warning message in the clear-all confirmation dialog"
-  },
-
-  "editModeOnTapFirst": "Edit mode ON • Tap first day",
-  "@editModeOnTapFirst": {
-    "description": "Banner text shown when edit/range mode is active but no start day selected"
-  },
-
-  "tapEndingDay": "Tap ending day (or same day for single-day)",
-  "@tapEndingDay": {
-    "description": "Banner text after first day is selected in edit mode"
-  },
-
-  "days": "days",
-  "@days": {
-    "description": "Unit label appended to average cycle length value"
-  },
-  
-  
-  "flowLight":    "light",
-"flowMedium":   "medium",
-"flowHeavy":    "heavy",
-"flowSpotting": "spotting",
-  "newEntry": "New Entry",
-  "editEntry": "Edit Entry",
-  "save": "Save",
-  "update": "Update",
-  "delete": "Delete",
-  "deleteEntry": "Delete Entry?",
-  "deleteEntryConfirm": "Are you sure you want to delete this entry? This cannot be undone.",
-  "everythingOptional": "Everything here is optional — you can save with just the date if you want 💕",
-  "today": "Today",
-  "none": "None",
-  "flowDescription": "Flow Description",
-  "camera": "Camera",
-  "gallery": "Gallery",
-  "addPhotosHint": "Add photos of your day or symptoms 💕",
-  "photos": "Photos",
-  "notesHint": "Write your notes here...",
-  "entrySaved": "Entry saved successfully",
-  "entryUpdated": "Entry updated successfully",
-
-  "moodSad": "Sad",
-  "moodNeutral": "Neutral",
-  "moodOkay": "Okay",
-  "moodHappy": "Happy",
-  "moodAmazing": "Amazing",
-
-  "energyVeryLow": "Very Low",
-  "energyLow": "Low",
-  "energyMedium": "Medium",
-  "energyHigh": "High",
-  "energyVeryHigh": "Very High",
-
-  "noPain": "No Pain",
-  "cramps": "Cramps",
-  "bloating": "Bloating",
-  "headache": "Headache",
-  "breastTenderness": "Breast Tenderness",
-  "fatigue": "Fatigue",
-  "nausea": "Nausea",
-  "moodSwings": "Mood Swings",
-  "acne": "Acne",
-  "backPain": "Back Pain",
-  "cravings": "Cravings",
-  "permissionDenied": "Permission denied. Please enable camera or photo access in settings."
-  }
+  "themePurpleM3": "Purple M3"
+}
