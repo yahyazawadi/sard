@@ -1,78 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:go_router/go_router.dart';
+import 'firebase_options.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // For prefs
-import 'package:tracker/l10n/app_localizations.dart';
-import 'package:tracker/providers/settings_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:sard/l10n/app_localizations.dart'; 
+import 'package:sard/providers/settings_provider.dart';
+import 'package:sard/providers/cart_provider.dart';
+import 'package:sard/providers/auth_provider.dart';
 
 import 'routes/routes.dart';
+import 'routes/app_routes.dart';
 import 'custom/app_theme.dart';
-import 'hive/hive_setup.dart';
+import 'package:app_links/app_links.dart';
+import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(const HiveLoadingApp());
-}
-
-class HiveLoadingApp extends StatefulWidget {
-  const HiveLoadingApp({super.key});
-
-  @override
-  State<HiveLoadingApp> createState() => _HiveLoadingAppState();
-}
-
-class _HiveLoadingAppState extends State<HiveLoadingApp> {
-  bool _hiveReady = false;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadHive();
+  
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   }
 
-  Future<void> _loadHive() async {
-    try {
-      await HiveSetup.initialize();
-      final encryptionKey = await HiveSetup.getEncryptionKey();
-      await HiveSetup.openSettingsBox(encryptionKey);
-      print('✅ Hive fully ready');
-      setState(() => _hiveReady = true);
-    } catch (e) {
-      print('Hive error: $e');
-      setState(() => _error = e.toString());
-    }
-  }
+  runApp(const SardAppConfigurator());
+}
+
+class SardAppConfigurator extends StatelessWidget {
+  const SardAppConfigurator({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) {
-      return MaterialApp(
-        home: Scaffold(
-          body: Center(child: Text('Error loading data:\n$_error')),
-        ),
-      );
-    }
-
-    if (!_hiveReady) {
-      return const MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 20),
-                Text('جاري تحميل التطبيق...'),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Hive is ready → run normal app
     return FutureBuilder<SharedPreferences>(
       future: SharedPreferences.getInstance(),
       builder: (context, snapshot) {
@@ -83,12 +43,17 @@ class _HiveLoadingAppState extends State<HiveLoadingApp> {
         }
 
         final prefs = snapshot.data!;
-        final appSettingsProvider = AppSettingsProvider(prefs);
-
+        
         return MultiProvider(
           providers: [
             ChangeNotifierProvider<AppSettingsProvider>(
-              create: (_) => appSettingsProvider,
+              create: (_) => AppSettingsProvider(prefs),
+            ),
+            ChangeNotifierProvider<CartProvider>(
+              create: (_) => CartProvider(prefs),
+            ),
+            ChangeNotifierProvider<AuthProvider>(
+              create: (_) => AuthProvider(prefs),
             ),
           ],
           child: const MyApp(),
@@ -98,25 +63,97 @@ class _HiveLoadingAppState extends State<HiveLoadingApp> {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final GoRouter _router;
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the router once. It will refresh automatically because of refreshListenable.
+    final auth = context.read<AuthProvider>();
+    _router = createRouter(auth);
+    _initDeepLinks();
+  }
+
+  void _initDeepLinks() {
+    _appLinks = AppLinks();
+
+    // Handle links when app is in foreground or background
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      print('!!! RAW DEEP LINK DETECTED: $uri');
+      _handleDeepLink(uri);
+    });
+
+    // Handle link that opened the app
+    _appLinks.getInitialLink().then((uri) {
+      if (uri != null) {
+        debugPrint('Initial Deep Link: $uri');
+        _handleDeepLink(uri);
+      }
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    try {
+      final linkStr = uri.toString();
+      print('!!! Processing Link: $linkStr (scheme: ${uri.scheme})');
+
+      String? firebaseLink;
+
+      if (uri.scheme == 'sarad') {
+        // Custom scheme link: sarad://verify?link=<encoded firebase link>
+        // OR the entire firebase link was passed as the URL path
+        print('!!! Custom sarad:// scheme detected.');
+        firebaseLink = uri.queryParameters['link'] ?? uri.queryParameters['continueUrl'];
+        // Sometimes Firebase appends the original link as a query param
+        if (firebaseLink == null && linkStr.contains('oobCode')) {
+          firebaseLink = linkStr;
+        }
+      } else if (linkStr.contains('apiKey') || linkStr.contains('oobCode')) {
+        // Direct Firebase HTTPS link
+        firebaseLink = linkStr;
+      }
+
+      if (firebaseLink != null) {
+        final target = '${AppRoutes.verify}?link=${Uri.encodeComponent(firebaseLink)}';
+        print('!!! Scheduling navigation to VerifyScreen. target length: ${target.length}');
+
+        Future.delayed(const Duration(milliseconds: 500), () {
+          print('!!! Executing GoRouter.go to VerifyScreen');
+          _router.go(target);
+        });
+      } else {
+        print('!!! No Firebase auth link found in: $linkStr');
+      }
+    } catch (e, stack) {
+      print('!!! Error in _handleDeepLink: $e');
+      print(stack);
+    }
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<AppSettingsProvider>(context);
 
     return MaterialApp.router(
-      title: 'Flutter Boilerplate',
-      theme: AppTheme.lightTheme(prov.selectedScheme).copyWith(
-        textTheme: AppTheme.lightTheme(
-          prov.selectedScheme,
-        ).textTheme.apply(fontFamily: 'DG Sahabah'),
-      ),
-      darkTheme: AppTheme.darkTheme(prov.selectedScheme).copyWith(
-        textTheme: AppTheme.darkTheme(
-          prov.selectedScheme,
-        ).textTheme.apply(fontFamily: 'DG Sahabah'),
-      ),
+      title: 'Sard - Chocolate Shop',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: prov.themeMode,
       locale: prov.locale,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -141,7 +178,7 @@ class MyApp extends StatelessWidget {
           ),
         );
       },
-      routerConfig: router,
+      routerConfig: _router,
     );
   }
 }

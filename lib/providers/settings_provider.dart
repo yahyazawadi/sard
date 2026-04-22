@@ -1,10 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flex_color_scheme/flex_color_scheme.dart';
-
-import '../l10n/app_localizations.dart';
 
 class AppSettingsProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
@@ -13,12 +9,11 @@ class AppSettingsProvider extends ChangeNotifier {
   Locale _locale = const Locale('en');
   double _textScale = 1.0;
   bool _hasTextScaleOverride = false;
+  
   set hasTextScaleOverride(bool value) {
     _hasTextScaleOverride = value;
     notifyListeners();
   }
-
-  FlexScheme _selectedScheme = FlexScheme.mandyRed;
 
   static const Map<String, bool> _defaultExpansionStates = {
     'themeStyle': true,
@@ -31,37 +26,6 @@ class AppSettingsProvider extends ChangeNotifier {
 
   AppSettingsProvider(this._prefs) {
     _loadSettings();
-  }
-
-  // ── Theme display names map ────────────────────────────────────────────────
-  static String getThemeDisplayName(BuildContext context, FlexScheme scheme) {
-    final t = AppLocalizations.of(context)!;
-    switch (scheme) {
-      case FlexScheme.mandyRed:
-        return t.themeMandyRed;
-      case FlexScheme.redWine:
-        return t.themeRedWine;
-      case FlexScheme.deepPurple:
-        return t.themeDeepPurple;
-      case FlexScheme.sakura:
-        return t.themeSakura;
-      case FlexScheme.purpleBrown:
-        return t.themePurpleBrown;
-      case FlexScheme.jungle:
-        return t.themeJungle;
-      case FlexScheme.shadBlue:
-        return t.themeShadBlue;
-      case FlexScheme.sanJuanBlue:
-        return t.themeSanJuanBlue;
-      case FlexScheme.indigo:
-        return t.themeIndigo;
-      case FlexScheme.brandBlue:
-        return t.themeBrandBlue;
-      case FlexScheme.purpleM3:
-        return t.themePurpleM3;
-      default:
-        return scheme.name;
-    }
   }
 
   void _loadSettings() {
@@ -78,10 +42,6 @@ class AppSettingsProvider extends ChangeNotifier {
     if (_hasTextScaleOverride) {
       _textScale = _prefs.getDouble('textScale') ?? 1.0;
     }
-
-    // Selected theme scheme
-    final schemeName = _prefs.getString('themeScheme') ?? 'mandyRed';
-    _selectedScheme = _schemeFromName(schemeName) ?? FlexScheme.mandyRed;
 
     final savedExpansion = _prefs.getString('expansion_states');
     if (savedExpansion != null) {
@@ -108,7 +68,6 @@ class AppSettingsProvider extends ChangeNotifier {
   Locale get locale => _locale;
   double get textScale => _textScale;
   bool get hasTextScaleOverride => _hasTextScaleOverride;
-  FlexScheme get selectedScheme => _selectedScheme;
   bool isSectionExpanded(String key) => _expansionStates[key] ?? false;
 
   // ── Setters ────────────────────────────────────────────────────────────────
@@ -138,18 +97,11 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setScheme(FlexScheme scheme) {
-    _selectedScheme = scheme;
-    _prefs.setString('themeScheme', _nameFromScheme(scheme));
-    notifyListeners();
-  }
-
   Future<void> resetToDefaults() async {
     await Future.wait([
       _prefs.remove('themeMode'),
       _prefs.remove('language'),
       _prefs.remove('textScale'),
-      _prefs.remove('themeScheme'),
       _prefs.remove('expansion_states'),
     ]);
     _loadSettings();
@@ -160,41 +112,6 @@ class AppSettingsProvider extends ChangeNotifier {
     _expansionStates[key] = expanded;
     _saveExpansionStates();
     notifyListeners();
-  }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  FlexScheme? _schemeFromName(String name) {
-    const map = {
-      'mandyRed': FlexScheme.mandyRed,
-      'redWine': FlexScheme.redWine,
-      'deepPurple': FlexScheme.deepPurple,
-      'sakura': FlexScheme.sakura,
-      'purpleBrown': FlexScheme.purpleBrown,
-      'jungle': FlexScheme.jungle,
-      'shadBlue': FlexScheme.shadBlue,
-      'sanJuanBlue': FlexScheme.sanJuanBlue,
-      'indigo': FlexScheme.indigo,
-      'brandBlue': FlexScheme.brandBlue,
-      'purpleM3': FlexScheme.purpleM3,
-    };
-    return map[name];
-  }
-
-  String _nameFromScheme(FlexScheme scheme) {
-    const reverseMap = {
-      FlexScheme.mandyRed: 'mandyRed',
-      FlexScheme.redWine: 'redWine',
-      FlexScheme.deepPurple: 'deepPurple',
-      FlexScheme.sakura: 'sakura',
-      FlexScheme.purpleBrown: 'purpleBrown',
-      FlexScheme.jungle: 'jungle',
-      FlexScheme.shadBlue: 'shadBlue',
-      FlexScheme.sanJuanBlue: 'sanJuanBlue',
-      FlexScheme.indigo: 'indigo',
-      FlexScheme.brandBlue: 'brandBlue',
-      FlexScheme.purpleM3: 'purpleM3',
-    };
-    return reverseMap[scheme] ?? 'mandyRed';
   }
 
   void _saveExpansionStates() {

@@ -1,13 +1,16 @@
 // android/app/build.gradle.kts
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.pt1"
+    namespace = "com.example.sarad"
     compileSdk = 36 //flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +23,7 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 defaultConfig {
-        applicationId = "com.example.pt1"
+        applicationId = "com.example.sarad"
         minSdk = 24  // ← Change to 24 (Android 7.0+ for permission_handler)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -29,7 +32,7 @@ defaultConfig {
 
     // defaultConfig {
     //     // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-    //     applicationId = "com.example.pt1"
+    //     applicationId = "com.example.sarad"
     //     // You can update the following values to match your application needs.
     //     // For more information, see: https://flutter.dev/to/review-gradle-config.
     //     minSdk = flutter.minSdkVersion
@@ -52,6 +55,7 @@ flutter {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
     implementation("androidx.activity:activity:1.9.3")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.core:core:1.13.1")
