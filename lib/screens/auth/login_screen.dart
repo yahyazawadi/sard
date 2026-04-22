@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/custom_inputs.dart';
 
+class LoginScreen extends StatefulWidget {
   final String? initialEmail;
   final bool initialIsSignUp;
   final String? oobCode;
@@ -26,6 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscureText = true;
+  bool _isSignUp = false;
+
   @override
   void initState() {
     super.initState();
@@ -225,5 +228,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
 }
