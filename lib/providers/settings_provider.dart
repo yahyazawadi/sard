@@ -9,6 +9,8 @@ class AppSettingsProvider extends ChangeNotifier {
   Locale _locale = const Locale('en');
   double _textScale = 1.0;
   bool _hasTextScaleOverride = false;
+  String _fontFamily = 'DG-Sahabah'; // Default font
+
   
   set hasTextScaleOverride(bool value) {
     _hasTextScaleOverride = value;
@@ -43,6 +45,9 @@ class AppSettingsProvider extends ChangeNotifier {
       _textScale = _prefs.getDouble('textScale') ?? 1.0;
     }
 
+    // Font family
+    _fontFamily = _prefs.getString('fontFamily') ?? 'DG-Sahabah';
+
     final savedExpansion = _prefs.getString('expansion_states');
     if (savedExpansion != null) {
       try {
@@ -68,7 +73,9 @@ class AppSettingsProvider extends ChangeNotifier {
   Locale get locale => _locale;
   double get textScale => _textScale;
   bool get hasTextScaleOverride => _hasTextScaleOverride;
+  String get fontFamily => _fontFamily;
   bool isSectionExpanded(String key) => _expansionStates[key] ?? false;
+
 
   // ── Setters ────────────────────────────────────────────────────────────────
   set themeMode(ThemeMode mode) {
@@ -90,6 +97,12 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  set fontFamily(String family) {
+    _fontFamily = family;
+    _prefs.setString('fontFamily', family);
+    notifyListeners();
+  }
+
   void resetTextScale() {
     _hasTextScaleOverride = false;
     _textScale = 1.0;
@@ -102,6 +115,7 @@ class AppSettingsProvider extends ChangeNotifier {
       _prefs.remove('themeMode'),
       _prefs.remove('language'),
       _prefs.remove('textScale'),
+      _prefs.remove('fontFamily'),
       _prefs.remove('expansion_states'),
     ]);
     _loadSettings();

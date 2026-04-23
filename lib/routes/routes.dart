@@ -1,3 +1,27 @@
+// =============================================================================
+// ROUTER — NAVIGATION LOGIC
+// =============================================================================
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║  ██████████████  DO NOT TOUCH THE REDIRECT LOGIC  ████████████████████  ║
+// ║                                                                          ║
+// ║  Routing Rules (in priority order):                                      ║
+// ║  1. If loading → stay put (null)                                         ║
+// ║  2. If NOT authenticated → allow only: onboarding, login, signup,        ║
+// ║       forgotPassword, verify. Everything else → onboarding               ║
+// ║  3. If authenticated + email NOT verified (email/password only) → /verify ║
+// ║  4. If authenticated + verified + on auth page → /home                   ║
+// ║  5. Otherwise → stay put (null)                                          ║
+// ║                                                                          ║
+// ║  ⚠️  Onboarding is ALWAYS the front door when not logged in.             ║
+// ║      hasSeenOnboarding is for UI only (e.g. skip intro animation).       ║
+// ║      It does NOT gate routing. Do NOT redirect onboarding → login.       ║
+// ║                                                                          ║
+// ║  ⚠️  emailVerified is ONLY gated here. Do NOT check it in auth methods.  ║
+// ║      Calling signOut() in loginWithEmail creates a race condition where   ║
+// ║      the auth stream fires first (→ home), then signOut fires (→ login). ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
+// =============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
@@ -5,7 +29,6 @@ import '../screens/home_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/auth/signup_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/verify_screen.dart';
 import '../providers/auth_provider.dart';
@@ -19,108 +42,159 @@ GoRouter createRouter(AuthProvider auth) {
     redirect: (context, state) {
       final path = state.uri.path;
       final isAuthenticated = auth.isAuthenticated;
-      final hasSeenOnboarding = auth.hasSeenOnboarding;
       final isLoading = auth.isLoading;
 
-      print('!!! Router Redirect: path=$path, auth=$isAuthenticated, onboarding=$hasSeenOnboarding, loading=$isLoading');
+      print('!!! Router: path=$path, auth=$isAuthenticated, loading=$isLoading');
 
-      if (isLoading) {
-        print('!!! Router: Loading, staying put.');
+      // ── Loading: stay put ───────────────────────────────────────────────────
+      if (isLoading) return null;
+
+      // ── NOT authenticated ───────────────────────────────────────────────────
+      // Onboarding is ALWAYS the front door. All auth pages are allowed.
+      // ⚠️  Do NOT redirect onboarding → login here. That caused an infinite
+      //     loop where the back button on login bounced between the two.
+      if (!isAuthenticated) {
+        const allowedWhenLoggedOut = {
+          AppRoutes.onboarding,
+          AppRoutes.login,
+          AppRoutes.signUp,
+          AppRoutes.forgotPassword,
+          AppRoutes.verify,
+        };
+        if (allowedWhenLoggedOut.contains(path)) return null;
+        // Any protected page → kick to onboarding
+        return AppRoutes.onboarding;
+      }
+
+      // ── Authenticated ───────────────────────────────────────────────────────
+      // ⚠️  This is the ONLY emailVerified gate. Do NOT add checks elsewhere.
+      // ⚠️  Do NOT call signOut() in auth code based on emailVerified — race condition.
+      final user = auth.user;
+      final isEmailUser = user?.providerData.any((p) => p.providerId == 'password') ?? false;
+      if (isEmailUser && !(user?.emailVerified ?? true)) {
+        // Signed in but unverified → stay on verify screen
+        print('!!! Router: Unverified email → /verify');
+        if (path != AppRoutes.verify) return AppRoutes.verify;
         return null;
       }
 
-      final isAuthRoute = path == AppRoutes.login || 
-                          path == AppRoutes.signUp || 
-                          path == AppRoutes.forgotPassword ||
-                          path == AppRoutes.verify ||
-                          path == AppRoutes.onboarding ||
-                          path == '/__/auth/action';
-      final isOnboardingRoute = path == AppRoutes.onboarding;
+      // Authenticated + verified: kick off auth/onboarding pages
+      const authPages = {
+        AppRoutes.onboarding,
+        AppRoutes.login,
+        AppRoutes.signUp,
+        AppRoutes.forgotPassword,
+        AppRoutes.verify,
+      };
+      if (authPages.contains(path)) return AppRoutes.home;
 
-      // 1. If NOT authenticated and HASN'T seen onboarding, force OnboardingScreen
-      if (!isAuthenticated && !hasSeenOnboarding) {
-        if (!isOnboardingRoute) {
-          print('!!! Router: Not auth, no onboarding -> Redirecting to Onboarding');
-          return AppRoutes.onboarding;
-        }
-        return null;
-      }
-
-      // 2. If authenticated, restrict returning to onboarding/auth screens
-      // UNLESS we are on the Verify route (to allow the link processing to finish)
-      if (isAuthenticated) {
-        if ((isAuthRoute || isOnboardingRoute) && path != AppRoutes.verify) {
-          print('!!! Router: Authenticated but on Auth page -> Redirecting to Home');
-          return AppRoutes.home;
-        }
-        return null; 
-      }
-
-      // 3. If NOT authenticated but HAS seen onboarding, redirect Onboarding to Login
-      if (isOnboardingRoute) {
-        print('!!! Router: Allowing Auth Action/Verify route.');
-        return null;
-      }
-
-      if (!isAuthRoute) {
-        print('!!! Router: Not on auth route -> Redirecting to Login');
-        return AppRoutes.login;
-      }
-
-      print('!!! Router: Staying on $path');
       return null;
     },
     routes: [
+      // ── Auth / Onboarding Routes ──────────────────────────────────────────
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (_, _) => const OnboardingScreen(),
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final email = state.uri.queryParameters['email'];
           final isSignUp = state.uri.queryParameters['signup'] == 'true';
           final oobCode = state.uri.queryParameters['oobCode'];
-          return LoginScreen(
-            initialEmail: email, 
-            initialIsSignUp: isSignUp,
-            oobCode: oobCode,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            transitionDuration: const Duration(milliseconds: 600),
+            child: LoginScreen(
+              initialEmail: email,
+              initialIsSignUp: isSignUp,
+              oobCode: oobCode,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: animation.drive(
+                    Tween(begin: const Offset(1, 0), end: Offset.zero)
+                        .chain(CurveTween(curve: Curves.easeOutCubic)),
+                  ),
+                  child: child,
+                ),
+              );
+            },
           );
         },
       ),
       GoRoute(
         path: AppRoutes.signUp,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final email = state.uri.queryParameters['email'];
           final oobCode = state.uri.queryParameters['oobCode'];
-          return LoginScreen(
-            initialEmail: email, 
-            initialIsSignUp: true,
-            oobCode: oobCode,
+          return CustomTransitionPage(
+            key: state.pageKey,
+            transitionDuration: const Duration(milliseconds: 600),
+            child: LoginScreen(
+              initialEmail: email,
+              initialIsSignUp: true,
+              oobCode: oobCode,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: animation.drive(
+                    Tween(begin: const Offset(1, 0), end: Offset.zero)
+                        .chain(CurveTween(curve: Curves.easeOutCubic)),
+                  ),
+                  child: child,
+                ),
+              );
+            },
           );
         },
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
-        builder: (_, _) => const ForgotPasswordScreen(),
-      ),
-      GoRoute(
-        path: '/__/auth/action',
-        builder: (context, state) {
-          // This captures the Firebase Auth links natively
-          final fullLink = state.uri.toString();
-          print('!!! GoRouter caught Auth link: $fullLink');
-          return VerifyScreen(emailLink: fullLink);
-        },
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          transitionDuration: const Duration(milliseconds: 600),
+          child: const ForgotPasswordScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: animation.drive(
+                  Tween(begin: const Offset(1, 0), end: Offset.zero)
+                      .chain(CurveTween(curve: Curves.easeOutCubic)),
+                ),
+                child: child,
+              ),
+            );
+          },
+        ),
       ),
       GoRoute(
         path: AppRoutes.verify,
-        builder: (context, state) {
-          final link = state.uri.queryParameters['link'];
-          print('!!! GoRouter /verify builder. link param: $link');
-          return VerifyScreen(emailLink: link);
-        },
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          transitionDuration: const Duration(milliseconds: 600),
+          child: const VerifyScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: animation.drive(
+                  Tween(begin: const Offset(1, 0), end: Offset.zero)
+                      .chain(CurveTween(curve: Curves.easeOutCubic)),
+                ),
+                child: child,
+              ),
+            );
+          },
+        ),
       ),
+
+      // ── Authenticated Routes (Shell with bottom nav) ──────────────────────
       ShellRoute(
         builder: (context, state, child) => Scaffold(
           body: child,
@@ -131,11 +205,7 @@ GoRouter createRouter(AuthProvider auth) {
               selectedItemColor: Theme.of(context).colorScheme.primary,
               unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
               backgroundColor: Theme.of(context).colorScheme.surface,
-              currentIndex: state.uri.path == AppRoutes.home
-                  ? 0
-                  : state.uri.path == AppRoutes.settings
-                  ? 1
-                  : 0,
+              currentIndex: state.uri.path == AppRoutes.settings ? 1 : 0,
               onTap: (index) {
                 if (index == 0) context.go(AppRoutes.home);
                 if (index == 1) context.go(AppRoutes.settings);
@@ -156,11 +226,43 @@ GoRouter createRouter(AuthProvider auth) {
         routes: [
           GoRoute(
             path: AppRoutes.home,
-            builder: (_, _) => const HomeScreen(),
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              transitionDuration: const Duration(milliseconds: 600),
+              child: const HomeScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: animation.drive(
+                      Tween(begin: const Offset(1, 0), end: Offset.zero)
+                          .chain(CurveTween(curve: Curves.easeOutCubic)),
+                    ),
+                    child: child,
+                  ),
+                );
+              },
+            ),
           ),
           GoRoute(
             path: AppRoutes.settings,
-            builder: (_, _) => const SettingsScreen(),
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              transitionDuration: const Duration(milliseconds: 600),
+              child: const SettingsScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: animation.drive(
+                      Tween(begin: const Offset(1, 0), end: Offset.zero)
+                          .chain(CurveTween(curve: Curves.easeOutCubic)),
+                    ),
+                    child: child,
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

@@ -7,7 +7,8 @@ class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final gsi.GoogleSignIn _googleSignIn = gsi.GoogleSignIn(
     scopes: ['email'],
-    serverClientId: '313420731986-drmk2ueaidtk20b58djs3e13ak3uv3f4.apps.googleusercontent.com',
+    serverClientId:
+        '313420731986-drmk2ueaidtk20b58djs3e13ak3uv3f4.apps.googleusercontent.com',
   );
 
   User? _user;
@@ -30,7 +31,7 @@ class AuthProvider extends ChangeNotifier {
   void _init() {
     _isGuest = prefs.getBool('isGuest') ?? false;
     _hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
-    
+
     _auth.authStateChanges().listen((User? user) {
       _user = user;
       // If user logs in physically, override guest state.
@@ -77,27 +78,47 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> loginWithEmail(String email, String password) async {
     _setLoading(true);
-    print('!!! Attempting login for: $email');
+    print(
+      '!!! Login attempt — email: "$email", password length: ${password.length}',
+    );
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
-      print('!!! Login successful for: $email');
+      final result = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      // Reload to get fresh emailVerified from server
+      await result.user?.reload();
+      _user = _auth.currentUser;
+      print('!!! Login SUCCESS — emailVerified: ${_user?.emailVerified}');
     } catch (e) {
-      print('!!! Login Error: $e');
+      final code = e is FirebaseAuthException ? e.code : 'unknown';
+      print('!!! Login FAILED — code: $code');
       rethrow;
     } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> signUpWithEmail(String name, String email, String password) async {
+  // Called after applyActionCode to refresh emailVerified state
+  Future<void> reloadUser() async {
+    await _auth.currentUser?.reload();
+    _user = _auth.currentUser;
+    notifyListeners();
+  }
+
+  Future<void> signUpWithEmail(
+    String name,
+    String email,
+    String password,
+  ) async {
     _setLoading(true);
     try {
       UserCredential cred = await _auth.createUserWithEmailAndPassword(
-        email: email, 
-        password: password
+        email: email,
+        password: password,
       );
       await cred.user?.updateDisplayName(name);
-      
+
       // Update local _user with new display name natively without waiting for next stream tick
       await cred.user?.reload();
       _user = _auth.currentUser;
@@ -113,9 +134,14 @@ class AuthProvider extends ChangeNotifier {
       final gsi.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return; // User canceled the sign-in
 
-      final gsi.GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      debugPrint("Google ID Token: ${googleAuth.idToken != null ? 'RECEIVED' : 'NULL'}");
-      debugPrint("Google Access Token: ${googleAuth.accessToken != null ? 'RECEIVED' : 'NULL'}");
+      final gsi.GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      debugPrint(
+        "Google ID Token: ${googleAuth.idToken != null ? 'RECEIVED' : 'NULL'}",
+      );
+      debugPrint(
+        "Google Access Token: ${googleAuth.accessToken != null ? 'RECEIVED' : 'NULL'}",
+      );
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -146,11 +172,8 @@ class AuthProvider extends ChangeNotifier {
     try {
       final acs = _getActionCodeSettings();
 
-      await _auth.sendSignInLinkToEmail(
-        email: email,
-        actionCodeSettings: acs,
-      );
-      
+      await _auth.sendSignInLinkToEmail(email: email, actionCodeSettings: acs);
+
       // Save email locally to complete sign-in later
       await prefs.setString('emailForSignIn', email);
     } catch (e) {
@@ -161,34 +184,49 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> registerWithEmailLink(String name, String email, String password) async {
+  Future<void> registerWithEmailLink(
+    String name,
+    String email,
+    String password,
+  ) async {
     _setLoading(true);
     print('!!! Starting registration for: $email');
     try {
       try {
         // 1. Create account
-        UserCredential cred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+        UserCredential cred = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
         await cred.user?.updateDisplayName(name);
-        print('!!! Account created successfully for: $email');
-        
-        // 2. Sign out immediately so we can use the magic link flow
+        print('!!! Account created for: $email');
+
+        // Send email verification link
+        final acs = _getActionCodeSettings();
+        await cred.user?.sendEmailVerification(acs);
+        print('!!! Verification email sent to: $email');
+
+        // Sign out so user must verify before logging in
         await _auth.signOut();
-        print('!!! Signed out after account creation.');
+        print('!!! Signed out after registration.');
+        return;
       } catch (e) {
-        // If account already exists, we just skip the creation and proceed to send the link
+        // If account already exists, we proceed with the magic link flow (for recovery/login)
         if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
-          print('!!! Account already exists. Proceeding to send magic link for recovery.');
+          print(
+            '!!! Account already exists. Sending magic link for sign-in/recovery.',
+          );
         } else {
           rethrow;
         }
       }
-      
-      // 3. Send the magic link (works for both new and existing accounts)
+
+      // 3. Send the magic link for existing accounts (or recovery)
       final acs = _getActionCodeSettings();
-      print('!!! Sending Magic Link to: $email with URL: ${acs.url}');
+      print('!!! Sending Magic Link to: $email');
       await _auth.sendSignInLinkToEmail(email: email, actionCodeSettings: acs);
       print('!!! Magic Link sent successfully.');
-      
+
       await prefs.setString('emailForSignIn', email);
     } catch (e) {
       print('!!! Register With Email Link Error: $e');
@@ -198,16 +236,23 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> confirmResetAndLogin(String oobCode, String email, String newPassword) async {
+  Future<void> confirmResetAndLogin(
+    String oobCode,
+    String email,
+    String newPassword,
+  ) async {
     _setLoading(true);
     print('!!! Confirming password reset and logging in for: $email');
     try {
       // 1. Confirm the reset
       await _auth.confirmPasswordReset(code: oobCode, newPassword: newPassword);
       print('!!! Password reset confirmed.');
-      
+
       // 2. Sign in immediately
-      await _auth.signInWithEmailAndPassword(email: email, password: newPassword);
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: newPassword,
+      );
       print('!!! Immediate login successful.');
     } catch (e) {
       print('!!! Confirm Reset and Login Error: $e');
@@ -219,7 +264,8 @@ class AuthProvider extends ChangeNotifier {
 
   ActionCodeSettings _getActionCodeSettings() {
     return ActionCodeSettings(
-      url: 'sarad://verify',
+      // Use the project's base URL instead of the internal auth path
+      url: 'https://flutter-ai-playground-96a06.firebaseapp.com/home',
       handleCodeInApp: true,
       androidPackageName: 'com.example.sarad',
       androidInstallApp: true,
@@ -233,8 +279,13 @@ class AuthProvider extends ChangeNotifier {
     try {
       if (_auth.isSignInWithEmailLink(emailLink)) {
         print('!!! Link is a valid Firebase Sign-In link.');
-        final UserCredential userCredential = await _auth.signInWithEmailLink(email: email, emailLink: emailLink);
-        print('!!! Magic link sign-in SUCCESS. User: ${userCredential.user?.email}');
+        final UserCredential userCredential = await _auth.signInWithEmailLink(
+          email: email,
+          emailLink: emailLink,
+        );
+        print(
+          '!!! Magic link sign-in SUCCESS. User: ${userCredential.user?.email}',
+        );
         // Clear the saved email
         await prefs.remove('emailForSignIn');
       } else {

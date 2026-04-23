@@ -39,16 +39,20 @@ subprojects {
             if (requested.group == "androidx.activity") {
                 useVersion("1.9.3")
             }
-            if (requested.group == "androidx.core") {
+            if (requested.group == "androidx.core" && requested.name != "core-splashscreen") {
                 useVersion("1.13.1")
+            }
+            if (requested.group == "androidx.core" && requested.name == "core-splashscreen") {
+                useVersion("1.0.1")
             }
             if (requested.group == "androidx.lifecycle") {
                 useVersion("2.8.7")
             }
             // This fixes that specific navigationevent error
             if (requested.group == "androidx.navigationevent") {
-                useVersion("1.0.0-alpha03") 
+                useVersion("1.0.0-alpha03")
             }
+
         }
     }
 }

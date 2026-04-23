@@ -59,5 +59,8 @@ dependencies {
     implementation("androidx.activity:activity:1.9.3")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.core:core:1.13.1")
+    implementation("androidx.core:core-splashscreen") {
+        version { strictly("1.0.1") }
+    }
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 }

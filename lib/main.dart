@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:go_router/go_router.dart';
 import 'firebase_options.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -110,29 +111,42 @@ class _MyAppState extends State<MyApp> {
       String? firebaseLink;
 
       if (uri.scheme == 'sarad') {
-        // Custom scheme link: sarad://verify?link=<encoded firebase link>
-        // OR the entire firebase link was passed as the URL path
-        print('!!! Custom sarad:// scheme detected.');
         firebaseLink = uri.queryParameters['link'] ?? uri.queryParameters['continueUrl'];
-        // Sometimes Firebase appends the original link as a query param
         if (firebaseLink == null && linkStr.contains('oobCode')) {
           firebaseLink = linkStr;
         }
       } else if (linkStr.contains('apiKey') || linkStr.contains('oobCode')) {
-        // Direct Firebase HTTPS link
         firebaseLink = linkStr;
       }
 
       if (firebaseLink != null) {
-        final target = '${AppRoutes.verify}?link=${Uri.encodeComponent(firebaseLink)}';
-        print('!!! Scheduling navigation to VerifyScreen. target length: ${target.length}');
+        final firebaseUri = Uri.parse(firebaseLink);
+        final mode = firebaseUri.queryParameters['mode'];
+        final oobCode = firebaseUri.queryParameters['oobCode'];
+        
+        print('!!! Detected Firebase mode: $mode');
 
-        Future.delayed(const Duration(milliseconds: 500), () {
-          print('!!! Executing GoRouter.go to VerifyScreen');
-          _router.go(target);
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          if (mode == 'resetPassword' && oobCode != null) {
+            // Navigate directly to sign up (which handles recovery) with the code
+            final email = await FirebaseAuth.instance.verifyPasswordResetCode(oobCode);
+            final target = '${AppRoutes.signUp}?email=${Uri.encodeComponent(email)}&oobCode=$oobCode';
+            print('!!! Redirecting directly to Recovery: $target');
+            _router.go(target);
+          } else if (mode == 'verifyEmail' && oobCode != null) {
+            await FirebaseAuth.instance.applyActionCode(oobCode);
+            print('!!! Email verified. Reloading user state...');
+            // Reload so the router sees emailVerified=true and navigates to home
+            final authProvider = _router.routerDelegate.navigatorKey.currentContext
+                ?.read<AuthProvider>();
+            if (authProvider != null) {
+              await authProvider.reloadUser();
+            }
+            _router.go(AppRoutes.home);
+          } else {
+            print('!!! Unhandled link mode: $mode. Doing nothing.');
+          }
         });
-      } else {
-        print('!!! No Firebase auth link found in: $linkStr');
       }
     } catch (e, stack) {
       print('!!! Error in _handleDeepLink: $e');
@@ -149,11 +163,13 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<AppSettingsProvider>(context);
+    final scale = prov.hasTextScaleOverride ? prov.textScale : 1.0;
+    final fontFamily = prov.fontFamily;
 
     return MaterialApp.router(
       title: 'Sard - Chocolate Shop',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme(scale: scale, fontFamily: fontFamily),
+      darkTheme: AppTheme.darkTheme(scale: scale, fontFamily: fontFamily),
       themeMode: prov.themeMode,
       locale: prov.locale,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -164,18 +180,11 @@ class _MyAppState extends State<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: prov.hasTextScaleOverride
-                ? TextScaler.linear(prov.textScale)
-                : null,
-          ),
-          child: Directionality(
-            textDirection: prov.locale.languageCode == 'ar'
-                ? TextDirection.rtl
-                : TextDirection.ltr,
-            child: child!,
-          ),
+        return Directionality(
+          textDirection: prov.locale.languageCode == 'ar'
+              ? TextDirection.rtl
+              : TextDirection.ltr,
+          child: child!,
         );
       },
       routerConfig: _router,
