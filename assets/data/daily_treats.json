@@ -1,0 +1,36 @@
+[
+  {
+    "id": "sard_bars_100g",
+    "section": "daily",
+    "name": {"ar": "الواح شوكولاتة سرد 100 غرام", "en": "Sard Chocolate Bars 100g"},
+    "image_url": "assets/images/chocophoto.png",
+    "price": 10,
+    "is_fixed_price": true
+  },
+  {
+    "id": "trend_bars",
+    "section": "daily",
+    "name": {"ar": "الواح ترند", "en": "Trend Bars"},
+    "image_url": "assets/images/chocophoto.png",
+    "price": 12,
+    "is_fixed_price": true
+  },
+  {
+    "id": "takseer",
+    "section": "daily",
+    "name": {"ar": "شوكولاتة تكسير", "en": "Broken Chocolate (Takseer)"},
+    "image_url": "assets/images/chocophoto.png",
+    "price": 120,
+    "unit": "kg",
+    "is_sold_by_weight": true
+  },
+  {
+    "id": "dragee",
+    "section": "daily",
+    "name": {"ar": "دراجية", "en": "Dragee"},
+    "image_url": "assets/images/chocophoto.png",
+    "price": 80,
+    "unit": "kg",
+    "is_sold_by_weight": true
+  }
+]

@@ -320,8 +320,18 @@ class AuthProvider extends ChangeNotifier {
   Future<void> fullReset() async {
     _setLoading(true);
     try {
-      await _auth.signOut();
-      await _googleSignIn.signOut();
+      // Sign out from all providers, ignoring errors if not currently signed in
+      try {
+        await _auth.signOut();
+      } catch (e) {
+        debugPrint('Firebase signOut error: $e');
+      }
+      try {
+        await _googleSignIn.signOut();
+      } catch (e) {
+        debugPrint('Google signOut error: $e');
+      }
+
       await prefs.clear();
       _isGuest = false;
       _hasSeenOnboarding = false;

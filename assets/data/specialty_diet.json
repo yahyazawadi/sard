@@ -1,0 +1,13 @@
+[
+  {
+    "id": "diet_wrapped_1kg",
+    "section": "specialty",
+    "name_ar": "شوكولاتة دايت مغلفة 1 كغم",
+    "name_en": "Diet Wrapped 1KG",
+    "image_url": "assets/images/chocophoto.png",
+    "price": 140,
+    "unit": "kg",
+    "is_diet": true,
+    "branch_stock": {"nablus": 10, "bethlehem": 5, "ramallah": 8}
+  }
+]

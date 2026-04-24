@@ -24,7 +24,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../l10n/app_localizations.dart';
 import '../screens/home_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -34,6 +33,13 @@ import '../screens/auth/verify_screen.dart';
 import '../providers/auth_provider.dart';
 
 import 'app_routes.dart';
+
+int _getSelectedIndex(String path) {
+  if (path == AppRoutes.settings) return 3;
+  if (path == '/cart') return 2; // placeholder
+  if (path == '/search') return 1; // placeholder
+  return 0; // Home
+}
 
 GoRouter createRouter(AuthProvider auth) {
   return GoRouter(
@@ -205,22 +211,37 @@ GoRouter createRouter(AuthProvider auth) {
               selectedItemColor: Theme.of(context).colorScheme.primary,
               unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
               backgroundColor: Theme.of(context).colorScheme.surface,
-              currentIndex: state.uri.path == AppRoutes.settings ? 1 : 0,
+              currentIndex: _getSelectedIndex(state.uri.path),
               onTap: (index) {
                 if (index == 0) context.go(AppRoutes.home);
-                if (index == 1) context.go(AppRoutes.settings);
+                if (index == 1) {} // TODO: Search
+                if (index == 2) {} // TODO: Cart
+                if (index == 3) context.go(AppRoutes.settings); // Using settings as profile for now
               },
-              items: [
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              items: const [
                 BottomNavigationBarItem(
-                  icon: const Icon(Icons.home),
-                  label: AppLocalizations.of(context)?.home ?? 'Home',
+                  icon: Icon(Icons.home_outlined, size: 28),
+                  activeIcon: Icon(Icons.home, size: 28),
+                  label: 'Home',
                 ),
                 BottomNavigationBarItem(
-                  icon: const Icon(Icons.settings),
-                  label: AppLocalizations.of(context)?.settings ?? 'Settings',
+                  icon: Icon(Icons.search, size: 28),
+                  label: 'Search',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.shopping_cart_outlined, size: 28),
+                  label: 'Cart',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline, size: 28),
+                  activeIcon: Icon(Icons.person, size: 28),
+                  label: 'Profile',
                 ),
               ],
             ),
+
           ),
         ),
         routes: [

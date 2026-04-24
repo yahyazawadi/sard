@@ -1,0 +1,22 @@
+[
+  {
+    "id": "baklava_premium",
+    "section": "traditional",
+    "name_ar": "بقلاوة فاخرة",
+    "name_en": "Premium Baklava",
+    "image_url": "assets/images/chocophoto.png",
+    "price": 90,
+    "unit": "box",
+    "branch_stock": {"nablus": 20, "bethlehem": 15, "ramallah": 25}
+  },
+  {
+    "id": "osh_bulbul",
+    "section": "traditional",
+    "name_ar": "عش البلبل",
+    "name_en": "Osh Al-Bulbul",
+    "image_url": "assets/images/chocophoto.png",
+    "price": 80,
+    "unit": "box",
+    "branch_stock": {"nablus": 30, "bethlehem": 10, "ramallah": 20}
+  }
+]

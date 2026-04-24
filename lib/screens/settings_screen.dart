@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart' as p;
 import '../l10n/app_localizations.dart';
 import '../providers/settings_provider.dart';
-
-import 'package:go_router/go_router.dart';
-import '../routes/app_routes.dart';
 import '../providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../providers/sync_provider.dart';
+import '../routes/app_routes.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<AppSettingsProvider>(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -23,21 +25,21 @@ class SettingsScreen extends StatelessWidget {
         children: [
           SwitchListTile(
             title: const Text('Dark Mode'),
-            value: provider.themeMode == ThemeMode.dark,
+            value: settings.themeMode == ThemeMode.dark,
             onChanged: (val) {
-              provider.themeMode = val ? ThemeMode.dark : ThemeMode.light;
+              settingsNotifier.setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
             },
           ),
           ListTile(
             title: const Text('Language (EN/AR)'),
             trailing: DropdownButton<String>(
-              value: provider.locale.languageCode,
+              value: settings.locale.languageCode,
               items: const [
                 DropdownMenuItem(value: 'en', child: Text('English')),
                 DropdownMenuItem(value: 'ar', child: Text('العربية')),
               ],
               onChanged: (val) {
-                if (val != null) provider.locale = Locale(val);
+                if (val != null) settingsNotifier.setLocale(Locale(val));
               },
             ),
           ),
@@ -48,7 +50,21 @@ class SettingsScreen extends StatelessWidget {
             leading: const Icon(Icons.delete_forever),
             title: const Text('Delete Cache (Debug)'),
             onTap: () async {
-              await context.read<AuthProvider>().fullReset();
+              // 1. Clear Isar Database (Riverpod)
+              await ref.read(syncProvider).clearAllData();
+
+              // 2. Reset Auth & Prefs (Auth still uses ChangeNotifier)
+              if (context.mounted) {
+                await p.Provider.of<AuthProvider>(context, listen: false).fullReset();
+              }
+
+              // 3. Reset Settings
+              await settingsNotifier.resetToDefaults();
+
+              // 4. Force redirect to onboarding
+              if (context.mounted) {
+                context.go(AppRoutes.onboarding);
+              }
             },
           )
         ],

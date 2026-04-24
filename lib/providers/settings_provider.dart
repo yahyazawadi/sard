@@ -1,134 +1,153 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'prefs_provider.dart';
 
-class AppSettingsProvider extends ChangeNotifier {
-  final SharedPreferences _prefs;
+class AppSettings {
+  final ThemeMode themeMode;
+  final Locale locale;
+  final double textScale;
+  final bool hasTextScaleOverride;
+  final String fontFamily;
+  final String selectedBranch;
+  final Map<String, bool> expansionStates;
 
-  ThemeMode _themeMode = ThemeMode.system;
-  Locale _locale = const Locale('en');
-  double _textScale = 1.0;
-  bool _hasTextScaleOverride = false;
-  String _fontFamily = 'DG-Sahabah'; // Default font
+  AppSettings({
+    required this.themeMode,
+    required this.locale,
+    required this.textScale,
+    required this.hasTextScaleOverride,
+    required this.fontFamily,
+    required this.selectedBranch,
+    required this.expansionStates,
+  });
 
-  
-  set hasTextScaleOverride(bool value) {
-    _hasTextScaleOverride = value;
-    notifyListeners();
+  AppSettings copyWith({
+    ThemeMode? themeMode,
+    Locale? locale,
+    double? textScale,
+    bool? hasTextScaleOverride,
+    String? fontFamily,
+    String? selectedBranch,
+    Map<String, bool>? expansionStates,
+  }) {
+    return AppSettings(
+      themeMode: themeMode ?? this.themeMode,
+      locale: locale ?? this.locale,
+      textScale: textScale ?? this.textScale,
+      hasTextScaleOverride: hasTextScaleOverride ?? this.hasTextScaleOverride,
+      fontFamily: fontFamily ?? this.fontFamily,
+      selectedBranch: selectedBranch ?? this.selectedBranch,
+      expansionStates: expansionStates ?? this.expansionStates,
+    );
   }
+}
 
+final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(() {
+  return SettingsNotifier();
+});
+
+class SettingsNotifier extends Notifier<AppSettings> {
   static const Map<String, bool> _defaultExpansionStates = {
     'themeStyle': true,
     'appearanceMode': false,
     'language': false,
   };
-  Map<String, bool> _expansionStates = Map<String, bool>.from(
-    _defaultExpansionStates,
-  );
 
-  AppSettingsProvider(this._prefs) {
-    _loadSettings();
-  }
-
-  void _loadSettings() {
+  @override
+  AppSettings build() {
+    final prefs = ref.watch(prefsProvider);
+    
     // Theme mode
-    final modeIndex = _prefs.getInt('themeMode') ?? ThemeMode.system.index;
-    _themeMode = ThemeMode.values[modeIndex];
+    final modeIndex = prefs.getInt('themeMode') ?? ThemeMode.system.index;
+    final themeMode = ThemeMode.values[modeIndex];
 
     // Locale
-    final lang = _prefs.getString('language') ?? 'en';
-    _locale = Locale(lang);
+    final lang = prefs.getString('language') ?? 'en';
+    final locale = Locale(lang);
 
     // Text scale
-    _hasTextScaleOverride = _prefs.containsKey('textScale');
-    if (_hasTextScaleOverride) {
-      _textScale = _prefs.getDouble('textScale') ?? 1.0;
-    }
+    final hasTextScaleOverride = prefs.containsKey('textScale');
+    final textScale = hasTextScaleOverride ? (prefs.getDouble('textScale') ?? 1.0) : 1.0;
 
     // Font family
-    _fontFamily = _prefs.getString('fontFamily') ?? 'DG-Sahabah';
+    final fontFamily = prefs.getString('fontFamily') ?? 'DG-Sahabah';
 
-    final savedExpansion = _prefs.getString('expansion_states');
+    // Branch
+    final selectedBranch = prefs.getString('selectedBranch') ?? 'nablus';
+
+    // Expansion states
+    Map<String, bool> expansionStates = Map<String, bool>.from(_defaultExpansionStates);
+    final savedExpansion = prefs.getString('expansion_states');
     if (savedExpansion != null) {
       try {
         final decoded = jsonDecode(savedExpansion);
         if (decoded is Map) {
-          final map = decoded.map(
-            (key, value) => MapEntry(key.toString(), value == true),
-          );
-          _expansionStates = {..._defaultExpansionStates, ...map};
+          final map = decoded.map((key, value) => MapEntry(key.toString(), value == true));
+          expansionStates = {..._defaultExpansionStates, ...map};
         }
-      } catch (_) {
-        _expansionStates = Map<String, bool>.from(_defaultExpansionStates);
-      }
-    } else {
-      _expansionStates = Map<String, bool>.from(_defaultExpansionStates);
+      } catch (_) {}
     }
 
-    notifyListeners();
+    return AppSettings(
+      themeMode: themeMode,
+      locale: locale,
+      textScale: textScale,
+      hasTextScaleOverride: hasTextScaleOverride,
+      fontFamily: fontFamily,
+      selectedBranch: selectedBranch,
+      expansionStates: expansionStates,
+    );
   }
 
-  // ── Getters ────────────────────────────────────────────────────────────────
-  ThemeMode get themeMode => _themeMode;
-  Locale get locale => _locale;
-  double get textScale => _textScale;
-  bool get hasTextScaleOverride => _hasTextScaleOverride;
-  String get fontFamily => _fontFamily;
-  bool isSectionExpanded(String key) => _expansionStates[key] ?? false;
-
-
-  // ── Setters ────────────────────────────────────────────────────────────────
-  set themeMode(ThemeMode mode) {
-    _themeMode = mode;
-    _prefs.setInt('themeMode', mode.index);
-    notifyListeners();
+  void setThemeMode(ThemeMode mode) {
+    state = state.copyWith(themeMode: mode);
+    ref.read(prefsProvider).setInt('themeMode', mode.index);
   }
 
-  set locale(Locale loc) {
-    _locale = loc;
-    _prefs.setString('language', loc.languageCode);
-    notifyListeners();
+  void setLocale(Locale loc) {
+    state = state.copyWith(locale: loc);
+    ref.read(prefsProvider).setString('language', loc.languageCode);
   }
 
-  set textScale(double scale) {
-    _textScale = scale.clamp(0.8, 2.0);
-    _hasTextScaleOverride = true;
-    _prefs.setDouble('textScale', _textScale);
-    notifyListeners();
+  void setTextScale(double scale) {
+    final newScale = scale.clamp(0.8, 2.0);
+    state = state.copyWith(textScale: newScale, hasTextScaleOverride: true);
+    ref.read(prefsProvider).setDouble('textScale', newScale);
   }
 
-  set fontFamily(String family) {
-    _fontFamily = family;
-    _prefs.setString('fontFamily', family);
-    notifyListeners();
+  void setFontFamily(String family) {
+    state = state.copyWith(fontFamily: family);
+    ref.read(prefsProvider).setString('fontFamily', family);
+  }
+
+  void setBranch(String branch) {
+    state = state.copyWith(selectedBranch: branch);
+    ref.read(prefsProvider).setString('selectedBranch', branch);
   }
 
   void resetTextScale() {
-    _hasTextScaleOverride = false;
-    _textScale = 1.0;
-    _prefs.remove('textScale');
-    notifyListeners();
-  }
-
-  Future<void> resetToDefaults() async {
-    await Future.wait([
-      _prefs.remove('themeMode'),
-      _prefs.remove('language'),
-      _prefs.remove('textScale'),
-      _prefs.remove('fontFamily'),
-      _prefs.remove('expansion_states'),
-    ]);
-    _loadSettings();
+    state = state.copyWith(textScale: 1.0, hasTextScaleOverride: false);
+    ref.read(prefsProvider).remove('textScale');
   }
 
   void setSectionExpanded(String key, bool expanded) {
-    if (_expansionStates[key] == expanded) return;
-    _expansionStates[key] = expanded;
-    _saveExpansionStates();
-    notifyListeners();
+    final newStates = Map<String, bool>.from(state.expansionStates);
+    newStates[key] = expanded;
+    state = state.copyWith(expansionStates: newStates);
+    ref.read(prefsProvider).setString('expansion_states', jsonEncode(newStates));
   }
 
-  void _saveExpansionStates() {
-    _prefs.setString('expansion_states', jsonEncode(_expansionStates));
+  Future<void> resetToDefaults() async {
+    final prefs = ref.read(prefsProvider);
+    await Future.wait([
+      prefs.remove('themeMode'),
+      prefs.remove('language'),
+      prefs.remove('textScale'),
+      prefs.remove('fontFamily'),
+      prefs.remove('expansion_states'),
+      prefs.remove('selectedBranch'),
+    ]);
+    ref.invalidateSelf();
   }
 }

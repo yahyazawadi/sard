@@ -7,15 +7,19 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; 
 import 'package:sard/l10n/app_localizations.dart'; 
-import 'package:sard/providers/settings_provider.dart';
-import 'package:sard/providers/cart_provider.dart';
-import 'package:sard/providers/auth_provider.dart';
-
 import 'routes/routes.dart';
 import 'routes/app_routes.dart';
 import 'custom/app_theme.dart';
+import 'providers/auth_provider.dart';
+import 'providers/settings_provider.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider, ChangeNotifierProvider;
+
+import 'providers/isar_provider.dart';
+import 'providers/sync_provider.dart';
+import 'providers/prefs_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,52 +30,45 @@ void main() async {
     );
   }
 
-  runApp(const SardAppConfigurator());
+  final isar = await initIsar();
+  final prefs = await SharedPreferences.getInstance();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        isarProvider.overrideWithValue(isar),
+        prefsProvider.overrideWithValue(prefs),
+      ],
+      child: const SardAppConfigurator(),
+    ),
+  );
 }
 
-class SardAppConfigurator extends StatelessWidget {
+class SardAppConfigurator extends ConsumerWidget {
   const SardAppConfigurator({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<SharedPreferences>(
-      future: SharedPreferences.getInstance(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const MaterialApp(
-            home: Scaffold(body: Center(child: CircularProgressIndicator())),
-          );
-        }
-
-        final prefs = snapshot.data!;
-        
-        return MultiProvider(
-          providers: [
-            ChangeNotifierProvider<AppSettingsProvider>(
-              create: (_) => AppSettingsProvider(prefs),
-            ),
-            ChangeNotifierProvider<CartProvider>(
-              create: (_) => CartProvider(prefs),
-            ),
-            ChangeNotifierProvider<AuthProvider>(
-              create: (_) => AuthProvider(prefs),
-            ),
-          ],
-          child: const MyApp(),
-        );
-      },
+  Widget build(BuildContext context, WidgetRef ref) {
+    // We still use MultiProvider for Auth (ChangeNotifier) to support GoRouter's refreshListenable easily
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) => AuthProvider(ref.read(prefsProvider)),
+        ),
+      ],
+      child: const MyApp(),
     );
   }
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> {
   late final GoRouter _router;
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
@@ -83,6 +80,12 @@ class _MyAppState extends State<MyApp> {
     final auth = context.read<AuthProvider>();
     _router = createRouter(auth);
     _initDeepLinks();
+    
+    // Seed database
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final container = ProviderScope.containerOf(context);
+      container.read(syncProvider).performInitialSeed();
+    });
   }
 
   void _initDeepLinks() {
@@ -162,16 +165,16 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final prov = Provider.of<AppSettingsProvider>(context);
-    final scale = prov.hasTextScaleOverride ? prov.textScale : 1.0;
-    final fontFamily = prov.fontFamily;
+    final settings = ref.watch(settingsProvider);
+    final scale = settings.hasTextScaleOverride ? settings.textScale : 1.0;
+    final fontFamily = settings.fontFamily;
 
     return MaterialApp.router(
       title: 'Sard - Chocolate Shop',
       theme: AppTheme.lightTheme(scale: scale, fontFamily: fontFamily),
       darkTheme: AppTheme.darkTheme(scale: scale, fontFamily: fontFamily),
-      themeMode: prov.themeMode,
-      locale: prov.locale,
+      themeMode: settings.themeMode,
+      locale: settings.locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -181,7 +184,7 @@ class _MyAppState extends State<MyApp> {
       ],
       builder: (context, child) {
         return Directionality(
-          textDirection: prov.locale.languageCode == 'ar'
+          textDirection: settings.locale.languageCode == 'ar'
               ? TextDirection.rtl
               : TextDirection.ltr,
           child: child!,

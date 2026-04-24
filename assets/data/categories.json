@@ -1,0 +1,37 @@
+[
+  {
+    "id": "icons",
+    "name_en": "Sard Icons",
+    "name_ar": "أيقونات سارد",
+    "image_url": "assets/images/chocophoto.png",
+    "display_order": 0
+  },
+  {
+    "id": "traditional",
+    "name_en": "Traditional & Sweets",
+    "name_ar": "حلويات تقليدية",
+    "image_url": "assets/images/chocophoto.png",
+    "display_order": 1
+  },
+  {
+    "id": "daily",
+    "name_en": "Daily Treats",
+    "name_ar": "تسالي يومية",
+    "image_url": "assets/images/chocophoto.png",
+    "display_order": 2
+  },
+  {
+    "id": "gifting",
+    "name_en": "Dates & Gifting",
+    "name_ar": "تمور وهدايا",
+    "image_url": "assets/images/chocophoto.png",
+    "display_order": 3
+  },
+  {
+    "id": "specialty",
+    "name_en": "Specialty & Diet",
+    "name_ar": "أصناف خاصة ودايت",
+    "image_url": "assets/images/chocophoto.png",
+    "display_order": 4
+  }
+]

@@ -52,7 +52,25 @@ subprojects {
             if (requested.group == "androidx.navigationevent") {
                 useVersion("1.0.0-alpha03")
             }
+        }
+    }
+}
 
+subprojects {
+    project.plugins.configureEach {
+        if (this is com.android.build.gradle.api.AndroidBasePlugin) {
+            val android = project.extensions.getByName("android") as? com.android.build.gradle.BaseExtension
+            if (android != null && android.namespace == null) {
+                val manifestFile = project.file("src/main/AndroidManifest.xml")
+                if (manifestFile.exists()) {
+                    val parser = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                    val document = parser.parse(manifestFile)
+                    val packageName = document.documentElement.getAttribute("package")
+                    if (packageName.isNotEmpty()) {
+                        android.namespace = packageName
+                    }
+                }
+            }
         }
     }
 }

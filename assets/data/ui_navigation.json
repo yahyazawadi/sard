@@ -1,0 +1,6 @@
+[
+  {"id": "cat_truffles", "label": "Truffles", "is_active": true},
+  {"id": "cat_bars", "label": "Bars", "is_active": true},
+  {"id": "cat_gift", "label": "Gift Boxes", "is_active": true},
+  {"id": "cat_seasonal", "label": "Seasonal", "is_active": true}
+]

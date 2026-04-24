@@ -1,0 +1,33 @@
+[
+  {
+    "id": "colored_box",
+    "section": "icons",
+    "name": {"ar": "بوكس شوكولاتة ملونة", "en": "Colored Chocolate Box"},
+    "image_url": "assets/images/chocophoto.png",
+    "variants": [
+      {"id": "col_s", "label": "Small", "price": 45, "piece_count": 12, "prefilled_mix": {"fill_0": 4, "fill_1": 4, "fill_2": 4}},
+      {"id": "col_m", "label": "Medium", "price": 80, "piece_count": 24, "prefilled_mix": {"fill_0": 6, "fill_1": 6, "fill_2": 6, "fill_3": 6}},
+      {"id": "col_l", "label": "Large", "price": 120, "piece_count": 36, "prefilled_mix": {"fill_0": 9, "fill_1": 9, "fill_2": 9, "fill_3": 9}}
+    ],
+    "is_customizable": true
+  },
+  {
+    "id": "wrapped_box",
+    "section": "icons",
+    "name": {"ar": "شوكولاتة مغلفة", "en": "Wrapped Chocolate Box"},
+    "image_url": "assets/images/chocophoto.png",
+    "variants": [
+      {"id": "wrap_m", "label": "Medium", "price": 60, "piece_count": 24},
+      {"id": "wrap_l", "label": "Large", "price": 120, "piece_count": 48}
+    ],
+    "is_customizable": true
+  },
+  {
+    "id": "premium_baklava",
+    "section": "traditional",
+    "name": {"ar": "بقلاوة سرد الفاخرة", "en": "Sard Premium Baklava"},
+    "image_url": "assets/images/chocophoto.png",
+    "price": 90,
+    "is_fixed_price": true
+  }
+]

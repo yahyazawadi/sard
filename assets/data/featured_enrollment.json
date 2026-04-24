@@ -1,0 +1,49 @@
+[
+  {
+    "id": "feat_001",
+    "title": "The Legendary Mix",
+    "subtitle": "Our absolute best-sellers in one box",
+    "banner_url": "assets/images/chocophoto.png",
+    "target_product_id": "colored_box",
+    "preselected_variant": "Medium",
+    "is_customizable": true,
+    "product_ids": ["colored_box", "trend_bar_pistachio", "baklava_premium"]
+  },
+  {
+    "id": "feat_002",
+    "title": "Ramadan Nights",
+    "subtitle": "Premium stuffed dates for your Iftar",
+    "banner_url": "assets/images/chocophoto.png",
+    "target_product_id": "sard_dates_s",
+    "preselected_variant": "Large",
+    "is_customizable": false,
+    "product_ids": ["sard_dates_s", "osh_bulbul", "dragee_nuts"]
+  },
+  {
+    "id": "feat_003",
+    "title": "Baby Celebration",
+    "subtitle": "Special gifts for the new arrival",
+    "banner_url": "assets/images/chocophoto.png",
+    "target_product_id": "baby_box_boy",
+    "is_customizable": false,
+    "product_ids": ["baby_box_boy", "baby_box_girl", "diet_wrapped_1kg"]
+  },
+  {
+    "id": "feat_004",
+    "title": "Summer Bliss",
+    "subtitle": "Refreshing citrus and fruit chocolates",
+    "banner_url": "assets/images/chocophoto.png",
+    "target_product_id": "colored_box",
+    "is_customizable": true,
+    "product_ids": ["colored_box", "dark_choc_bar", "truffle_box_gold"]
+  },
+  {
+    "id": "feat_005",
+    "title": "Gifting Suite",
+    "subtitle": "Elegance in every wrap",
+    "banner_url": "assets/images/chocophoto.png",
+    "target_product_id": "sard_dates_s",
+    "is_customizable": false,
+    "product_ids": ["baklava_premium", "osh_bulbul", "dragee_nuts", "trend_bar_pistachio"]
+  }
+]

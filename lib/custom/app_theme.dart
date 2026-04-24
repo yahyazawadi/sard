@@ -39,13 +39,14 @@ class AppFonts {
 
 class AppTheme {
   // ── Palette ──────────────────────────────────────────────────────────────
-  static const Color primaryTeal          = Color(0xFF26C6B8);
+  static const Color primaryTeal          = Color(0xFF49D4D0); // Sard Teal
   static const Color secondaryTeal        = Color(0xFF1A8F85);
-  static const Color accentGold           = Color(0xFFD4A017);
-  static const Color bgWhite              = Color(0xFFFFFFFF);
-  static const Color sectionBgLight       = Color(0xFFE6F9F6);
-  static const Color textPrimaryLight     = Color(0xFF1F2A2E);
-  static const Color textSecondaryLight   = Color(0xFF555555);
+  static const Color accentGold           = Color(0xFFC5A359); // Elegant Gold
+  static const Color bgWhite              = Color(0xFFFFFFFF); // Pure White
+  static const Color darkCocoa            = Color(0xFF3C2415); // Dark Cocoa
+  static const Color sectionBgLight       = Color(0xFFF7FDFD);
+  static const Color textPrimaryLight     = Color(0xFF3C2415); // Using Dark Cocoa for text
+  static const Color textSecondaryLight   = Color(0xFF757575);
   static const Color successGreen         = Color(0xFF4CAF88);
 
   static const Color bgDarkTeal           = Color(0xFF0F2A2A);
