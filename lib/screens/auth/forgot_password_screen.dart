@@ -153,8 +153,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final isSelected = _selectedOption == index;
     // Primary is #26C6B8. We make a very faded version for the background.
     final bgColor = isSelected 
-        ? theme.colorScheme.primary.withOpacity(0.15) 
-        : theme.colorScheme.surfaceVariant.withOpacity(0.5);
+        ? theme.colorScheme.primary.withValues(alpha: 0.15) 
+        : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
 
     return GestureDetector(
       onTap: () {

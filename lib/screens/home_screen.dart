@@ -117,7 +117,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               loading: () => const SizedBox(height: 56),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (error, stackTrace) => const SizedBox.shrink(),
             ),
           ),
 
@@ -278,7 +278,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             boxShadow: [
                                               BoxShadow(
                                                 color: Colors.black
-                                                    .withOpacity(0.08),
+                                                    .withValues(alpha: 0.08),
                                                 blurRadius: 6,
                                                 offset: const Offset(0, 3),
                                               ),
@@ -360,7 +360,7 @@ class _FeaturedCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.center,
-            colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
           ),
         ),
         padding: const EdgeInsets.all(24),
@@ -439,9 +439,6 @@ class _CategorySection extends ConsumerWidget {
           }
 
           if (branchStockCount == 0) return false;
-
-          if (branchStockCount == 0) return false;
-
           return true;
         }).toList();
 
@@ -528,7 +525,7 @@ class ProductCard extends ConsumerWidget {
                         Navigator.pop(context);
                         SardSnackBar.show(
                           context, 
-                          "${product.nameEn ?? 'Product'} added to cart",
+                          "${product.nameEn} added to cart",
                           action: SnackBarAction(
                             label: "VIEW CART",
                             onPressed: () => context.push(AppRoutes.cart),
@@ -548,7 +545,7 @@ class ProductCard extends ConsumerWidget {
       ref.read(cartProvider.notifier).addToCart(product);
       SardSnackBar.show(
         context, 
-        "${product.nameEn ?? 'Product'} added to cart",
+        "${product.nameEn} added to cart",
         action: SnackBarAction(
           label: "VIEW CART",
           onPressed: () => context.push(AppRoutes.cart),
@@ -595,7 +592,7 @@ class ProductCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -626,8 +623,8 @@ class ProductCard extends ConsumerWidget {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: gender == 'boy'
-                            ? Colors.blue.withOpacity(0.8)
-                            : Colors.pink.withOpacity(0.8),
+                            ? Colors.blue.withValues(alpha: 0.8)
+                            : Colors.pink.withValues(alpha: 0.8),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -687,7 +684,7 @@ class ProductCard extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withOpacity(0.8),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.8),
                             shape: BoxShape.circle,
                             border: Border.all(color: const Color(0xFFC5A359), width: 1.5),
                           ),

@@ -57,7 +57,7 @@ class CartScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: const Text(
-          'Sard Selection',
+          'My Cart',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontFamily: 'serif'),
         ),
         centerTitle: true,
@@ -94,23 +94,11 @@ class CartScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Your Cart",
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'serif'),
-                          ),
-                          Text(
-                            "$totalItems Items",
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                          ),
-                        ],
+                      Text(
+                        "$totalItems Items",
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                       ),
-                      const Text(
-                        "review your selection",
-                        style: TextStyle(color: Colors.grey, fontSize: 16, fontFamily: 'serif'),
-                      ),
+                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
@@ -148,39 +136,40 @@ class CartScreen extends ConsumerWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          item.product.nameEn ?? '',
+                                          item.product.nameEn,
                                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      Text(
-                                        "₪ ${item.variant.price.toStringAsFixed(2)}",
-                                        style: TextStyle(
-                                          color: colorScheme.primary,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
+                                      IconButton(
+                                        icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+                                        onPressed: () => _confirmDelete(context, ref, item),
                                       ),
                                     ],
                                   ),
                                   Text(
-                                    "${item.variant.size ?? ''} Box",
+                                    item.variant.size,
                                     style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
+                                      Text(
+                                        "₪ ${item.variant.price.toStringAsFixed(2)}",
+                                        style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                                      ),
                                       Container(
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: Colors.grey.shade200),
                                         ),
                                         child: Row(
                                           children: [
                                             IconButton(
-                                              icon: const Icon(Icons.remove, size: 16, color: Color(0xFF49D4D0)),
+                                              icon: const Icon(Icons.remove, size: 16),
                                               onPressed: () => cartNotifier.updateQuantity(item.id, item.quantity - 1),
                                             ),
                                             Text(
@@ -188,31 +177,11 @@ class CartScreen extends ConsumerWidget {
                                               style: const TextStyle(fontWeight: FontWeight.bold),
                                             ),
                                             IconButton(
-                                              icon: const Icon(Icons.add, size: 16, color: Color(0xFF49D4D0)),
+                                              icon: const Icon(Icons.add, size: 16),
                                               onPressed: () => cartNotifier.updateQuantity(item.id, item.quantity + 1),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.edit_outlined, color: Color(0xFFC5A359), size: 20),
-                                            onPressed: () {
-                                              context.push(
-                                                AppRoutes.productDetail,
-                                                extra: {
-                                                  'product': item.product,
-                                                  'editingItem': item,
-                                                },
-                                              );
-                                            },
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                                            onPressed: () => _confirmDelete(context, ref, item),
-                                          ),
-                                        ],
                                       ),
                                     ],
                                   ),
@@ -226,63 +195,49 @@ class CartScreen extends ConsumerWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
+                      ),
                     ],
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Order Summary",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 16),
-                      ...cartItems.map((item) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                "${item.quantity}x ${item.product.nameEn ?? ''} (${item.variant.size ?? ''})",
-                                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Text(
-                              "₪ ${(item.variant.price * item.quantity).toStringAsFixed(2)}",
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      )).toList(),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("Shipping", style: TextStyle(color: Colors.grey, fontSize: 13)),
-                            Text("₪ 5.00", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                      const Divider(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Total", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          const Text("Subtotal", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                          Text("₪ ${subtotal.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Shipping", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                          Text("₪ 5.00", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ],
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Divider(),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Total", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           Text(
                             "₪ ${total.toStringAsFixed(2)}",
                             style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
                               color: colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
                             ),
                           ),
                         ],

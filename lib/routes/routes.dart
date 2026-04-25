@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/home_screen.dart';
 import '../screens/product_detail_screen.dart';
 import '../models/product.dart';
-import '../screens/settings_screen.dart';
+import '../screens/profile_screen.dart';
 import '../screens/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
@@ -142,10 +142,6 @@ GoRouter createRouter(AuthProvider auth) {
             builder: (_, _) => const CartScreen(),
           ),
           GoRoute(
-            path: AppRoutes.checkout,
-            builder: (_, _) => const CheckoutScreen(),
-          ),
-          GoRoute(
             path: AppRoutes.productDetail,
             builder: (context, state) {
               if (state.extra is Product) {
@@ -162,9 +158,13 @@ GoRouter createRouter(AuthProvider auth) {
           ),
           GoRoute(
             path: AppRoutes.settings,
-            builder: (_, _) => const SettingsScreen(),
+            builder: (_, _) => const ProfileScreen(),
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.checkout,
+        builder: (_, _) => const CheckoutScreen(),
       ),
     ],
   );

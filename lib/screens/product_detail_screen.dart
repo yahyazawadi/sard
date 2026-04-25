@@ -210,7 +210,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: state.selectedGender == 'boy' ? Colors.blue : Colors.blue.withOpacity(0.3),
+                                    color: state.selectedGender == 'boy' ? Colors.blue : Colors.blue.withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   alignment: Alignment.center,
@@ -231,7 +231,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: state.selectedGender == 'girl' ? Colors.pink : Colors.pink.withOpacity(0.3),
+                                    color: state.selectedGender == 'girl' ? Colors.pink : Colors.pink.withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   alignment: Alignment.center,
@@ -366,13 +366,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF49D4D0).withOpacity(state.isSelectionValid ? 1.0 : 0.5),
+                            color: const Color(0xFF49D4D0).withValues(alpha: state.isSelectionValid ? 1.0 : 0.5),
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: const Color(0xFFC5A359), width: 2), // Permanent Gold border
                             boxShadow: [
                               if (state.isSelectionValid)
                                 BoxShadow(
-                                  color: const Color(0xFFC5A359).withOpacity(0.3),
+                                  color: const Color(0xFFC5A359).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   spreadRadius: 1,
                                 ),
@@ -647,7 +647,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         child: Image.asset(
                           'assets/images/cover.png',
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox(height: 28, width: 50),
+                          errorBuilder: (context, error, stackTrace) => const SizedBox(height: 28, width: 50),
                         ),
                       ),
                     ),

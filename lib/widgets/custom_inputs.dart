@@ -38,11 +38,11 @@ class CustomTextField extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           style: theme.textTheme.bodyLarge,
           placeholderStyle: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             fontWeight: FontWeight.w300, // Very thin placeholder like wireframe
           ),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3), // Very soft grey box
+            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3), // Very soft grey box
             borderRadius: BorderRadius.circular(4), // slightly squared
           ),
           suffix: suffix,
@@ -71,7 +71,7 @@ class CustomButton extends StatelessWidget {
     final theme = Theme.of(context);
     
     final Color bgColor = isSecondary 
-      ? theme.colorScheme.surfaceContainerHighest.withOpacity(0.5)
+      ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
       : theme.colorScheme.primaryContainer; // Light Sard teal
       
     final Color textColor = theme.colorScheme.onSurface; // Black text for primary buttons per spec
