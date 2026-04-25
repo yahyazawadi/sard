@@ -9,33 +9,33 @@ class Product {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  late String remoteId; // e.g., 'colored_box'
+  String remoteId = ''; // e.g., 'colored_box'
 
-  late String section; // icons, daily, gifting, specialty
+  String section = ''; // icons, daily, gifting, specialty
   
-  late String nameAr;
-  late String nameEn;
-  late String imageUrl;
+  String nameAr = '';
+  String nameEn = '';
+  String imageUrl = '';
   
   List<ProductVariant>? variants;
 
   // The Master Toggles
-  late bool hasVariants; // Controls S/M/L visibility
-  late bool isGendered; // Controls Boy/Girl visibility
-  late bool isCustomizable; // Controls filling grid visibility
-  late bool isSoldByWeight; // Controls kg logic vs pieces logic
-  late bool isFixedPrice; // Controls Total bar visibility
-  late bool isContactOnly; // Controls Cart button visibility
+  bool hasVariants = false; 
+  bool isGendered = false; 
+  bool isCustomizable = false; 
+  bool isSoldByWeight = false; 
+  bool isFixedPrice = false; 
+  bool isContactOnly = false; 
 
   // Additional Data
   List<String>? genderOptions;
-  String? unit; // kg, box, etc.
-  String? gender; // boy, girl, etc.
+  String? unit; 
+  String? gender; 
   
   // Stock per branch
   BranchStock? branchStock;
 
-  late DateTime lastUpdated;
+  DateTime lastUpdated = DateTime.now();
 
   Map<String, dynamic> toJson() {
     return {
@@ -61,11 +61,11 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product()
-      ..remoteId = json['remoteId']
-      ..section = json['section']
-      ..nameAr = json['nameAr']
-      ..nameEn = json['nameEn']
-      ..imageUrl = json['imageUrl']
+      ..remoteId = json['remoteId'] ?? json['id'] ?? ''
+      ..section = json['section'] ?? ''
+      ..nameAr = json['nameAr'] ?? json['name_ar'] ?? ''
+      ..nameEn = json['nameEn'] ?? json['name_en'] ?? ''
+      ..imageUrl = json['imageUrl'] ?? json['image_url'] ?? ''
       ..variants = json['variants'] != null 
           ? (json['variants'] as List).map((v) => ProductVariant.fromJson(v)).toList()
           : null

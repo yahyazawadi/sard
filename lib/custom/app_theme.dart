@@ -134,6 +134,11 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
       ),
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: primaryTeal,
+        behavior: SnackBarBehavior.floating,
+        contentTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -173,6 +178,11 @@ class AppTheme {
         foregroundColor: primaryTeal,
         elevation: 0,
         centerTitle: true,
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: primaryTeal,
+        behavior: SnackBarBehavior.floating,
+        contentTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }

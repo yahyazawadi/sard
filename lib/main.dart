@@ -10,6 +10,7 @@ import 'package:sard/l10n/app_localizations.dart';
 import 'routes/routes.dart';
 import 'routes/app_routes.dart';
 import 'custom/app_theme.dart';
+import 'utils/snackbar_utils.dart';
 import 'providers/auth_provider.dart';
 import 'providers/settings_provider.dart';
 import 'package:app_links/app_links.dart';
@@ -183,11 +184,14 @@ class _MyAppState extends ConsumerState<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, child) {
-        return Directionality(
-          textDirection: settings.locale.languageCode == 'ar'
-              ? TextDirection.rtl
-              : TextDirection.ltr,
-          child: child!,
+        return ScaffoldMessenger(
+          key: SardSnackBar.messengerKey,
+          child: Directionality(
+            textDirection: settings.locale.languageCode == 'ar'
+                ? TextDirection.rtl
+                : TextDirection.ltr,
+            child: child!,
+          ),
         );
       },
       routerConfig: _router,

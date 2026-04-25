@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
+import '../models/cart_item.dart';
 
 class ProductBuilderState {
   final Product? product;
@@ -90,6 +91,18 @@ class ProductBuilderState {
 
 class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
   ProductBuilderNotifier() : super(ProductBuilderState());
+
+  void initFromCartItem(CartItem item) {
+    state = ProductBuilderState(
+      product: item.product,
+      selectedVariant: item.product.variants?[item.selectedVariantIndex],
+      selectedGender: item.selectedGender,
+      selectedWeight: item.selectedWeight,
+      selectedFillings: item.selectedFillings != null ? Map<String, int>.from(item.selectedFillings!) : {},
+      isLoading: false,
+      isEdited: true, 
+    );
+  }
 
   void initProduct(Product product) {
     ProductVariant? initialVariant;

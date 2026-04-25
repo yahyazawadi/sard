@@ -33,17 +33,58 @@ class CartNotifier extends Notifier<List<CartItem>> {
     return state.fold(0, (total, item) => total + item.quantity);
   }
 
-  void addToCart(Product product, {int variantIndex = 0}) {
-    final existingIndex = state.indexWhere(
-      (item) => item.product.remoteId == product.remoteId && item.selectedVariantIndex == variantIndex
-    );
-    
+  void addToCart(
+    Product product, {
+    int variantIndex = 0,
+    String? gender,
+    double? weight,
+    Map<String, int>? fillings,
+  }) {
+    final existingIndex = state.indexWhere((item) {
+      bool basicMatch = item.product.remoteId == product.remoteId && item.selectedVariantIndex == variantIndex;
+      if (!basicMatch) return false;
+
+      // Check customizations
+      bool genderMatch = item.selectedGender == gender;
+      bool weightMatch = item.selectedWeight == weight;
+      
+      // Check fillings (deep equality)
+      bool fillingsMatch = true;
+      if (item.selectedFillings == null && fillings == null) {
+        fillingsMatch = true;
+      } else if (item.selectedFillings != null && fillings != null) {
+        if (item.selectedFillings!.length != fillings.length) {
+          fillingsMatch = false;
+        } else {
+          for (var key in item.selectedFillings!.keys) {
+            if (item.selectedFillings![key] != fillings[key]) {
+              fillingsMatch = false;
+              break;
+            }
+          }
+        }
+      } else {
+        fillingsMatch = false;
+      }
+
+      return genderMatch && weightMatch && fillingsMatch;
+    });
+
     if (existingIndex >= 0) {
       final newList = List<CartItem>.from(state);
       newList[existingIndex].quantity += 1;
       state = newList;
     } else {
-      state = [...state, CartItem(product: product, selectedVariantIndex: variantIndex)];
+      state = [
+        ...state,
+        CartItem(
+          product: product,
+          selectedVariantIndex: variantIndex,
+          selectedGender: gender,
+          selectedWeight: weight,
+          selectedFillings: fillings != null ? Map<String, int>.from(fillings) : null,
+        )
+      ];
     }
     _saveCart();
   }
@@ -53,20 +94,40 @@ class CartNotifier extends Notifier<List<CartItem>> {
     _saveCart();
   }
 
-  void updateQuantity(String remoteId, int variantIndex, int quantity) {
-    final index = state.indexWhere(
-      (item) => item.product.remoteId == remoteId && item.selectedVariantIndex == variantIndex
-    );
+  void updateQuantity(String id, int quantity) {
+    final index = state.indexWhere((item) => item.id == id);
     
     if (index >= 0) {
       if (quantity <= 0) {
-        removeFromCart(remoteId, variantIndex);
+        removeItemById(id);
       } else {
         final newList = List<CartItem>.from(state);
-        newList[index].quantity = quantity;
+        newList[index] = newList[index].copyWith(quantity: quantity);
         state = newList;
         _saveCart();
       }
+    }
+  }
+
+  void removeItemById(String id) {
+    final currentState = state;
+    final newState = currentState.where((item) => item.id != id).toList();
+    
+    // Explicitly check if something changed to avoid redundant updates, 
+    // but ALWAYS replace the state with a new list if it did.
+    if (newState.length != currentState.length) {
+      state = newState;
+      _saveCart();
+    }
+  }
+
+  void updateCartItem(CartItem newItem) {
+    final index = state.indexWhere((item) => item.id == newItem.id);
+    if (index >= 0) {
+      final newList = List<CartItem>.from(state);
+      newList[index] = newItem;
+      state = newList;
+      _saveCart();
     }
   }
 

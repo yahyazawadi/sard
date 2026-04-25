@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../providers/product_builder_provider.dart';
+import '../providers/cart_provider.dart';
+import '../models/cart_item.dart';
+import '../routes/app_routes.dart';
+import 'package:go_router/go_router.dart';
+import '../utils/snackbar_utils.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final Product product;
+  final CartItem? editingItem;
 
-  const ProductDetailScreen({super.key, required this.product});
+  const ProductDetailScreen({super.key, required this.product, this.editingItem});
 
   @override
   ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -17,7 +23,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(productBuilderProvider.notifier).initProduct(widget.product);
+      if (widget.editingItem != null) {
+        ref.read(productBuilderProvider.notifier).initFromCartItem(widget.editingItem!);
+      } else {
+        ref.read(productBuilderProvider.notifier).initProduct(widget.product);
+      }
     });
   }
 
@@ -33,10 +43,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
+    return Stack(
+      children: [
           CustomScrollView(
             slivers: [
               // --- Hero Image ---
@@ -68,7 +76,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       child: IconButton(
                         icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
                         onPressed: () {
-                          // Go to cart
+                          context.push(AppRoutes.cart);
                         },
                       ),
                     ),
@@ -315,20 +323,66 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       
                       // --- Add to Cart Button (Moved from bottom bar) ---
                       InkWell(
-                        onTap: state.isSelectionValid ? () {} : null,
+                        onTap: state.isSelectionValid
+                            ? () {
+                                final variantIndex = widget.product.variants?.indexWhere((v) => v.size == state.selectedVariant?.size) ?? 0;
+                                
+                                if (widget.editingItem != null) {
+                                  // Update existing item
+                                  ref.read(cartProvider.notifier).updateCartItem(
+                                    CartItem(
+                                      id: widget.editingItem!.id,
+                                      product: widget.product,
+                                      selectedVariantIndex: variantIndex >= 0 ? variantIndex : 0,
+                                      selectedGender: state.selectedGender,
+                                      selectedWeight: state.selectedWeight,
+                                      selectedFillings: state.selectedFillings,
+                                      quantity: widget.editingItem!.quantity,
+                                    ),
+                                  );
+                                  SardSnackBar.show(context, "Changes saved successfully");
+                                  context.pop(); // Go back to cart
+                                } else {
+                                  // Add new item
+                                  ref.read(cartProvider.notifier).addToCart(
+                                        widget.product,
+                                        variantIndex: variantIndex >= 0 ? variantIndex : 0,
+                                        gender: state.selectedGender,
+                                        weight: state.selectedWeight,
+                                        fillings: state.selectedFillings,
+                                      );
+                                  SardSnackBar.show(
+                                    context, 
+                                    "${widget.product.nameEn} added to cart",
+                                    action: SnackBarAction(
+                                      label: "VIEW CART",
+                                      onPressed: () => context.push(AppRoutes.cart),
+                                    ),
+                                  );
+                                }
+                              }
+                            : null,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(state.isSelectionValid ? 1.0 : 0.5),
+                            color: const Color(0xFF49D4D0).withOpacity(state.isSelectionValid ? 1.0 : 0.5),
                             borderRadius: BorderRadius.circular(24),
-                            border: state.isSelectionValid && state.isBoxFull
-                                ? Border.all(color: Theme.of(context).colorScheme.tertiary, width: 2) // Gold glow
-                                : null,
+                            border: Border.all(color: const Color(0xFFC5A359), width: 2), // Permanent Gold border
+                            boxShadow: [
+                              if (state.isSelectionValid)
+                                BoxShadow(
+                                  color: const Color(0xFFC5A359).withOpacity(0.3),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                ),
+                            ],
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PIECES, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
+                            widget.editingItem != null 
+                              ? "SAVE CHANGES"
+                              : "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PIECES, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -345,8 +399,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ],
           ),
         ],
-      ),
-    );
+      );
   }
 
   String _getMockFillingName(String id) {
@@ -372,6 +425,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (modalContext) {
+        bool isClosing = false;
         return Stack(
           alignment: Alignment.bottomCenter,
           children: [
@@ -387,11 +441,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   builder: (_, setSheetState) {
                     return NotificationListener<DraggableScrollableNotification>(
                       onNotification: (notification) {
-                        // Only close when the sheet has been dragged to near-zero
-                        // (well past both snap points). This prevents false triggers
-                        // during normal snapping from expanded → compact.
-                        if (notification.extent <= 0.05) {
-                          Navigator.of(modalContext).pop();
+                        if (notification.extent <= 0.05 && !isClosing) {
+                          isClosing = true;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (modalContext.mounted) {
+                              Navigator.of(modalContext).pop();
+                            }
+                          });
                         }
                         setSheetState(() {});
                         return false;

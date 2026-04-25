@@ -5,12 +5,13 @@ import '../providers/cart_provider.dart';
 import '../models/product.dart';
 import '../models/featured_template.dart';
 import '../models/category.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import '../providers/settings_provider.dart';
 import '../providers/sync_provider.dart';
 import 'collection_screen.dart';
-import 'product_detail_screen.dart';
+import 'package:go_router/go_router.dart';
+import '../routes/app_routes.dart';
+import '../utils/snackbar_utils.dart';
+import '../widgets/search_widgets.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -20,8 +21,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String _searchQuery = '';
-  List<dynamic> _uiFilters = [];
   bool _isFeaturedExpanded = false;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _featuredKey = GlobalKey();
@@ -35,367 +34,305 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadFilters();
     // Auto-sync products on first load (e.g. after login)
     Future.microtask(() => ref.read(syncProvider).performInitialSeed());
   }
 
-  Future<void> _loadFilters() async {
-    try {
-      final String jsonString = await rootBundle.loadString(
-        'assets/data/ui_navigation.json',
-      );
-      setState(() {
-        _uiFilters = json.decode(jsonString);
-      });
-    } catch (e) {
-      debugPrint('Error loading UI filters: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final featuredAsync = ref.watch(featuredTemplatesProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // 1. Logo App Bar
-            SliverAppBar(
-              floating: true,
-              backgroundColor: Colors.white,
-              elevation: 0,
-              centerTitle: true,
-              title: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset('assets/images/iconSARD.png', height: 40),
-                  const Text(
-                    ' v2',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.sync, size: 16, color: Colors.grey),
-                    onPressed: () async {
-                      await ref.read(syncProvider).performInitialSeed();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Syncing data from JSON...'),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            // 2. Search Bar
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
+    return SafeArea(
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          // 1. Logo App Bar
+          SliverAppBar(
+            floating: true,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/images/iconSARD.png', height: 40),
+                const Text(
+                  ' v2',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: TextField(
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'search for chocolate, truffle...',
-                      hintStyle: TextStyle(color: Colors.grey.shade500),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: Colors.grey.shade500,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
-                      ),
-                    ),
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.sync, size: 16, color: Colors.grey),
+                  onPressed: () async {
+                    await ref.read(syncProvider).performInitialSeed();
+                    if (context.mounted) {
+                      SardSnackBar.show(context, 'Syncing data from JSON...');
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // 2. Search Bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SardSearchBar(
+                  readOnly: true,
+                  onTap: () => context.push(AppRoutes.search),
                 ),
               ),
             ),
+          ),
 
-            // 3. Filter Pills
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 48,
+          // 3. Dynamic Category Filter Pills
+          SliverToBoxAdapter(
+            child: categoriesAsync.when(
+              data: (categories) => SizedBox(
+                height: 56,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: _uiFilters.length,
+                  itemCount: categories.length,
                   itemBuilder: (context, index) {
-                    final filter = _uiFilters[index];
-                    return _FilterPill(
-                      label: filter['label'],
-                      isActive: filter['is_active'] ?? false,
+                    final category = categories[index];
+                    return SardCategoryChip(
+                      label: category.nameEn,
+                      isSelected: true,
+                      onSelected: (_) {
+                        context.push('${AppRoutes.search}?category=${category.remoteId}');
+                      },
                     );
                   },
                 ),
               ),
+              loading: () => const SizedBox(height: 56),
+              error: (_, __) => const SizedBox.shrink(),
             ),
+          ),
 
-            // 4. Featured Section
-            if (_searchQuery.isEmpty) ...[
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-                  child: Text(
-                    'Featured',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'serif',
-                    ),
+          // 4. Featured Section
+          const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text(
+                  'Featured',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'serif',
                   ),
                 ),
               ),
-              featuredAsync.when(
-                data: (templates) {
-                  final showAll = templates.length > 2;
-                  final itemHeight = 240.0;
-                  final itemMargin = 16.0;
-                  final totalItemBlock = itemHeight + itemMargin;
+            ),
+            featuredAsync.when(
+              data: (templates) {
+                final showAll = templates.length > 2;
+                final itemHeight = 240.0;
+                final itemMargin = 16.0;
+                final totalItemBlock = itemHeight + itemMargin;
 
-                  final collapsedHeight = (itemHeight * 1.3) + itemMargin;
-                  final expandedHeight = (totalItemBlock * templates.length);
+                final collapsedHeight = (itemHeight * 1.3) + itemMargin;
+                final expandedHeight = (totalItemBlock * templates.length);
 
-                  final currentHeight = _isFeaturedExpanded
-                      ? expandedHeight
-                      : collapsedHeight;
-                  const buttonHeight = 64.0; // Total height of button area
+                final currentHeight = _isFeaturedExpanded
+                    ? expandedHeight
+                    : collapsedHeight;
+                const buttonHeight = 64.0; // Total height of button area
 
-                  return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverToBoxAdapter(
-                      child: SizedBox(
-                        key: _featuredKey,
-                        // Height includes the main content + half the button height for overlap
-                        height:
-                            (templates.length <= 2
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: SizedBox(
+                      key: _featuredKey,
+                      // Height includes the main content + half the button height for overlap
+                      height:
+                          (templates.length <= 2
+                              ? (totalItemBlock * templates.length)
+                              : currentHeight) +
+                          8.0, // Reduced from buttonHeight / 2 (32.0) to tighten gap
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.topCenter,
+                        children: [
+                          // The List Container
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            height: templates.length <= 2
                                 ? (totalItemBlock * templates.length)
-                                : currentHeight) +
-                            8.0, // Reduced from buttonHeight / 2 (32.0) to tighten gap
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.topCenter,
-                          children: [
-                            // The List Container
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 600),
-                              curve: Curves.fastLinearToSlowEaseIn,
-                              height: templates.length <= 2
-                                  ? (totalItemBlock * templates.length)
-                                  : currentHeight,
-                              clipBehavior: Clip.hardEdge,
-                              decoration: const BoxDecoration(),
-                              child: OverflowBox(
-                                alignment: Alignment.topCenter,
-                                minHeight: 0,
-                                maxHeight: double.infinity,
-                                child: Column(
-                                  children: [
-                                    ...templates.map(
-                                      (t) => Container(
-                                        height: itemHeight,
-                                        width: double.infinity,
-                                        margin: EdgeInsets.only(
-                                          bottom: itemMargin,
-                                        ),
-                                        child: _FeaturedCard(template: t),
+                                : currentHeight,
+                            clipBehavior: Clip.hardEdge,
+                            decoration: const BoxDecoration(),
+                            child: OverflowBox(
+                              alignment: Alignment.topCenter,
+                              minHeight: 0,
+                              maxHeight: double.infinity,
+                              child: Column(
+                                children: [
+                                  ...templates.map(
+                                    (t) => Container(
+                                      height: itemHeight,
+                                      width: double.infinity,
+                                      margin: EdgeInsets.only(
+                                        bottom: itemMargin,
                                       ),
+                                      child: _FeaturedCard(template: t),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
+                          ),
 
-                            // The Overlapping Button
-                            if (showAll)
-                              Positioned(
-                                // Position the center of the line exactly at the bottom of the container
-                                top:
-                                    (templates.length <= 2
-                                        ? (totalItemBlock * templates.length)
-                                        : currentHeight) -
-                                    (buttonHeight / 2),
-                                left: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (!_scrollController.hasClients) return;
+                          // The Overlapping Button
+                          if (showAll)
+                            Positioned(
+                              // Position the center of the line exactly at the bottom of the container
+                              top:
+                                  (templates.length <= 2
+                                      ? (totalItemBlock * templates.length)
+                                      : currentHeight) -
+                                  (buttonHeight / 2),
+                              left: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!_scrollController.hasClients) return;
 
-                                    final wasExpanded = _isFeaturedExpanded;
-                                    double? targetOffset;
+                                  final wasExpanded = _isFeaturedExpanded;
+                                  double? targetOffset;
 
-                                    // Capture target BEFORE state change for a stable snapshot
-                                    if (wasExpanded) {
-                                      final RenderBox? renderBox =
-                                          _featuredKey.currentContext
-                                                  ?.findRenderObject()
-                                              as RenderBox?;
-                                      if (renderBox != null) {
-                                        final position = renderBox
-                                            .localToGlobal(Offset.zero);
-                                        targetOffset =
-                                            _scrollController.offset +
-                                            position.dy -
-                                            20;
-                                      }
+                                  // Capture target BEFORE state change for a stable snapshot
+                                  if (wasExpanded) {
+                                    final RenderBox? renderBox =
+                                        _featuredKey.currentContext
+                                                ?.findRenderObject()
+                                            as RenderBox?;
+                                    if (renderBox != null) {
+                                      final position = renderBox
+                                          .localToGlobal(Offset.zero);
+                                      targetOffset =
+                                          _scrollController.offset +
+                                          position.dy -
+                                          20;
                                     }
+                                  }
 
-                                    setState(
-                                      () => _isFeaturedExpanded =
-                                          !_isFeaturedExpanded,
+                                  setState(
+                                    () => _isFeaturedExpanded =
+                                        !_isFeaturedExpanded,
+                                  );
+
+                                  if (wasExpanded && targetOffset != null) {
+                                    _scrollController.animateTo(
+                                      targetOffset.clamp(
+                                        0,
+                                        _scrollController
+                                            .position
+                                            .maxScrollExtent,
+                                      ),
+                                      duration: const Duration(
+                                        milliseconds: 600,
+                                      ),
+                                      curve: Curves.fastLinearToSlowEaseIn,
                                     );
-
-                                    if (wasExpanded && targetOffset != null) {
-                                      _scrollController.animateTo(
-                                        targetOffset.clamp(
-                                          0,
-                                          _scrollController
-                                              .position
-                                              .maxScrollExtent,
-                                        ),
+                                  }
+                                },
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(
+                                  height: buttonHeight,
+                                  color: Colors.transparent,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Divider(
+                                        color: Colors.grey.shade300,
+                                        thickness: 1,
+                                      ),
+                                      AnimatedRotation(
+                                        turns: _isFeaturedExpanded ? 0.5 : 0,
                                         duration: const Duration(
                                           milliseconds: 600,
                                         ),
-                                        curve: Curves.fastLinearToSlowEaseIn,
-                                      );
-                                    }
-                                  },
-                                  behavior: HitTestBehavior.opaque,
-                                  child: Container(
-                                    height: buttonHeight,
-                                    color: Colors.transparent,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Divider(
-                                          color: Colors.grey.shade300,
-                                          thickness: 1,
-                                        ),
-                                        AnimatedRotation(
-                                          turns: _isFeaturedExpanded ? 0.5 : 0,
-                                          duration: const Duration(
-                                            milliseconds: 600,
-                                          ),
-                                          curve: Curves
-                                              .easeOutBack, // Slight overshoot for a organic feel
-                                          child: Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: Colors.grey.shade300,
+                                        curve: Curves
+                                            .easeOutBack, // Slight overshoot for a organic feel
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.grey.shade300,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withOpacity(0.08),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 3),
                                               ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.08),
-                                                  blurRadius: 6,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                              Icons.keyboard_arrow_down,
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.primary,
-                                              size: 24,
-                                            ),
+                                            ],
+                                          ),
+                                          child: Icon(
+                                            Icons.keyboard_arrow_down,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            size: 24,
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
                     ),
-                  );
-                },
-                loading: () => const SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 240,
-                    child: Center(child: CircularProgressIndicator()),
                   ),
+                );
+              },
+              loading: () => const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 240,
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
               ),
-            ],
-
-            // 5. Dynamic Categories & Products (or Search Results)
-            categoriesAsync.when(
-              data: (categories) => SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final category = categories[index];
-                  return _CategorySection(
-                    category: category,
-                    searchQuery: _searchQuery,
-                  );
-                }, childCount: categories.length),
-              ),
-              loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (e, s) => SliverFillRemaining(
-                child: Center(child: Text('Error loading catalog: $e')),
-              ),
+              error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterPill extends StatelessWidget {
-  final String label;
-  final bool isActive;
-  const _FilterPill({required this.label, required this.isActive});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive
-            ? theme.colorScheme.primary.withOpacity(0.8)
-            : Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isActive ? Colors.white : Colors.grey.shade700,
-            fontWeight: FontWeight.bold,
+          // 5. Dynamic Categories & Products (or Search Results)
+          categoriesAsync.when(
+            data: (categories) => SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final category = categories[index];
+                return _CategorySection(
+                  category: category,
+                );
+              }, childCount: categories.length),
+            ),
+            loading: () => const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, s) => SliverFillRemaining(
+              child: Center(child: Text('Error loading catalog: $e')),
+            ),
           ),
-        ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
     );
   }
@@ -477,8 +414,7 @@ class _FeaturedCard extends StatelessWidget {
 
 class _CategorySection extends ConsumerWidget {
   final Category category;
-  final String searchQuery;
-  const _CategorySection({required this.category, required this.searchQuery});
+  const _CategorySection({required this.category});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -504,10 +440,9 @@ class _CategorySection extends ConsumerWidget {
 
           if (branchStockCount == 0) return false;
 
-          // 2. Search Query
-          if (searchQuery.isEmpty) return true;
-          return p.nameEn.toLowerCase().contains(searchQuery.toLowerCase()) ||
-              p.nameAr.contains(searchQuery);
+          if (branchStockCount == 0) return false;
+
+          return true;
         }).toList();
 
         if (filteredProducts.isEmpty) return const SizedBox.shrink();
@@ -591,9 +526,12 @@ class ProductCard extends ConsumerWidget {
                             .read(cartProvider.notifier)
                             .addToCart(product, variantIndex: index);
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${product.nameEn} added to cart'),
+                        SardSnackBar.show(
+                          context, 
+                          "${product.nameEn ?? 'Product'} added to cart",
+                          action: SnackBarAction(
+                            label: "VIEW CART",
+                            onPressed: () => context.push(AppRoutes.cart),
                           ),
                         );
                       },
@@ -608,8 +546,13 @@ class ProductCard extends ConsumerWidget {
     } else {
       // Add directly
       ref.read(cartProvider.notifier).addToCart(product);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${product.nameEn} added to cart')),
+      SardSnackBar.show(
+        context, 
+        "${product.nameEn ?? 'Product'} added to cart",
+        action: SnackBarAction(
+          label: "VIEW CART",
+          onPressed: () => context.push(AppRoutes.cart),
+        ),
       );
     }
   }
@@ -642,11 +585,7 @@ class ProductCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(
-            builder: (context) => ProductDetailScreen(product: product),
-          ),
-        );
+        context.push(AppRoutes.productDetail, extra: product);
       },
       child: Container(
         width: 170,
@@ -750,6 +689,7 @@ class ProductCard extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primary.withOpacity(0.8),
                             shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFC5A359), width: 1.5),
                           ),
                           child: const Icon(
                             Icons.add,
