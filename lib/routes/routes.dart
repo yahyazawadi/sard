@@ -3,6 +3,7 @@
 // =============================================================================
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/home_screen.dart';
 import '../screens/product_detail_screen.dart';
 import '../models/product.dart';
@@ -12,7 +13,6 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/verify_screen.dart';
 import '../providers/auth_provider.dart';
-import '../screens/search_screen.dart';
 import '../screens/cart_screen.dart';
 import '../screens/checkout_screen.dart';
 import '../screens/collection_screen.dart';
@@ -22,9 +22,8 @@ import 'app_routes.dart';
 import '../custom/app_theme.dart';
 
 int _getSelectedIndex(String path) {
-  if (path == AppRoutes.settings) return 3;
-  if (path == AppRoutes.cart) return 2;
-  if (path == AppRoutes.search) return 1;
+  if (path == AppRoutes.settings) return 2;
+  if (path == AppRoutes.cart) return 1;
   if (path == AppRoutes.home ||
       path == '/' ||
       path == AppRoutes.collection ||
@@ -116,103 +115,96 @@ GoRouter createRouter(AuthProvider auth) {
 
       // ── Authenticated Routes (Shell with bottom nav) ──────────────────────
       ShellRoute(
-        builder: (context, state, child) => Scaffold(
-          body: child,
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _getSelectedIndex(state.uri.path) == -1
-                ? 0
-                : _getSelectedIndex(state.uri.path),
-            onDestinationSelected: (index) {
-              if (index == 0) context.go(AppRoutes.home);
-              if (index == 1) context.go(AppRoutes.search);
-              if (index == 2) context.go(AppRoutes.cart);
-              if (index == 3) context.go(AppRoutes.settings);
-            },
-            destinations: [
-              NavigationDestination(
-                icon: const SizedBox(
-                  width: 52,
-                  height: 52,
-                  child: Center(child: Icon(Icons.home_outlined)),
-                ),
-                selectedIcon: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
+        builder: (context, state, child) => Consumer(
+          builder: (context, ref, _) {
+            final isSearchMode = ref.watch(isSearchModeProvider);
+            return PopScope(
+              canPop: !isSearchMode,
+              onPopInvokedWithResult: (didPop, result) {
+                if (didPop) return;
+                // If we are on home and in search mode, reset it
+                if (isSearchMode && _getSelectedIndex(state.uri.path) == 0) {
+                  ref.read(homeResetProvider.notifier).state++;
+                }
+              },
+              child: Scaffold(
+                body: child,
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: _getSelectedIndex(state.uri.path) == -1
+                  ? 0
+                  : _getSelectedIndex(state.uri.path),
+              onDestinationSelected: (index) {
+                if (index == 0) {
+                  if (_getSelectedIndex(state.uri.path) == 0) {
+                    // Already on home, trigger reset
+                    ref.read(homeResetProvider.notifier).state++;
+                  }
+                  context.go(AppRoutes.home);
+                }
+                if (index == 1) context.go(AppRoutes.cart);
+                if (index == 2) context.go(AppRoutes.settings);
+              },
+              destinations: [
+                NavigationDestination(
+                  icon: const SizedBox(
+                    width: 52,
+                    height: 52,
+                    child: Center(child: Icon(Icons.home_outlined)),
                   ),
-                  child: const Center(child: Icon(Icons.home_rounded)),
-                ),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: const SizedBox(
-                  width: 52,
-                  height: 52,
-                  child: Center(child: Icon(Icons.search_rounded)),
-                ),
-                selectedIcon: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
+                  selectedIcon: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(child: Icon(Icons.home_rounded)),
                   ),
-                  child: const Center(child: Icon(Icons.search_rounded)),
+                  label: 'Home',
                 ),
-                label: 'Search',
-              ),
-              NavigationDestination(
-                icon: const SizedBox(
-                  width: 52,
-                  height: 52,
-                  child: Center(child: Icon(Icons.shopping_cart_outlined)),
-                ),
-                selectedIcon: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
+                NavigationDestination(
+                  icon: const SizedBox(
+                    width: 52,
+                    height: 52,
+                    child: Center(child: Icon(Icons.shopping_cart_outlined)),
                   ),
-                  child: const Center(child: Icon(Icons.shopping_cart_rounded)),
-                ),
-                label: 'Cart',
-              ),
-              NavigationDestination(
-                icon: const SizedBox(
-                  width: 52,
-                  height: 52,
-                  child: Center(child: Icon(Icons.person_outline_rounded)),
-                ),
-                selectedIcon: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
+                  selectedIcon: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(child: Icon(Icons.shopping_cart_rounded)),
                   ),
-                  child: const Center(child: Icon(Icons.person_rounded)),
+                  label: 'Cart',
                 ),
-                label: 'Profile',
+                NavigationDestination(
+                  icon: const SizedBox(
+                    width: 52,
+                    height: 52,
+                    child: Center(child: Icon(Icons.person_outline_rounded)),
+                  ),
+                  selectedIcon: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(child: Icon(Icons.person_rounded)),
+                  ),
+                  label: 'Profile',
+                ),
+              ],
+            ),
               ),
-            ],
-          ),
+            );
+          },
         ),
         routes: [
           GoRoute(path: AppRoutes.home, builder: (_, _) => const HomeScreen()),
-          GoRoute(
-            path: AppRoutes.search,
-            builder: (context, state) {
-              final categoryId = state.uri.queryParameters['category'];
-              final focus = state.uri.queryParameters['focus'] == 'true';
-              return SearchScreen(
-                initialCategoryId: categoryId,
-                autofocus: focus,
-              );
-            },
-          ),
+
           GoRoute(path: AppRoutes.cart, builder: (_, _) => const CartScreen()),
           GoRoute(
             path: AppRoutes.productDetail,

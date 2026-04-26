@@ -290,7 +290,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
             ),
-            if (trailing != null) trailing,
+            ?trailing,
             const SizedBox(width: 8),
             Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
           ],

@@ -760,7 +760,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                   onTap: () => notifier.removeFilling(fillingId),
                   child: const Padding(
                     padding: EdgeInsets.all(4.0),
-                    child: const Icon(Icons.remove_rounded, size: 14),
+                    child: Icon(Icons.remove_rounded, size: 14),
                   ),
                 ),
                 Text("$count", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
@@ -768,7 +768,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                   onTap: () => notifier.addFilling(fillingId),
                   child: const Padding(
                     padding: EdgeInsets.all(4.0),
-                    child: const Icon(Icons.add_rounded, size: 14),
+                    child: Icon(Icons.add_rounded, size: 14),
                   ),
                 ),
               ],

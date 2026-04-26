@@ -58,9 +58,9 @@ class AppTheme {
   // ── Style Tokens (Centralized UI Consistency) ────────────────────────────
   static final cardShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.05),
-      blurRadius: 10,
-      offset: const Offset(0, 4),
+      color: Colors.black.withValues(alpha: 0.08),
+      blurRadius: 12,
+      offset: const Offset(0, 6),
     ),
   ];
 
@@ -232,7 +232,7 @@ class AppTheme {
         ),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: bgWhite,
+        backgroundColor: const Color(0xFFD9E8E8),
         selectedItemColor: primaryTeal,
         unselectedItemColor: secondaryTeal.withValues(alpha: 0.4),
         type: BottomNavigationBarType.fixed,
@@ -241,7 +241,7 @@ class AppTheme {
         showUnselectedLabels: false,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: bgWhite,
+        backgroundColor: const Color(0xFFD9E8E8),
         indicatorColor: Colors.transparent,
         indicatorShape: const CircleBorder(),
         overlayColor: WidgetStateProperty.all(

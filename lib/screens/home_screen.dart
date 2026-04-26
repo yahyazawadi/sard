@@ -13,6 +13,12 @@ import '../routes/app_routes.dart';
 import '../utils/snackbar_utils.dart';
 import '../widgets/search_widgets.dart';
 import '../custom/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/isar_provider.dart';
+import 'package:isar/isar.dart';
+
+final homeResetProvider = StateProvider<int>((ref) => 0);
+final isSearchModeProvider = StateProvider<bool>((ref) => false);
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -26,21 +32,88 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _featuredKey = GlobalKey();
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  // Search Integration
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  final Set<String> _selectedCategoryIds = {};
+  bool _isSearchMode = false;
 
   @override
   void initState() {
     super.initState();
+    _loadSearchHistory();
     // Auto-sync products on first load (e.g. after login)
     Future.microtask(() => ref.read(syncProvider).performInitialSeed());
   }
 
+
+
+  Future<void> _loadSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final query = prefs.getString('last_search_query') ?? '';
+    final categories = prefs.getStringList('last_search_categories') ?? [];
+    
+    if (mounted) {
+      setState(() {
+        _searchQuery = query;
+        _searchController.text = query;
+        _selectedCategoryIds.addAll(categories);
+      });
+    }
+  }
+
+  Future<void> _saveSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_search_query', _searchQuery);
+    await prefs.setStringList('last_search_categories', _selectedCategoryIds.toList());
+  }
+
+  void _exitSearchMode() {
+    setState(() {
+      _isSearchMode = false;
+      _searchQuery = '';
+      _searchController.clear();
+      _selectedCategoryIds.clear();
+    });
+    ref.read(isSearchModeProvider.notifier).state = false;
+    FocusScope.of(context).unfocus();
+  }
+
+  void _enterSearchMode() async {
+    if (!_isSearchMode) {
+      // If entering fresh, restore the last saved search as "autofill"
+      final prefs = await SharedPreferences.getInstance();
+      final lastQuery = prefs.getString('last_search_query') ?? '';
+      final lastCategories = prefs.getStringList('last_search_categories') ?? [];
+
+      setState(() {
+        _isSearchMode = true;
+        if (_searchQuery.isEmpty && _selectedCategoryIds.isEmpty) {
+          _searchQuery = lastQuery;
+          _searchController.text = lastQuery;
+          _selectedCategoryIds.addAll(lastCategories);
+        }
+      });
+      ref.read(isSearchModeProvider.notifier).state = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Listen to reset signal
+    ref.listen(homeResetProvider, (prev, next) {
+      if (next > 0) {
+        _exitSearchMode();
+      }
+    });
+
     final theme = Theme.of(context);
     final categoriesAsync = ref.watch(categoriesProvider);
     final featuredAsync = ref.watch(featuredTemplatesProvider);
@@ -54,32 +127,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             floating: true,
             backgroundColor: theme.appBarTheme.backgroundColor,
             elevation: 0,
-            title: TweenAnimationBuilder<double>(
-              duration: const Duration(milliseconds: 1000),
-              tween: Tween(begin: 0.0, end: 1.0),
-              curve: Curves.elasticOut,
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: child,
-                );
-              },
-              child: GestureDetector(
-                onTap: () {
-                  if (_scrollController.hasClients) {
-                    _scrollController.animateTo(
-                      0,
-                      duration: const Duration(milliseconds: 600),
-                      curve: Curves.fastOutSlowIn,
-                    );
-                  }
-                },
-                child: Image.asset(
-                  'assets/images/TealLogo.png',
-                  height: 45,
-                  fit: BoxFit.contain,
-                ),
-              ),
+            title: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isSearchMode
+                  ? Row(
+                      key: const ValueKey('search_title'),
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                          onPressed: _exitSearchMode,
+                        ),
+                        Text(
+                          'Search',
+                          style: theme.textTheme.headlineSmall,
+                        ),
+                      ],
+                    )
+                  : TweenAnimationBuilder<double>(
+                      key: const ValueKey('logo_title'),
+                      duration: const Duration(milliseconds: 1000),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      curve: Curves.elasticOut,
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: child,
+                        );
+                      },
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_scrollController.hasClients) {
+                            _scrollController.animateTo(
+                              0,
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.fastOutSlowIn,
+                            );
+                          }
+                        },
+                        child: Image.asset(
+                          'assets/images/TealLogo.png',
+                          height: 45,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
             ),
           ),
 
@@ -88,8 +179,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: SardSearchBar(
-                readOnly: true,
-                onTap: () => context.push(AppRoutes.search),
+                controller: _searchController,
+                onTap: _enterSearchMode,
+                onChanged: (val) {
+                  setState(() {
+                    _searchQuery = val;
+                    if (val.isNotEmpty) _isSearchMode = true;
+                  });
+                  _saveSearchHistory();
+                },
+                onClear: () {
+                  setState(() {
+                    _searchQuery = '';
+                    _searchController.clear();
+                  });
+                  _saveSearchHistory();
+                },
               ),
             ),
           ),
@@ -102,16 +207,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: categories.length,
+                  itemCount: categories.length + 1,
                   itemBuilder: (context, index) {
-                    final category = categories[index];
+                    if (index == 0) {
+                      final isAllSelected = _selectedCategoryIds.isEmpty;
+                      return SardCategoryChip(
+                        label: 'ALL',
+                        isSelected: isAllSelected,
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedCategoryIds.clear();
+                            _isSearchMode = true;
+                          });
+                          _saveSearchHistory();
+                        },
+                      );
+                    }
+                    final category = categories[index - 1];
+                    final isSelected = _selectedCategoryIds.contains(category.remoteId);
                     return SardCategoryChip(
                       label: category.nameEn,
-                      isSelected: true,
-                      onSelected: (_) {
-                        context.push(
-                          '${AppRoutes.search}?category=${category.remoteId}',
-                        );
+                      isSelected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedCategoryIds.add(category.remoteId);
+                            _isSearchMode = true;
+                          } else {
+                            _selectedCategoryIds.remove(category.remoteId);
+                          }
+                        });
+                        _saveSearchHistory();
                       },
                     );
                   },
@@ -122,202 +248,146 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
 
-          // 4. Featured Section
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-              child: Text('Featured', style: theme.textTheme.headlineSmall),
+          // 4. Content (Featured & Catalog OR Search Results)
+          if (!_isSearchMode) ...[
+            // Default View: Featured Section
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text('Featured', style: theme.textTheme.headlineSmall),
+              ),
             ),
-          ),
-          featuredAsync.when(
-            data: (templates) {
-              final showAll = templates.length > 2;
-              final itemHeight = 240.0;
-              final itemMargin = 16.0;
-              final totalItemBlock = itemHeight + itemMargin;
+            featuredAsync.when(
+              data: (templates) {
+                final showAll = templates.length > 2;
+                final itemHeight = 240.0;
+                final itemMargin = 16.0;
+                final totalItemBlock = itemHeight + itemMargin;
+                final collapsedHeight = (itemHeight * 1.3) + itemMargin;
+                final expandedHeight = (totalItemBlock * templates.length);
+                final currentHeight = _isFeaturedExpanded ? expandedHeight : collapsedHeight;
+                const buttonHeight = 64.0;
 
-              final collapsedHeight = (itemHeight * 1.3) + itemMargin;
-              final expandedHeight = (totalItemBlock * templates.length);
-
-              final currentHeight = _isFeaturedExpanded
-                  ? expandedHeight
-                  : collapsedHeight;
-              const buttonHeight = 64.0; // Total height of button area
-
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverToBoxAdapter(
-                  child: SizedBox(
-                    key: _featuredKey,
-                    // Height includes the main content + half the button height for overlap
-                    height:
-                        (templates.length <= 2
-                            ? (totalItemBlock * templates.length)
-                            : currentHeight) +
-                        8.0, // Reduced from buttonHeight / 2 (32.0) to tighten gap
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.topCenter,
-                      children: [
-                        // The List Container
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 600),
-                          curve: Curves.fastLinearToSlowEaseIn,
-                          height: templates.length <= 2
-                              ? (totalItemBlock * templates.length)
-                              : currentHeight,
-                          clipBehavior: Clip.hardEdge,
-                          decoration: const BoxDecoration(),
-                          child: OverflowBox(
-                            alignment: Alignment.topCenter,
-                            minHeight: 0,
-                            maxHeight: double.infinity,
-                            child: Column(
-                              children: [
-                                ...templates.map(
-                                  (t) => Container(
-                                    height: itemHeight,
-                                    width: double.infinity,
-                                    margin: EdgeInsets.only(bottom: itemMargin),
-                                    child: _FeaturedCard(template: t),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // The Overlapping Button
-                        if (showAll)
-                          Positioned(
-                            // Position the center of the line exactly at the bottom of the container
-                            top:
-                                (templates.length <= 2
-                                    ? (totalItemBlock * templates.length)
-                                    : currentHeight) -
-                                (buttonHeight / 2),
-                            left: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                if (!_scrollController.hasClients) return;
-
-                                final wasExpanded = _isFeaturedExpanded;
-                                double? targetOffset;
-
-                                // Capture target BEFORE state change for a stable snapshot
-                                if (wasExpanded) {
-                                  final RenderBox? renderBox =
-                                      _featuredKey.currentContext
-                                              ?.findRenderObject()
-                                          as RenderBox?;
-                                  if (renderBox != null) {
-                                    final position = renderBox.localToGlobal(
-                                      Offset.zero,
-                                    );
-                                    targetOffset =
-                                        _scrollController.offset +
-                                        position.dy -
-                                        20;
-                                  }
-                                }
-
-                                setState(
-                                  () => _isFeaturedExpanded =
-                                      !_isFeaturedExpanded,
-                                );
-
-                                if (wasExpanded && targetOffset != null) {
-                                  _scrollController.animateTo(
-                                    targetOffset.clamp(
-                                      0,
-                                      _scrollController
-                                          .position
-                                          .maxScrollExtent,
-                                    ),
-                                    duration: const Duration(milliseconds: 600),
-                                    curve: Curves.fastLinearToSlowEaseIn,
-                                  );
-                                }
-                              },
-                              behavior: HitTestBehavior.opaque,
-                              child: Container(
-                                height: buttonHeight,
-                                color: Colors.transparent,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Divider(
-                                      color: Colors.grey.shade300,
-                                      thickness: 1,
-                                    ),
-                                    AnimatedRotation(
-                                      turns: _isFeaturedExpanded ? 0.5 : 0,
-                                      duration: const Duration(
-                                        milliseconds: 600,
-                                      ),
-                                      curve: Curves
-                                          .easeOutBack, // Slight overshoot for a organic feel
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.grey.shade300,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(
-                                                alpha: 0.08,
-                                              ),
-                                              blurRadius: 6,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          Icons.keyboard_arrow_down_rounded,
-                                          color: theme.colorScheme.primary,
-                                          size: 24,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: SizedBox(
+                      key: _featuredKey,
+                      height: (templates.length <= 2 ? (totalItemBlock * templates.length) : currentHeight) + 8.0,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.topCenter,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            height: templates.length <= 2 ? (totalItemBlock * templates.length) : currentHeight,
+                            clipBehavior: Clip.hardEdge,
+                            decoration: const BoxDecoration(),
+                            child: OverflowBox(
+                              alignment: Alignment.topCenter,
+                              minHeight: 0,
+                              maxHeight: double.infinity,
+                              child: Column(
+                                children: [
+                                  ...templates.map((t) => Container(
+                                        height: itemHeight,
+                                        width: double.infinity,
+                                        margin: EdgeInsets.only(bottom: itemMargin),
+                                        child: _FeaturedCard(template: t),
+                                      )),
+                                ],
                               ),
                             ),
                           ),
-                      ],
+                          if (showAll)
+                            Positioned(
+                              top: (templates.length <= 2 ? (totalItemBlock * templates.length) : currentHeight) - (buttonHeight / 2),
+                              left: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!_scrollController.hasClients) return;
+                                  final wasExpanded = _isFeaturedExpanded;
+                                  double? targetOffset;
+                                  if (wasExpanded) {
+                                    final RenderBox? renderBox = _featuredKey.currentContext?.findRenderObject() as RenderBox?;
+                                    if (renderBox != null) {
+                                      final position = renderBox.localToGlobal(Offset.zero);
+                                      targetOffset = _scrollController.offset + position.dy - 20;
+                                    }
+                                  }
+                                  setState(() => _isFeaturedExpanded = !_isFeaturedExpanded);
+                                  if (wasExpanded && targetOffset != null) {
+                                    _scrollController.animateTo(
+                                      targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
+                                      duration: const Duration(milliseconds: 600),
+                                      curve: Curves.fastLinearToSlowEaseIn,
+                                    );
+                                  }
+                                },
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(
+                                  height: buttonHeight,
+                                  color: Colors.transparent,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Divider(color: Colors.grey.shade300, thickness: 1),
+                                      AnimatedRotation(
+                                        turns: _isFeaturedExpanded ? 0.5 : 0,
+                                        duration: const Duration(milliseconds: 600),
+                                        curve: Curves.easeOutBack,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: Colors.grey.shade300),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.08),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 3),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Icon(Icons.keyboard_arrow_down_rounded, color: theme.colorScheme.primary, size: 24),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-            loading: () => const SliverToBoxAdapter(
-              child: SizedBox(
-                height: 240,
-                child: Center(child: CircularProgressIndicator()),
-              ),
+                );
+              },
+              loading: () => const SliverToBoxAdapter(child: SizedBox(height: 240, child: Center(child: CircularProgressIndicator()))),
+              error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
             ),
-            error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
-          ),
 
-          // 5. Dynamic Categories & Products (or Search Results)
-          categoriesAsync.when(
-            data: (categories) => SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final category = categories[index];
-                return _CategorySection(category: category);
-              }, childCount: categories.length),
+            // 5. Dynamic Categories & Products
+            categoriesAsync.when(
+              data: (categories) => SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final category = categories[index];
+                  return _CategorySection(category: category);
+                }, childCount: categories.length),
+              ),
+              loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
+              error: (e, s) => SliverFillRemaining(child: Center(child: Text('Error loading catalog: $e'))),
             ),
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+          ] else ...[
+            // Search Results Mode
+            _SearchResultsGrid(
+              query: _searchQuery,
+              selectedCategoryIds: _selectedCategoryIds,
             ),
-            error: (e, s) => SliverFillRemaining(
-              child: Center(child: Text('Error loading catalog: $e')),
-            ),
-          ),
+          ],
 
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
@@ -325,6 +395,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
+
+
 
 class _FeaturedCard extends StatelessWidget {
   final FeaturedTemplate template;
@@ -337,6 +409,11 @@ class _FeaturedCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
+        border: Border.all(
+          color: AppTheme.accentGold.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        boxShadow: AppTheme.cardShadow,
         image: DecorationImage(
           image: AssetImage(template.bannerUrl),
           fit: BoxFit.cover,
@@ -344,7 +421,7 @@ class _FeaturedCard extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 6), // Slightly smaller to fit inside border
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.center,
@@ -574,6 +651,10 @@ class ProductCard extends ConsumerWidget {
             alpha: 0.5,
           ),
           borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+          border: Border.all(
+            color: AppTheme.accentGold.withValues(alpha: 0.4),
+            width: 1,
+          ),
           boxShadow: AppTheme.cardShadow,
         ),
         child: Column(
@@ -696,6 +777,100 @@ class ProductCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SearchResultsGrid extends ConsumerWidget {
+  final String query;
+  final Set<String> selectedCategoryIds;
+
+  const _SearchResultsGrid({
+    required this.query,
+    required this.selectedCategoryIds,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isar = ref.watch(isarProvider);
+    final settings = ref.watch(settingsProvider);
+    final branch = settings.selectedBranch;
+
+    return StreamBuilder<List<Product>>(
+      stream: isar.products.where().watch(fireImmediately: true),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SliverToBoxAdapter(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final allProducts = snapshot.data!;
+        final filteredProducts = allProducts.where((p) {
+          // a. Stock Filtering
+          final stock = p.branchStock;
+          int branchStockCount = 0;
+          if (stock != null) {
+            if (branch == 'nablus') branchStockCount = stock.nablus ?? 0;
+            if (branch == 'bethlehem') branchStockCount = stock.bethlehem ?? 0;
+            if (branch == 'ramallah') branchStockCount = stock.ramallah ?? 0;
+          } else {
+            branchStockCount = 99;
+          }
+          if (branchStockCount == 0) return false;
+
+          // b. Search Text Filter
+          final matchesSearch = query.isEmpty ||
+              p.nameEn.toLowerCase().contains(query.toLowerCase()) ||
+              p.nameAr.contains(query);
+
+          // c. Category Filter
+          final matchesCategory = selectedCategoryIds.isEmpty ||
+              selectedCategoryIds.contains(p.section);
+
+          return matchesSearch && matchesCategory;
+        }).toList();
+
+        if (filteredProducts.isEmpty) {
+          return SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.search_off_outlined,
+                      size: 64, color: Colors.grey.shade300),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No products found',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant
+                            .withValues(alpha: 0.5)),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.6,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => ProductCard(product: filteredProducts[index]),
+              childCount: filteredProducts.length,
+            ),
+          ),
+        );
+      },
     );
   }
 }

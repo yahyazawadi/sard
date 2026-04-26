@@ -81,13 +81,24 @@ class SardCategoryChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: FilterChip(
-        label: Text(label),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? Icons.check_rounded : Icons.close_rounded,
+              size: 16,
+              color: isSelected ? Colors.white : theme.colorScheme.primary,
+            ),
+            const SizedBox(width: 6),
+            Text(label),
+          ],
+        ),
         selected: isSelected,
         onSelected: onSelected,
         backgroundColor: theme.colorScheme.surface,
         selectedColor: theme.colorScheme.primary,
         checkmarkColor: Colors.white,
-        showCheckmark: false, // Cleaner look for this premium design
+        showCheckmark: false, // We use our custom Row-based checkmark
         labelStyle: theme.textTheme.labelLarge?.copyWith(
           color: isSelected ? Colors.white : theme.colorScheme.primary,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
