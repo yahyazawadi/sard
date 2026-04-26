@@ -10,6 +10,7 @@ import '../routes/app_routes.dart';
 import '../providers/user_profile_provider.dart'; // Added import
 import '../models/order_model.dart'; // Added import
 import '../custom/app_theme.dart';
+import '../screens/main_wrapper_screen.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -111,7 +112,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 color: theme.colorScheme.onSurface,
                 size: 24,
               ),
-              onPressed: () => context.go(AppRoutes.cart),
+              onPressed: () {
+                ref.read(mainWrapperPageProvider.notifier).state = 1;
+                context.go(AppRoutes.home);
+              },
             ),
           ],
         ),

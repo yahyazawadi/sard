@@ -13,14 +13,23 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
   final Product product;
   final CartItem? editingItem;
 
-  const ProductDetailScreen({super.key, required this.product, this.editingItem});
+  const ProductDetailScreen({
+    super.key,
+    required this.product,
+    this.editingItem,
+  });
 
   @override
-  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with SingleTickerProviderStateMixin {
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
+    with TickerProviderStateMixin {
   late AnimationController _bottomSheetController;
+  late AnimationController _entryController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -29,18 +38,42 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
       vsync: this,
       duration: const Duration(milliseconds: 600), // Slower, smoother entry
     );
+
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _entryController,
+      curve: Curves.easeOut,
+    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(
+          CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
+        );
+
+    // Initialize state asynchronously to avoid mid-transition rebuild exceptions
     Future.microtask(() {
+      if (!mounted) return;
       if (widget.editingItem != null) {
-        ref.read(productBuilderProvider.notifier).initFromCartItem(widget.editingItem!);
+        ref
+            .read(productBuilderProvider.notifier)
+            .initFromCartItem(widget.editingItem!);
       } else {
         ref.read(productBuilderProvider.notifier).initProduct(widget.product);
       }
     });
+
+    // Delay the entry animation until the Hero transition is mostly done
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) _entryController.forward();
+    });
   }
-  
+
   @override
   void dispose() {
     _bottomSheetController.dispose();
+    _entryController.dispose();
     super.dispose();
   }
 
@@ -50,23 +83,36 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
     final state = ref.watch(productBuilderProvider);
     final notifier = ref.read(productBuilderProvider.notifier);
 
-    // Guard against uninitialized state
-    if (state.product == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    // Guard against uninitialized state handled implicitly because product fields are used from widget.product
 
     return Stack(
       children: [
-          CustomScrollView(
-            slivers: [
-              // --- Hero Image ---
-              SliverAppBar(
-                expandedHeight: 300,
-                pinned: true,
-                backgroundColor: theme.appBarTheme.backgroundColor,
-                leading: Padding(
+        CustomScrollView(
+          slivers: [
+            // --- Hero Image ---
+            SliverAppBar(
+              expandedHeight: 300,
+              pinned: true,
+              backgroundColor: theme.appBarTheme.backgroundColor,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.black,
+                      size: 20,
+                    ),
+                    onPressed: () => context.pop(),
+                  ),
+                ),
+              ),
+              actions: [
+                Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     decoration: const BoxDecoration(
@@ -74,53 +120,33 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 20),
-                      onPressed: () => context.pop(),
+                      icon: const Icon(
+                        Icons.shopping_cart_outlined,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        context.push(AppRoutes.cart);
+                      },
                     ),
                   ),
                 ),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
-                        onPressed: () {
-                          context.push(AppRoutes.cart);
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Hero(
-                    tag: 'product_${widget.product.remoteId}',
-                    child: Image.asset(
-                      widget.product.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Hero(
+                  tag: 'product_${widget.product.remoteId}',
+                  child: Image.asset(
+                    widget.product.imageUrl,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
+            ),
 
-              SliverToBoxAdapter(
-                child: TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 800),
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, child) {
-                    return Transform.translate(
-                      offset: Offset(0, 30 * (1 - value)),
-                      child: Opacity(
-                        opacity: value,
-                        child: child,
-                      ),
-                    );
-                  },
+            SliverToBoxAdapter(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -157,299 +183,444 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
                         const SizedBox(height: 24),
 
                         // --- Master Toggle 1: hasVariants (S/M/L) ---
-                      if (widget.product.hasVariants && widget.product.variants != null) ...[
-                        Row(
-                          children: widget.product.variants!.map((v) {
-                            final isSelected = state.selectedVariant?.size == v.size;
-                            return Expanded(
-                              child: GestureDetector(
-                                onTap: () async {
-                                  if (state.isEdited) {
-                                    final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text("Change Size?"),
-                                        content: const Text("Changing the box size will reset your custom mix. Are you sure?"),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, false),
-                                            child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+                        if (widget.product.hasVariants &&
+                            widget.product.variants != null) ...[
+                          Row(
+                            children: widget.product.variants!.map((v) {
+                              final isSelected =
+                                  state.selectedVariant?.size == v.size;
+                              return Expanded(
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    if (state.isEdited) {
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text("Change Size?"),
+                                          content: const Text(
+                                            "Changing the box size will reset your custom mix. Are you sure?",
                                           ),
-                                          ElevatedButton(
-                                            onPressed: () => Navigator.pop(context, true),
-                                            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.tertiary),
-                                            child: const Text("YES, RESET", style: TextStyle(color: Colors.white)),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (confirm == true) {
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
+                                              child: const Text(
+                                                "CANCEL",
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, true),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Theme.of(
+                                                  context,
+                                                ).colorScheme.tertiary,
+                                              ),
+                                              child: const Text(
+                                                "YES, RESET",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirm == true) {
+                                        notifier.selectVariant(v);
+                                      }
+                                    } else {
                                       notifier.selectVariant(v);
                                     }
-                                  } else {
-                                    notifier.selectVariant(v);
-                                  }
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? theme.colorScheme.tertiary.withValues(alpha: 0.1) : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
-                                    border: Border.all(
-                                      color: isSelected ? theme.colorScheme.tertiary : Colors.grey.shade300,
-                                      width: isSelected ? 1.5 : 1.0,
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
                                     ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        v.size.toUpperCase(),
-                                        style: TextStyle(
-                                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
-                                          color: isSelected ? theme.colorScheme.tertiary : Colors.black87,
-                                          letterSpacing: 1.2,
-                                        ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? theme.colorScheme.tertiary
+                                                .withValues(alpha: 0.1)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.buttonRadius,
                                       ),
-                                      if (v.pieces != null)
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? theme.colorScheme.tertiary
+                                            : Colors.grey.shade300,
+                                        width: isSelected ? 1.5 : 1.0,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
                                         Text(
-                                          "(${v.pieces} PCS)",
+                                          v.size.toUpperCase(),
                                           style: TextStyle(
-                                            fontSize: 10,
-                                            color: isSelected ? Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.8) : Colors.grey.shade500,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w900
+                                                : FontWeight.w500,
+                                            color: isSelected
+                                                ? theme.colorScheme.tertiary
+                                                : Colors.black87,
+                                            letterSpacing: 1.2,
                                           ),
                                         ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // --- Master Toggle 2: isGendered (Boy/Girl) ---
-                      if (widget.product.isGendered) ...[
-                        Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => notifier.selectGender('boy'),
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  decoration: BoxDecoration(
-                                    color: state.selectedGender == 'boy' 
-                                      ? theme.colorScheme.primary.withValues(alpha: 0.15) 
-                                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                                    border: Border.all(
-                                      color: state.selectedGender == 'boy' 
-                                        ? theme.colorScheme.primary 
-                                        : Colors.transparent,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "BOY",
-                                    style: theme.textTheme.labelLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: state.selectedGender == 'boy' 
-                                        ? theme.colorScheme.primary 
-                                        : theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => notifier.selectGender('girl'),
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  decoration: BoxDecoration(
-                                    color: state.selectedGender == 'girl' 
-                                      ? const Color(0xFFFCE4EC) 
-                                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                                    border: Border.all(
-                                      color: state.selectedGender == 'girl' 
-                                        ? const Color(0xFFE91E63) 
-                                        : Colors.transparent,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "GIRL",
-                                    style: theme.textTheme.labelLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: state.selectedGender == 'girl' 
-                                        ? const Color(0xFFC2185B) 
-                                        : theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // --- Master Toggle 3: isCustomizable (Fillings Grid) ---
-                      if (widget.product.isCustomizable) ...[
-                        const Divider(height: 32),
-                        // Custom selections expanded
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text("SELECTED FILLINGS", style: TextStyle(fontWeight: FontWeight.bold)),
-                                        TextButton(
-                                          onPressed: () => _showFillingsBottomSheet(context, state, notifier),
-                                          child: Text("Edit Mix", style: TextStyle(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold)),
-                                        )
+                                        if (v.pieces != null)
+                                          Text(
+                                            "(${v.pieces} PCS)",
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: isSelected
+                                                  ? Theme.of(context)
+                                                        .colorScheme
+                                                        .tertiary
+                                                        .withValues(alpha: 0.8)
+                                                  : Colors.grey.shade500,
+                                            ),
+                                          ),
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
-                                    
-                                    // Horizontally scrollable selected fillings
-                                    SizedBox(
-                                      height: 100,
-                                      child: ListView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: state.selectedFillings.length,
-                                        itemBuilder: (context, index) {
-                                          final fillingId = state.selectedFillings.keys.elementAt(index);
-                                          final count = state.selectedFillings[fillingId]!;
-                                          final name = _getMockFillingName(fillingId);
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
 
-                                          return Container(
-                                            width: 80,
-                                            margin: const EdgeInsets.only(right: 12),
-                                            child: Column(
-                                              children: [
-                                                Stack(
-                                                  alignment: Alignment.topRight,
-                                                  children: [
-                                                    Image.asset('assets/images/filling.png', height: 50),
-                                                    Container(
-                                                      padding: const EdgeInsets.all(4),
-                                                      decoration: const BoxDecoration(
-                                                        color: Color(0xFF49D4D0),
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: Text("$count", style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  name,
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
+                        // --- Master Toggle 2: isGendered (Boy/Girl) ---
+                        if (widget.product.isGendered) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => notifier.selectGender('boy'),
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: state.selectedGender == 'boy'
+                                          ? theme.colorScheme.primary
+                                                .withValues(alpha: 0.15)
+                                          : theme
+                                                .colorScheme
+                                                .surfaceContainerHighest
+                                                .withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.cardRadius,
+                                      ),
+                                      border: Border.all(
+                                        color: state.selectedGender == 'boy'
+                                            ? theme.colorScheme.primary
+                                            : Colors.transparent,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "BOY",
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: state.selectedGender == 'boy'
+                                                ? theme.colorScheme.primary
+                                                : theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => notifier.selectGender('girl'),
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: state.selectedGender == 'girl'
+                                          ? const Color(0xFFFCE4EC)
+                                          : theme
+                                                .colorScheme
+                                                .surfaceContainerHighest
+                                                .withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(
+                                        AppTheme.cardRadius,
+                                      ),
+                                      border: Border.all(
+                                        color: state.selectedGender == 'girl'
+                                            ? const Color(0xFFE91E63)
+                                            : Colors.transparent,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "GIRL",
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                state.selectedGender == 'girl'
+                                                ? const Color(0xFFC2185B)
+                                                : theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // --- Master Toggle 3: isCustomizable (Fillings Grid) ---
+                        if (widget.product.isCustomizable) ...[
+                          const Divider(height: 32),
+                          // Custom selections expanded
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "SELECTED FILLINGS",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => _showFillingsBottomSheet(
+                                        context,
+                                        state,
+                                        notifier,
+                                      ),
+                                      child: Text(
+                                        "Edit Mix",
+                                        style: TextStyle(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.tertiary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                          ),
-                      ],
-                      const SizedBox(height: 32),
-                      
-                      // --- Add to Cart Button (Moved from bottom bar) ---
-                      InkWell(
-                        onTap: state.isSelectionValid
-                            ? () {
-                                final variantIndex = widget.product.variants?.indexWhere((v) => v.size == state.selectedVariant?.size) ?? 0;
-                                
-                                if (widget.editingItem != null) {
-                                  // Update existing item
-                                  ref.read(cartProvider.notifier).updateCartItem(
-                                    CartItem(
-                                      id: widget.editingItem!.id,
-                                      product: widget.product,
-                                      selectedVariantIndex: variantIndex >= 0 ? variantIndex : 0,
-                                      selectedGender: state.selectedGender,
-                                      selectedWeight: state.selectedWeight,
-                                      selectedFillings: state.selectedFillings,
-                                      quantity: widget.editingItem!.quantity,
-                                    ),
-                                  );
-                                  SardSnackBar.show(context, "Changes saved successfully");
-                                  context.pop(); // Go back to cart
-                                } else {
-                                  // Add new item
-                                  ref.read(cartProvider.notifier).addToCart(
-                                        widget.product,
-                                        variantIndex: variantIndex >= 0 ? variantIndex : 0,
-                                        gender: state.selectedGender,
-                                        weight: state.selectedWeight,
-                                        fillings: state.selectedFillings,
+                                const SizedBox(height: 8),
+
+                                // Horizontally scrollable selected fillings
+                                SizedBox(
+                                  height: 100,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: state.selectedFillings.length,
+                                    itemBuilder: (context, index) {
+                                      final fillingId = state
+                                          .selectedFillings
+                                          .keys
+                                          .elementAt(index);
+                                      final count =
+                                          state.selectedFillings[fillingId]!;
+                                      final name = _getMockFillingName(
+                                        fillingId,
                                       );
-                                  SardSnackBar.show(
-                                    context, 
-                                    "${widget.product.nameEn} added to cart",
-                                    action: SnackBarAction(
-                                      label: "VIEW CART",
-                                      onPressed: () => context.push(AppRoutes.cart),
-                                    ),
-                                  );
-                                }
-                              }
-                            : null,
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: state.isSelectionValid ? 1.0 : 0.5),
-                            borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
-                            border: Border.all(color: theme.colorScheme.tertiary, width: 2), // Permanent Gold border
-                            boxShadow: state.isSelectionValid ? AppTheme.goldShadow : null,
+
+                                      return Container(
+                                        width: 80,
+                                        margin: const EdgeInsets.only(
+                                          right: 12,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Stack(
+                                              alignment: Alignment.topRight,
+                                              children: [
+                                                Image.asset(
+                                                  'assets/images/filling.png',
+                                                  height: 50,
+                                                  cacheWidth: 200,
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    4,
+                                                  ),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                        color: Color(
+                                                          0xFF49D4D0,
+                                                        ),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                  child: Text(
+                                                    "$count",
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              name,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            widget.editingItem != null 
-                              ? "SAVE CHANGES"
-                              : "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PIECES, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                        ],
+                        const SizedBox(height: 32),
+
+                        // --- Add to Cart Button (Moved from bottom bar) ---
+                        InkWell(
+                          onTap: state.isSelectionValid
+                              ? () {
+                                  final variantIndex =
+                                      widget.product.variants?.indexWhere(
+                                        (v) =>
+                                            v.size ==
+                                            state.selectedVariant?.size,
+                                      ) ??
+                                      0;
+
+                                  if (widget.editingItem != null) {
+                                    // Update existing item
+                                    ref
+                                        .read(cartProvider.notifier)
+                                        .updateCartItem(
+                                          CartItem(
+                                            id: widget.editingItem!.id,
+                                            product: widget.product,
+                                            selectedVariantIndex:
+                                                variantIndex >= 0
+                                                ? variantIndex
+                                                : 0,
+                                            selectedGender:
+                                                state.selectedGender,
+                                            selectedWeight:
+                                                state.selectedWeight,
+                                            selectedFillings:
+                                                state.selectedFillings,
+                                            quantity:
+                                                widget.editingItem!.quantity,
+                                          ),
+                                        );
+                                    SardSnackBar.show(
+                                      context,
+                                      "Changes saved successfully",
+                                    );
+                                    context.pop(); // Go back to cart
+                                  } else {
+                                    // Add new item
+                                    ref
+                                        .read(cartProvider.notifier)
+                                        .addToCart(
+                                          widget.product,
+                                          variantIndex: variantIndex >= 0
+                                              ? variantIndex
+                                              : 0,
+                                          gender: state.selectedGender,
+                                          weight: state.selectedWeight,
+                                          fillings: state.selectedFillings,
+                                        );
+                                    SardSnackBar.show(
+                                      context,
+                                      "${widget.product.nameEn} added to cart",
+                                      action: SnackBarAction(
+                                        label: "VIEW CART",
+                                        onPressed: () =>
+                                            context.push(AppRoutes.cart),
+                                      ),
+                                    );
+                                  }
+                                }
+                              : null,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: state.isSelectionValid ? 1.0 : 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.buttonRadius,
+                              ),
+                              border: Border.all(
+                                color: theme.colorScheme.tertiary,
+                                width: 2,
+                              ), // Permanent Gold border
+                              boxShadow: state.isSelectionValid
+                                  ? AppTheme.goldShadow
+                                  : null,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              widget.editingItem != null
+                                  ? "SAVE CHANGES"
+                                  : "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PIECES, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
                     ),
                   ),
                 ),
               ),
-          const SliverToBoxAdapter(
-            child: SafeArea(
-              top: false,
-              child: SizedBox(height: 60),
             ),
-          ),
-        ],
-      ),
-    ],
-  );
-}
+            const SliverToBoxAdapter(
+              child: SafeArea(top: false, child: SizedBox(height: 60)),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   String _getMockFillingName(String id) {
     final mockNames = {
@@ -467,7 +638,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
     return mockNames[id] ?? 'Special Mix';
   }
 
-  void _showFillingsBottomSheet(BuildContext context, ProductBuilderState state, ProductBuilderNotifier notifier) {
+  void _showFillingsBottomSheet(
+    BuildContext context,
+    ProductBuilderState state,
+    ProductBuilderNotifier notifier,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -504,6 +679,7 @@ class _FillingsSheetContent extends StatefulWidget {
 
 class _FillingsSheetContentState extends State<_FillingsSheetContent> {
   bool _isClosing = false;
+  bool _isExpanded = false;
 
   String _getMockFillingName(String id) {
     const mockNames = {
@@ -541,114 +717,175 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     widget.onClose();
                   });
+                } else if (notification.extent > 0.45 && !_isExpanded) {
+                  setState(() => _isExpanded = true);
+                } else if (notification.extent <= 0.45 && _isExpanded) {
+                  setState(() => _isExpanded = false);
                 }
                 return false;
               },
               child: Consumer(
                 builder: (ctx, ref, child) {
                   final sheetState = ref.watch(productBuilderProvider);
-                  return LayoutBuilder(
-                    builder: (ctx, constraints) {
-                      final isExpanded = constraints.maxHeight > MediaQuery.of(ctx).size.height * 0.45;
-                      return Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                        ),
-                        child: SingleChildScrollView(
-                          controller: scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 12),
-                                  width: 40,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).scaffoldBackgroundColor,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    child: CustomScrollView(
+                      controller: scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 12,
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text("Customize Mix", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                      Text(
-                                        "${sheetState.currentPieces}/${sheetState.maxPieces}",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: sheetState.currentPieces > sheetState.maxPieces
-                                              ? Colors.red
-                                              : Theme.of(ctx).colorScheme.tertiary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                width: 40,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(2),
                                 ),
-                                const SizedBox(height: 8),
-                                const Divider(height: 1),
-                                AnimatedCrossFade(
-                                  duration: const Duration(milliseconds: 250),
-                                  crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                                  firstChild: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                        child: Text("Swipe up to expand...", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Customize Mix",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      SizedBox(
-                                        height: 110,
-                                        child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                                          itemCount: 10,
-                                          itemBuilder: (context, index) {
-                                            final fillingId = 'fill_$index';
-                                            final name = _getMockFillingName(fillingId);
-                                            final count = sheetState.selectedFillings[fillingId] ?? 0;
-                                            return Container(
-                                              width: 90,
-                                              margin: const EdgeInsets.only(right: 10),
-                                              child: _buildFillingCard(context, fillingId, name, count, widget.notifier, isCompact: true),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                    ],
-                                  ),
-                                  secondChild: GridView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 120),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      childAspectRatio: 0.65,
-                                      crossAxisSpacing: 8,
-                                      mainAxisSpacing: 8,
                                     ),
-                                    itemCount: 10,
-                                    itemBuilder: (context, index) {
-                                      final fillingId = 'fill_$index';
-                                      final name = _getMockFillingName(fillingId);
-                                      final count = sheetState.selectedFillings[fillingId] ?? 0;
-                                      return _buildFillingCard(context, fillingId, name, count, widget.notifier, isCompact: false);
-                                    },
-                                  ),
+                                    Text(
+                                      "${sheetState.currentPieces}/${sheetState.maxPieces}",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            sheetState.currentPieces >
+                                                sheetState.maxPieces
+                                            ? Colors.red
+                                            : Theme.of(
+                                                ctx,
+                                              ).colorScheme.tertiary,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(height: 1),
+                              AnimatedCrossFade(
+                                duration: const Duration(milliseconds: 250),
+                                crossFadeState: _isExpanded
+                                    ? CrossFadeState.showSecond
+                                    : CrossFadeState.showFirst,
+                                firstChild: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      child: Text(
+                                        "Swipe up to expand...",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 110,
+                                      child: ListView.builder(
+                                        scrollDirection: Axis.horizontal,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        itemCount: 10,
+                                        itemBuilder: (context, index) {
+                                          final fillingId = 'fill_$index';
+                                          final name = _getMockFillingName(
+                                            fillingId,
+                                          );
+                                          final count =
+                                              sheetState
+                                                  .selectedFillings[fillingId] ??
+                                              0;
+                                          return Container(
+                                            width: 90,
+                                            margin: const EdgeInsets.only(
+                                              right: 10,
+                                            ),
+                                            child: _buildFillingCard(
+                                              context,
+                                              fillingId,
+                                              name,
+                                              count,
+                                              widget.notifier,
+                                              isCompact: true,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                  ],
+                                ),
+                                secondChild: GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    12,
+                                    12,
+                                    120,
+                                  ),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        childAspectRatio: 0.65,
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8,
+                                      ),
+                                  itemCount: 10,
+                                  itemBuilder: (context, index) {
+                                    final fillingId = 'fill_$index';
+                                    final name = _getMockFillingName(fillingId);
+                                    final count =
+                                        sheetState
+                                            .selectedFillings[fillingId] ??
+                                        0;
+                                    return _buildFillingCard(
+                                      context,
+                                      fillingId,
+                                      name,
+                                      count,
+                                      widget.notifier,
+                                      isCompact: false,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
+                        const SliverFillRemaining(hasScrollBody: false),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -659,30 +896,40 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
           bottom: 0,
           left: 0,
           right: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: widget.onClose,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.tertiary,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                    elevation: 0,
+          child: RepaintBoundary(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, -4),
                   ),
-                  child: const Text("SAVE SELECTIONS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: widget.onClose,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      "SAVE SELECTIONS",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -692,89 +939,120 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
     );
   }
 
-  Widget _buildFillingCard(BuildContext context, String fillingId, String name, int count, ProductBuilderNotifier notifier, {bool isCompact = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: count > 0 ? Theme.of(context).colorScheme.tertiary : Colors.grey.shade200),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // filling.png always shown
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 1),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: Image.asset(
-                      'assets/images/filling.png',
-                      height: isCompact ? 60 : 50,
-                      width: double.infinity,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  // cover.png below filling.png — only in full card mode
-                  if (!isCompact) ...([
-                    const SizedBox(height: 2),
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.asset(
-                          'assets/images/cover.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const SizedBox(height: 50, width: double.infinity),
-                        ),
+  Widget _buildFillingCard(
+    BuildContext context,
+    String fillingId,
+    String name,
+    int count,
+    ProductBuilderNotifier notifier, {
+    bool isCompact = false,
+  }) {
+    return RepaintBoundary(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: count > 0
+                ? Theme.of(context).colorScheme.tertiary
+                : Colors.grey.shade200,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // filling.png always shown
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 1),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.asset(
+                        'assets/images/filling.png',
+                        height: isCompact ? 60 : 50,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                        cacheWidth: 200,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    // cover.png below filling.png — only in full card mode
+                    if (!isCompact)
+                      ...([
+                        const SizedBox(height: 2),
+                        SizedBox(
+                          height: 50,
+                          width: double.infinity,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.asset(
+                              'assets/images/cover.png',
+                              fit: BoxFit.contain,
+                              cacheWidth: 200,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const SizedBox(
+                                    height: 50,
+                                    width: double.infinity,
+                                  ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          name,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ]),
+                  ],
+                ),
+              ),
+            ),
+
+            // +/- controls
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(7),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () => notifier.removeFilling(fillingId),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Icon(Icons.remove_rounded, size: 14),
                     ),
-                  ]),
+                  ),
+                  Text(
+                    "$count",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => notifier.addFilling(fillingId),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Icon(Icons.add_rounded, size: 14),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-
-          // +/- controls
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(7)),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () => notifier.removeFilling(fillingId),
-                  child: const Padding(
-                    padding: EdgeInsets.all(4.0),
-                    child: Icon(Icons.remove_rounded, size: 14),
-                  ),
-                ),
-                Text("$count", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                GestureDetector(
-                  onTap: () => notifier.addFilling(fillingId),
-                  child: const Padding(
-                    padding: EdgeInsets.all(4.0),
-                    child: Icon(Icons.add_rounded, size: 14),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

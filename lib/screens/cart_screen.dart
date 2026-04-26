@@ -95,27 +95,7 @@ class CartScreen extends ConsumerWidget {
           centerTitle: true,
           actions: [
             IconButton(
-              icon: Stack(
-                children: [
-                  const Icon(Icons.shopping_cart_outlined, color: Colors.black),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: colorScheme.tertiary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 8,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              icon: const Icon(Icons.shopping_cart_checkout, color: Colors.black),
               onPressed: () => context.push(AppRoutes.checkout),
             ),
           ],
