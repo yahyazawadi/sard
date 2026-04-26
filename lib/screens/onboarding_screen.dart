@@ -36,7 +36,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           curve: Curves.easeOutCubic,
           builder: (context, value, child) {
             return Transform.translate(
-              offset: Offset(50 * value, 0),
+              offset: Offset.zero,
               child: Opacity(
                 opacity: 1.0 - value,
                 child: child,

@@ -78,12 +78,11 @@ class CartScreen extends ConsumerWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -109,7 +108,7 @@ class CartScreen extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.arrow_forward,
+                        Icons.arrow_forward_rounded,
                         size: 8,
                         color: Colors.white,
                       ),
@@ -195,7 +194,7 @@ class CartScreen extends ConsumerWidget {
                                           ),
                                           IconButton(
                                             icon: const Icon(
-                                              Icons.close,
+                                              Icons.close_rounded,
                                               size: 18,
                                               color: Colors.grey,
                                             ),
@@ -240,7 +239,7 @@ class CartScreen extends ConsumerWidget {
                                               children: [
                                                 IconButton(
                                                   icon: const Icon(
-                                                    Icons.remove,
+                                                    Icons.remove_rounded,
                                                     size: 16,
                                                   ),
                                                   onPressed:
@@ -258,7 +257,7 @@ class CartScreen extends ConsumerWidget {
                                                 ),
                                                 IconButton(
                                                   icon: const Icon(
-                                                    Icons.add,
+                                                    Icons.add_rounded,
                                                     size: 16,
                                                   ),
                                                   onPressed:

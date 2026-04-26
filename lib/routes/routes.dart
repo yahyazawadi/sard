@@ -19,13 +19,19 @@ import '../screens/collection_screen.dart';
 import '../models/cart_item.dart';
 import '../models/featured_template.dart';
 import 'app_routes.dart';
+import '../custom/app_theme.dart';
 
 int _getSelectedIndex(String path) {
   if (path == AppRoutes.settings) return 3;
   if (path == AppRoutes.cart) return 2;
   if (path == AppRoutes.search) return 1;
-  if (path == AppRoutes.home || path == '/' || path == AppRoutes.collection || path == AppRoutes.productDetail) return 0;
-  return -1; 
+  if (path == AppRoutes.home ||
+      path == '/' ||
+      path == AppRoutes.collection ||
+      path == AppRoutes.productDetail) {
+    return 0;
+  }
+  return -1;
 }
 
 GoRouter createRouter(AuthProvider auth) {
@@ -53,7 +59,8 @@ GoRouter createRouter(AuthProvider auth) {
       }
 
       final user = auth.user;
-      final isEmailUser = user?.providerData.any((p) => p.providerId == 'password') ?? false;
+      final isEmailUser =
+          user?.providerData.any((p) => p.providerId == 'password') ?? false;
       if (isEmailUser && !(user?.emailVerified ?? true)) {
         if (path != AppRoutes.verify) return AppRoutes.verify;
         return null;
@@ -82,7 +89,11 @@ GoRouter createRouter(AuthProvider auth) {
           final email = state.uri.queryParameters['email'];
           final isSignUp = state.uri.queryParameters['signup'] == 'true';
           final oobCode = state.uri.queryParameters['oobCode'];
-          return LoginScreen(initialEmail: email, initialIsSignUp: isSignUp, oobCode: oobCode);
+          return LoginScreen(
+            initialEmail: email,
+            initialIsSignUp: isSignUp,
+            oobCode: oobCode,
+          );
         },
       ),
       GoRoute(
@@ -90,49 +101,107 @@ GoRouter createRouter(AuthProvider auth) {
         builder: (context, state) {
           final email = state.uri.queryParameters['email'];
           final oobCode = state.uri.queryParameters['oobCode'];
-          return LoginScreen(initialEmail: email, initialIsSignUp: true, oobCode: oobCode);
+          return LoginScreen(
+            initialEmail: email,
+            initialIsSignUp: true,
+            oobCode: oobCode,
+          );
         },
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
         builder: (_, _) => const ForgotPasswordScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.verify,
-        builder: (_, _) => const VerifyScreen(),
-      ),
+      GoRoute(path: AppRoutes.verify, builder: (_, _) => const VerifyScreen()),
 
       // ── Authenticated Routes (Shell with bottom nav) ──────────────────────
       ShellRoute(
         builder: (context, state, child) => Scaffold(
           body: child,
-          bottomNavigationBar: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Theme.of(context).colorScheme.primary,
-            unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            currentIndex: _getSelectedIndex(state.uri.path) == -1 ? 0 : _getSelectedIndex(state.uri.path),
-            onTap: (index) {
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _getSelectedIndex(state.uri.path) == -1
+                ? 0
+                : _getSelectedIndex(state.uri.path),
+            onDestinationSelected: (index) {
               if (index == 0) context.go(AppRoutes.home);
               if (index == 1) context.go(AppRoutes.search);
               if (index == 2) context.go(AppRoutes.cart);
               if (index == 3) context.go(AppRoutes.settings);
             },
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Cart'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+            destinations: [
+              NavigationDestination(
+                icon: const SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Center(child: Icon(Icons.home_outlined)),
+                ),
+                selectedIcon: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(child: Icon(Icons.home_rounded)),
+                ),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: const SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Center(child: Icon(Icons.search_rounded)),
+                ),
+                selectedIcon: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(child: Icon(Icons.search_rounded)),
+                ),
+                label: 'Search',
+              ),
+              NavigationDestination(
+                icon: const SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Center(child: Icon(Icons.shopping_cart_outlined)),
+                ),
+                selectedIcon: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(child: Icon(Icons.shopping_cart_rounded)),
+                ),
+                label: 'Cart',
+              ),
+              NavigationDestination(
+                icon: const SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Center(child: Icon(Icons.person_outline_rounded)),
+                ),
+                selectedIcon: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(child: Icon(Icons.person_rounded)),
+                ),
+                label: 'Profile',
+              ),
             ],
           ),
         ),
         routes: [
-          GoRoute(
-            path: AppRoutes.home,
-            builder: (_, _) => const HomeScreen(),
-          ),
+          GoRoute(path: AppRoutes.home, builder: (_, _) => const HomeScreen()),
           GoRoute(
             path: AppRoutes.search,
             builder: (context, state) {
@@ -144,10 +213,7 @@ GoRouter createRouter(AuthProvider auth) {
               );
             },
           ),
-          GoRoute(
-            path: AppRoutes.cart,
-            builder: (_, _) => const CartScreen(),
-          ),
+          GoRoute(path: AppRoutes.cart, builder: (_, _) => const CartScreen()),
           GoRoute(
             path: AppRoutes.productDetail,
             builder: (context, state) {
@@ -160,7 +226,9 @@ GoRouter createRouter(AuthProvider auth) {
                   editingItem: map['editingItem'] as CartItem?,
                 );
               }
-              return const Scaffold(body: Center(child: Text("Product data missing")));
+              return const Scaffold(
+                body: Center(child: Text("Product data missing")),
+              );
             },
           ),
           GoRoute(

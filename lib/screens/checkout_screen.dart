@@ -90,7 +90,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           elevation: 0,
           leading: IconButton(
             icon: Icon(
-              Icons.arrow_back,
+              Icons.arrow_back_rounded,
               color: theme.colorScheme.onSurface,
               size: 24,
             ),
@@ -138,7 +138,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        Icons.location_on,
+                        Icons.location_on_outlined,
                         color: theme.colorScheme.primary,
                         size: 20,
                       ),
@@ -202,7 +202,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     child: Row(
                       children: [
                         Icon(
-                          Icons.phone_android,
+                          Icons.phone_android_outlined,
                           color: theme.colorScheme.primary,
                         ),
                         const SizedBox(width: 12),
@@ -237,7 +237,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               _buildSectionHeader('Payment Method'),
               _buildPaymentOption(theme, 'Apple Pay', Icons.apple),
               _buildPaymentOption(theme, 'Credit', Icons.credit_card_outlined),
-              _buildPaymentOption(theme, 'cash', Icons.money),
+              _buildPaymentOption(theme, 'cash', Icons.payments_outlined),
 
               const SizedBox(height: 32),
               _buildSectionHeader('Order Summary'),
@@ -461,7 +461,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     'Use Current Location',
                     theme.colorScheme.primary,
                     Colors.white,
-                    Icons.my_location,
+                    Icons.my_location_rounded,
                     onTap: () {
                       Navigator.pop(context);
                       _fetchAndSetLocation();
@@ -617,7 +617,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            Icons.phone_android,
+                            Icons.phone_android_outlined,
                             color: theme.colorScheme.primary,
                             size: 32,
                           ),
@@ -663,7 +663,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.phone,
+                                    Icons.phone_outlined,
                                     color: theme.colorScheme.primary,
                                     size: 20,
                                   ),
@@ -793,7 +793,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           children: [
                             _buildSmallIconBox(
                               theme,
-                              Icons.remove,
+                              Icons.remove_rounded,
                               theme.colorScheme.surfaceContainerHighest,
                             ),
                             const SizedBox(width: 8),
@@ -831,7 +831,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         _buildFormTextField(
                           theme,
                           '0000 0000 0000 0000',
-                          Icons.credit_card,
+                          Icons.credit_card_outlined,
                           hints: [AutofillHints.creditCardNumber],
                         ),
                         const SizedBox(height: 16),
@@ -887,7 +887,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.verified_user,
+                                Icons.verified_user_outlined,
                                 size: 14,
                                 color: theme.colorScheme.primary,
                               ),
@@ -970,7 +970,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(
-                Icons.wifi,
+                Icons.wifi_rounded,
                 color: Colors.white.withValues(alpha: 0.5),
                 size: 20,
               ),
@@ -1136,7 +1136,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
             const Spacer(),
             Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
+              isSelected ? Icons.check_circle_outlined : Icons.circle_outlined,
               color:
                   isSelected
                       ? theme.colorScheme.primary
@@ -1254,7 +1254,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
               ),
               Icon(
-                Icons.arrow_forward_ios,
+                Icons.arrow_forward_ios_rounded,
                 size: 10,
                 color: textColor.withValues(alpha: 0.5),
               ),
@@ -1296,7 +1296,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.check_circle,
+                  Icons.check_circle_outline_rounded,
                   size: 80,
                   color: Theme.of(context).colorScheme.primary,
                 ),

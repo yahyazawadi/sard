@@ -52,7 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 1. Logo App Bar
           SliverAppBar(
             floating: true,
-            backgroundColor: Colors.white,
+            backgroundColor: theme.appBarTheme.backgroundColor,
             elevation: 0,
             title: TweenAnimationBuilder<double>(
               duration: const Duration(milliseconds: 1000),
@@ -277,7 +277,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           ],
                                         ),
                                         child: Icon(
-                                          Icons.keyboard_arrow_down,
+                                          Icons.keyboard_arrow_down_rounded,
                                           color: theme.colorScheme.primary,
                                           size: 24,
                                         ),
@@ -612,7 +612,7 @@ class ProductCard extends ConsumerWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          gender == 'boy' ? Icons.male : Icons.female,
+                          gender == 'boy' ? Icons.male_rounded : Icons.female_rounded,
                           color: Colors.white,
                           size: 14,
                         ),
@@ -678,7 +678,7 @@ class ProductCard extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
-                                    Icons.add,
+                                    Icons.add_rounded,
                                     color: Colors.white,
                                     size: 20,
                                   ),

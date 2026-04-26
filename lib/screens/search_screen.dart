@@ -59,7 +59,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                             onPressed: () => Navigator.of(context).pop(),
                           ),
                         ),
@@ -163,7 +163,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
+                          Icon(Icons.search_off_outlined, size: 64, color: Colors.grey.shade300),
                           const SizedBox(height: 16),
                           Text(
                             'No products found',

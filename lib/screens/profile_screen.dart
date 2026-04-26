@@ -86,7 +86,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           backgroundColor: theme.scaffoldBackgroundColor,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+            icon: Icon(Icons.arrow_back_rounded, color: theme.colorScheme.onSurface),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -172,8 +172,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               _buildProfileItem(
                 icon:
                     settings.themeMode == ThemeMode.dark
-                        ? Icons.dark_mode
-                        : Icons.light_mode,
+                        ? Icons.dark_mode_outlined
+                        : Icons.light_mode_outlined,
                 title: 'THEME MODE',
                 subtitle:
                     settings.themeMode == ThemeMode.dark
@@ -204,7 +204,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 12),
               _buildActionButton(
                 label: 'Sign Out',
-                icon: Icons.logout,
+                icon: Icons.logout_outlined,
                 onPressed: () async {
                   await auth.fullReset();
                   ref.invalidate(cartProvider);
@@ -292,7 +292,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             if (trailing != null) trailing,
             const SizedBox(width: 8),
-            Icon(Icons.chevron_right, color: Colors.grey.shade300),
+            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
           ],
         ),
       ),
@@ -377,7 +377,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'Use Current Location',
                     theme.colorScheme.primary,
                     Colors.white,
-                    Icons.my_location,
+                    Icons.my_location_rounded,
                     onTap: () {
                       Navigator.pop(context);
                       _fetchAndSetLocation();
@@ -506,7 +506,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            Icons.phone_android,
+                            Icons.phone_android_outlined,
                             color: theme.colorScheme.primary,
                             size: 32,
                           ),
@@ -552,7 +552,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.phone,
+                                    Icons.phone_outlined,
                                     color: theme.colorScheme.primary,
                                     size: 20,
                                   ),
@@ -661,7 +661,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     children: [
                       _buildLabel(theme, 'CARD NUMBER'),
-                      _buildFormTextField(theme, '0000 0000 0000 0000', Icons.credit_card),
+                      _buildFormTextField(theme, '0000 0000 0000 0000', Icons.credit_card_outlined),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
@@ -683,7 +683,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ref.read(userProfileProvider.notifier).updatePreferredPayment('cash');
                             Navigator.pop(context);
                           },
-                          icon: const Icon(Icons.money, size: 20),
+                          icon: const Icon(Icons.payments_outlined, size: 20),
                           label: const Text('SWITCH TO CASH'),
                           style: OutlinedButton.styleFrom(
                             shape: RoundedRectangleBorder(
@@ -718,7 +718,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.wifi, color: Colors.white.withValues(alpha: 0.5), size: 20),
+              Icon(Icons.wifi_rounded, color: Colors.white.withValues(alpha: 0.5), size: 20),
               const Text('VISA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
             ],
           ),
@@ -774,7 +774,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Icon(icon, color: textColor, size: 20),
               const SizedBox(width: 12),
               Expanded(child: Text(label, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14))),
-              Icon(Icons.arrow_forward_ios, size: 10, color: textColor.withValues(alpha: 0.5)),
+              Icon(Icons.arrow_forward_ios_rounded, size: 10, color: textColor.withValues(alpha: 0.5)),
             ],
           ),
         ),

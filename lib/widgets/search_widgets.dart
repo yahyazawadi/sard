@@ -43,19 +43,19 @@ class SardSearchBar extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           prefixIcon: Icon(
-            Icons.search,
+            Icons.search_rounded,
             color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           suffixIcon: (!readOnly && (controller?.text.isNotEmpty ?? false))
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.grey),
+                  icon: const Icon(Icons.close_rounded, color: Colors.grey),
                   onPressed: onClear,
                 )
               : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
-            vertical: 14,
+            vertical: 8,
           ),
         ),
       ),
@@ -84,7 +84,7 @@ class SardCategoryChip extends StatelessWidget {
         label: Text(label),
         selected: isSelected,
         onSelected: onSelected,
-        backgroundColor: Colors.white,
+        backgroundColor: theme.colorScheme.surface,
         selectedColor: theme.colorScheme.primary,
         checkmarkColor: Colors.white,
         showCheckmark: false, // Cleaner look for this premium design

@@ -16,7 +16,6 @@ class CollectionScreen extends ConsumerWidget {
     final productsAsync = ref.watch(productsByIdsProvider(ids));
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
           // 1. Immersive Header Section
@@ -33,7 +32,7 @@ class CollectionScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(

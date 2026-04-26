@@ -7,21 +7,21 @@ import 'package:flutter/material.dart';
 class AppTextSizes {
   AppTextSizes._();
 
-  static const double displayLarge  = 32;
+  static const double displayLarge = 32;
   static const double displayMedium = 28;
-  static const double displaySmall  = 24;
-  static const double headlineLarge  = 36;
+  static const double displaySmall = 24;
+  static const double headlineLarge = 36;
   static const double headlineMedium = 24;
-  static const double headlineSmall  = 20;
-  static const double titleLarge   = 22;
-  static const double titleMedium  = 18;
-  static const double titleSmall   = 16;
-  static const double bodyLarge    = 16;
-  static const double bodyMedium   = 14;
-  static const double bodySmall    = 12;
-  static const double labelLarge   = 14;
-  static const double labelMedium  = 12;
-  static const double labelSmall   = 10;
+  static const double headlineSmall = 20;
+  static const double titleLarge = 22;
+  static const double titleMedium = 18;
+  static const double titleSmall = 16;
+  static const double bodyLarge = 16;
+  static const double bodyMedium = 14;
+  static const double bodySmall = 12;
+  static const double labelLarge = 14;
+  static const double labelMedium = 12;
+  static const double labelSmall = 10;
 }
 
 /// Central font-family list.
@@ -30,29 +30,30 @@ class AppFonts {
   AppFonts._();
 
   static const String defaultFont = 'DG Sahabah';
-  static const List<String> available = [
-    'DG-Sahabah',
-    'Roboto',
-    'Inter',
-  ];
+  static const List<String> available = ['DG-Sahabah', 'Roboto', 'Inter'];
 }
 
 class AppTheme {
   // ── Palette ──────────────────────────────────────────────────────────────
-  static const Color primaryTeal          = Color(0xFF49D4D0); // Sard Teal
-  static const Color secondaryTeal        = Color(0xFF1A8F85);
-  static const Color accentGold           = Color(0xFFC5A359); // Elegant Gold
-  static const Color bgWhite              = Color(0xFFFFFFFF); // Pure White
-  static const Color darkCocoa            = Color(0xFF3C2415); // Dark Cocoa
-  static const Color sectionBgLight       = Color(0xFFF7FDFD);
-  static const Color textPrimaryLight     = Color(0xFF3C2415); // Using Dark Cocoa for text
-  static const Color textSecondaryLight   = Color(0xFF757575);
-  static const Color successGreen         = Color(0xFF4CAF88);
+  static const Color primaryTeal = Color(0xFF49D4D0); // Sard Teal
+  static const Color secondaryTeal = Color(0xFF1A8F85);
+  static const Color accentGold = Color(0xFFC5A359); // Elegant Gold
+  static const Color bgWhite = Color(0xFFE5F2F2); // Soft Ice Teal (Reduced glare)
+  static const Color appBarTeal = bgWhite; // Matches background exactly
+  static const Color darkCocoa = Color(0xFF3C2415); // Dark Cocoa
+  static const Color sectionBgLight = Color(
+    0xFFE5F2F2,
+  ); // Soft Teal for sections
+  static const Color textPrimaryLight = Color(
+    0xFF3C2415,
+  ); // Using Dark Cocoa for text
+  static const Color textSecondaryLight = Color(0xFF757575);
+  static const Color successGreen = Color(0xFF4CAF88);
 
-  static const Color bgDarkTeal           = Color(0xFF0F2A2A);
-  static const Color sectionBgDark        = Color(0xFF1E3F3D);
-  static const Color textPrimaryDark      = Color(0xFFFFFFFF);
-  static const Color textSecondaryDark    = Color(0xFFB0B8B8);
+  static const Color bgDarkTeal = Color(0xFF0F2A2A);
+  static const Color sectionBgDark = Color(0xFF1E3F3D);
+  static const Color textPrimaryDark = Color(0xFFFFFFFF);
+  static const Color textSecondaryDark = Color(0xFFB0B8B8);
 
   // ── Style Tokens (Centralized UI Consistency) ────────────────────────────
   static final cardShadow = [
@@ -89,32 +90,83 @@ class AppTheme {
       FontWeight weight = FontWeight.normal,
       double? height,
       double? letterSpacing,
-    }) =>
-        TextStyle(
-          color: color,
-          fontSize: s(size),
-          fontWeight: weight,
-          fontFamily: fontFamily,
-          height: height,
-          letterSpacing: letterSpacing,
-        );
+    }) => TextStyle(
+      color: color,
+      fontSize: s(size),
+      fontWeight: weight,
+      fontFamily: fontFamily,
+      height: height,
+      letterSpacing: letterSpacing,
+    );
 
     return TextTheme(
-      displayLarge:   style(primary, AppTextSizes.displayLarge,  weight: FontWeight.bold, height: 1.1),
-      displayMedium:  style(primary, AppTextSizes.displayMedium, weight: FontWeight.bold, height: 1.1),
-      displaySmall:   style(primary, AppTextSizes.displaySmall,  weight: FontWeight.bold, height: 1.1),
-      headlineLarge:  style(primary, AppTextSizes.headlineLarge,  weight: FontWeight.w900, height: 1.2),
-      headlineMedium: style(primary, AppTextSizes.headlineMedium, weight: FontWeight.w800, height: 1.2),
-      headlineSmall:  style(primary, AppTextSizes.headlineSmall,  weight: FontWeight.bold, height: 1.2),
-      titleLarge:     style(primary, AppTextSizes.titleLarge,  weight: FontWeight.bold, letterSpacing: 0.5),
-      titleMedium:    style(primary, AppTextSizes.titleMedium, weight: FontWeight.w600),
-      titleSmall:     style(primary, AppTextSizes.titleSmall,  weight: FontWeight.w500),
-      bodyLarge:      style(primary,   AppTextSizes.bodyLarge),
-      bodyMedium:     style(secondary, AppTextSizes.bodyMedium),
-      bodySmall:      style(secondary, AppTextSizes.bodySmall),
-      labelLarge:     style(primary,   AppTextSizes.labelLarge,  weight: FontWeight.bold, letterSpacing: 1.1),
-      labelMedium:    style(secondary, AppTextSizes.labelMedium, weight: FontWeight.w500),
-      labelSmall:     style(secondary, AppTextSizes.labelSmall),
+      displayLarge: style(
+        primary,
+        AppTextSizes.displayLarge,
+        weight: FontWeight.bold,
+        height: 1.1,
+      ),
+      displayMedium: style(
+        primary,
+        AppTextSizes.displayMedium,
+        weight: FontWeight.bold,
+        height: 1.1,
+      ),
+      displaySmall: style(
+        primary,
+        AppTextSizes.displaySmall,
+        weight: FontWeight.bold,
+        height: 1.1,
+      ),
+      headlineLarge: style(
+        primary,
+        AppTextSizes.headlineLarge,
+        weight: FontWeight.w900,
+        height: 1.2,
+      ),
+      headlineMedium: style(
+        primary,
+        AppTextSizes.headlineMedium,
+        weight: FontWeight.w800,
+        height: 1.2,
+      ),
+      headlineSmall: style(
+        primary,
+        AppTextSizes.headlineSmall,
+        weight: FontWeight.bold,
+        height: 1.2,
+      ),
+      titleLarge: style(
+        primary,
+        AppTextSizes.titleLarge,
+        weight: FontWeight.bold,
+        letterSpacing: 0.5,
+      ),
+      titleMedium: style(
+        primary,
+        AppTextSizes.titleMedium,
+        weight: FontWeight.w600,
+      ),
+      titleSmall: style(
+        primary,
+        AppTextSizes.titleSmall,
+        weight: FontWeight.w500,
+      ),
+      bodyLarge: style(primary, AppTextSizes.bodyLarge),
+      bodyMedium: style(secondary, AppTextSizes.bodyMedium),
+      bodySmall: style(secondary, AppTextSizes.bodySmall),
+      labelLarge: style(
+        primary,
+        AppTextSizes.labelLarge,
+        weight: FontWeight.bold,
+        letterSpacing: 1.1,
+      ),
+      labelMedium: style(
+        secondary,
+        AppTextSizes.labelMedium,
+        weight: FontWeight.w500,
+      ),
+      labelSmall: style(secondary, AppTextSizes.labelSmall),
     );
   }
 
@@ -141,15 +193,19 @@ class AppTheme {
         onSurfaceVariant: textSecondaryLight,
       ),
       textTheme: _buildTextTheme(
-        textPrimaryLight, textSecondaryLight,
-        scale: scale, fontFamily: fontFamily ?? AppFonts.defaultFont,
+        textPrimaryLight,
+        textSecondaryLight,
+        scale: scale,
+        fontFamily: fontFamily ?? AppFonts.defaultFont,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryTeal,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(buttonRadius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(buttonRadius),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
@@ -162,7 +218,7 @@ class AppTheme {
         ),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: bgWhite,
+        backgroundColor: appBarTeal,
         foregroundColor: primaryTeal,
         elevation: 0,
         centerTitle: true,
@@ -170,7 +226,38 @@ class AppTheme {
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: primaryTeal,
         behavior: SnackBarBehavior.floating,
-        contentTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        contentTextStyle: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: bgWhite,
+        selectedItemColor: primaryTeal,
+        unselectedItemColor: secondaryTeal.withValues(alpha: 0.4),
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: bgWhite,
+        indicatorColor: Colors.transparent,
+        indicatorShape: const CircleBorder(),
+        overlayColor: WidgetStateProperty.all(
+          primaryTeal.withValues(alpha: 0.1),
+        ),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+        height: 70,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: primaryTeal, size: 32);
+          }
+          return IconThemeData(
+            color: secondaryTeal.withValues(alpha: 0.6),
+            size: 24,
+          );
+        }),
       ),
     );
   }
@@ -197,15 +284,19 @@ class AppTheme {
         onSurfaceVariant: textSecondaryDark,
       ),
       textTheme: _buildTextTheme(
-        textPrimaryDark, textSecondaryDark,
-        scale: scale, fontFamily: fontFamily,
+        textPrimaryDark,
+        textSecondaryDark,
+        scale: scale,
+        fontFamily: fontFamily,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryTeal,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(buttonRadius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(buttonRadius),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
@@ -218,7 +309,35 @@ class AppTheme {
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: primaryTeal,
         behavior: SnackBarBehavior.floating,
-        contentTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        contentTextStyle: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.black,
+        selectedItemColor: primaryTeal,
+        unselectedItemColor: Colors.white.withValues(alpha: 0.5),
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Colors.black,
+        indicatorColor: Colors.transparent,
+        indicatorShape: const CircleBorder(),
+        overlayColor: WidgetStateProperty.all(
+          primaryTeal.withValues(alpha: 0.1),
+        ),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+        height: 70,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: primaryTeal, size: 32);
+          }
+          return IconThemeData(color: textSecondaryDark, size: 24);
+        }),
       ),
     );
   }

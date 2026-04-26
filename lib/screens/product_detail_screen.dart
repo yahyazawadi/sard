@@ -65,7 +65,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
               SliverAppBar(
                 expandedHeight: 300,
                 pinned: true,
-                backgroundColor: Colors.white,
+                backgroundColor: theme.appBarTheme.backgroundColor,
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
@@ -74,7 +74,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 20),
                       onPressed: () => context.pop(),
                     ),
                   ),
@@ -607,7 +607,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                                         height: 110,
                                         child: ListView.builder(
                                           scrollDirection: Axis.horizontal,
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          padding: const EdgeInsets.symmetric(horizontal: 12),
                                           itemCount: 10,
                                           itemBuilder: (context, index) {
                                             final fillingId = 'fill_$index';
@@ -627,12 +627,12 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                                   secondChild: GridView.builder(
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
-                                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 120),
                                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 3,
                                       childAspectRatio: 0.65,
-                                      crossAxisSpacing: 12,
-                                      mainAxisSpacing: 16,
+                                      crossAxisSpacing: 8,
+                                      mainAxisSpacing: 8,
                                     ),
                                     itemCount: 10,
                                     itemBuilder: (context, index) {
@@ -704,27 +704,35 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
           // filling.png always shown
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 1),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/images/filling.png', height: isCompact ? 32 : 36, width: 50, fit: BoxFit.contain),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.asset(
+                      'assets/images/filling.png',
+                      height: isCompact ? 60 : 50,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                   // cover.png below filling.png — only in full card mode
                   if (!isCompact) ...([
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     SizedBox(
-                      height: 28,
-                      width: 50,
+                      height: 50,
+                      width: double.infinity,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: Image.asset(
                           'assets/images/cover.png',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const SizedBox(height: 28, width: 50),
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => const SizedBox(height: 50, width: double.infinity),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       name,
                       textAlign: TextAlign.center,
@@ -752,7 +760,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                   onTap: () => notifier.removeFilling(fillingId),
                   child: const Padding(
                     padding: EdgeInsets.all(4.0),
-                    child: Icon(Icons.remove, size: 14),
+                    child: const Icon(Icons.remove_rounded, size: 14),
                   ),
                 ),
                 Text("$count", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
@@ -760,7 +768,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                   onTap: () => notifier.addFilling(fillingId),
                   child: const Padding(
                     padding: EdgeInsets.all(4.0),
-                    child: Icon(Icons.add, size: 14),
+                    child: const Icon(Icons.add_rounded, size: 14),
                   ),
                 ),
               ],
