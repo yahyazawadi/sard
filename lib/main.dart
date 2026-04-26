@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'firebase_options.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-import 'package:sard/l10n/app_localizations.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sard/l10n/app_localizations.dart';
 import 'routes/routes.dart';
 import 'routes/app_routes.dart';
 import 'custom/app_theme.dart';
@@ -16,7 +16,8 @@ import 'providers/settings_provider.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider, ChangeNotifierProvider;
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    hide Provider, ChangeNotifierProvider;
 
 import 'providers/isar_provider.dart';
 import 'providers/sync_provider.dart';
@@ -24,7 +25,7 @@ import 'providers/prefs_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -81,7 +82,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     final auth = context.read<AuthProvider>();
     _router = createRouter(auth);
     _initDeepLinks();
-    
+
     // Seed database
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final container = ProviderScope.containerOf(context);
@@ -114,8 +115,9 @@ class _MyAppState extends ConsumerState<MyApp> {
 
       String? firebaseLink;
 
-      if (uri.scheme == 'sarad') {
-        firebaseLink = uri.queryParameters['link'] ?? uri.queryParameters['continueUrl'];
+      if (uri.scheme == 'sard') {
+        firebaseLink =
+            uri.queryParameters['link'] ?? uri.queryParameters['continueUrl'];
         if (firebaseLink == null && linkStr.contains('oobCode')) {
           firebaseLink = linkStr;
         }
@@ -127,21 +129,27 @@ class _MyAppState extends ConsumerState<MyApp> {
         final firebaseUri = Uri.parse(firebaseLink);
         final mode = firebaseUri.queryParameters['mode'];
         final oobCode = firebaseUri.queryParameters['oobCode'];
-        
+
         print('!!! Detected Firebase mode: $mode');
 
         Future.delayed(const Duration(milliseconds: 500), () async {
           if (mode == 'resetPassword' && oobCode != null) {
             // Navigate directly to sign up (which handles recovery) with the code
-            final email = await FirebaseAuth.instance.verifyPasswordResetCode(oobCode);
-            final target = '${AppRoutes.signUp}?email=${Uri.encodeComponent(email)}&oobCode=$oobCode';
+            final email = await FirebaseAuth.instance.verifyPasswordResetCode(
+              oobCode,
+            );
+            final target =
+                '${AppRoutes.signUp}?email=${Uri.encodeComponent(email)}&oobCode=$oobCode';
             print('!!! Redirecting directly to Recovery: $target');
             _router.go(target);
           } else if (mode == 'verifyEmail' && oobCode != null) {
             await FirebaseAuth.instance.applyActionCode(oobCode);
             print('!!! Email verified. Reloading user state...');
             // Reload so the router sees emailVerified=true and navigates to home
-            final authProvider = _router.routerDelegate.navigatorKey.currentContext
+            final authProvider = _router
+                .routerDelegate
+                .navigatorKey
+                .currentContext
                 ?.read<AuthProvider>();
             if (authProvider != null) {
               await authProvider.reloadUser();

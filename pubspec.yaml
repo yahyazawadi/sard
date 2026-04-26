@@ -49,6 +49,15 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/iconSARD_final.png"
+  adaptive_icon_background: "#5ec5c3"
+  adaptive_icon_foreground: "assets/images/iconSARD_final.png"
+
 
 
 flutter:
@@ -71,11 +80,11 @@ flutter:
 
 flutter_native_splash:
   color: "#5ec5c3"
-  image: assets/images/iconSARD_seamless.png
+  image: assets/images/WhiteLogo.png
   android: true
   ios: true
   android_12:
     color: "#5ec5c3"
-    image: assets/images/iconSARD_seamless.png
+    image: assets/images/WhiteLogo.png
 
 

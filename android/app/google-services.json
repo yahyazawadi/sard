@@ -7,23 +7,19 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:313420731986:android:e8d7458bfdb07478dd718b",
+        "mobilesdk_app_id": "1:313420731986:android:78d96ebd923988dfdd718b",
         "android_client_info": {
-          "package_name": "com.example.sarad"
+          "package_name": "com.example.sard"
         }
       },
       "oauth_client": [
         {
-          "client_id": "313420731986-3o9266fsshv9ve9p5etmo4pm1gae28tk.apps.googleusercontent.com",
+          "client_id": "313420731986-073umqkad03thbrbhahdcim81t0pelbc.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.sarad",
+            "package_name": "com.example.sard",
             "certificate_hash": "6dddcaaaff233632b12e7517393e5b6e3f87d78b"
           }
-        },
-        {
-          "client_id": "313420731986-54a2akarqmqgb98t4jc1cj33agg1jgv8.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
@@ -35,7 +31,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "313420731986-54a2akarqmqgb98t4jc1cj33agg1jgv8.apps.googleusercontent.com",
+              "client_id": "313420731986-drmk2ueaidtk20b58djs3e13ak3uv3f4.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

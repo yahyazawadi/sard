@@ -10,7 +10,8 @@ import '../widgets/search_widgets.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialCategoryId;
-  const SearchScreen({super.key, this.initialCategoryId});
+  final bool autofocus;
+  const SearchScreen({super.key, this.initialCategoryId, this.autofocus = false});
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -62,20 +63,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             onPressed: () => Navigator.of(context).pop(),
                           ),
                         ),
-                      const Text(
+                      Text(
                         'Search Catalog',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'serif',
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   SardSearchBar(
                     controller: _searchController,
-                    autofocus: true,
+                    autofocus: widget.autofocus,
                     onChanged: (val) {
                       setState(() {
                         _searchQuery = val;
@@ -170,7 +167,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           const SizedBox(height: 16),
                           Text(
                             'No products found',
-                            style: TextStyle(color: Colors.grey.shade500, fontSize: 18),
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
                           ),
                         ],
                       ),
@@ -181,7 +178,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     padding: const EdgeInsets.all(16),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.65,
+                      childAspectRatio: 0.6, // Adjusted from 0.65 to give more vertical space for text
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),

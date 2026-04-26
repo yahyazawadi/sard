@@ -3,20 +3,20 @@
     "platforms": {
       "android": {
         "default": {
-          "projectId": "saradd",
-          "appId": "1:519027311708:android:cb194b349a5d3341229299",
+          "projectId": "flutter-ai-playground-96a06",
+          "appId": "1:313420731986:android:78d96ebd923988dfdd718b",
           "fileOutput": "android/app/google-services.json"
         }
       },
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "saradd",
+          "projectId": "flutter-ai-playground-96a06",
           "configurations": {
-            "android": "1:519027311708:android:cb194b349a5d3341229299",
-            "ios": "1:519027311708:ios:fdcd2c0845969c85229299",
-            "macos": "1:519027311708:ios:fdcd2c0845969c85229299",
-            "web": "1:519027311708:web:1a8e19e7e836e256229299",
-            "windows": "1:519027311708:web:05ec4382ae4910fb229299"
+            "android": "1:313420731986:android:78d96ebd923988dfdd718b",
+            "ios": "1:313420731986:ios:fc174b3d98a25b2fdd718b",
+            "macos": "1:313420731986:ios:fc174b3d98a25b2fdd718b",
+            "web": "1:313420731986:web:7eb9481b29a25b2fdd718b",
+            "windows": "1:313420731986:web:7eb9481b29a25b2fdd718b"
           }
         }
       }

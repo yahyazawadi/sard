@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sarad"
+    namespace = "com.example.sard"
     compileSdk = 36 //flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -23,7 +23,7 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 defaultConfig {
-        applicationId = "com.example.sarad"
+        applicationId = "com.example.sard"
         minSdk = 24  // ← Change to 24 (Android 7.0+ for permission_handler)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -32,7 +32,7 @@ defaultConfig {
 
     // defaultConfig {
     //     // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-    //     applicationId = "com.example.sarad"
+    //     applicationId = "com.example.sard"
     //     // You can update the following values to match your application needs.
     //     // For more information, see: https://flutter.dev/to/review-gradle-config.
     //     minSdk = flutter.minSdkVersion

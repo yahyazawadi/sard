@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/featured_template.dart';
 import '../providers/catalog_provider.dart';
@@ -16,66 +17,76 @@ class CollectionScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          template.title,
-          style: const TextStyle(
-            fontFamily: 'serif',
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: CustomScrollView(
         slivers: [
-          // Banner Section
-          SliverToBoxAdapter(
-            child: Container(
-              height: 200,
-              width: double.infinity,
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                image: DecorationImage(
-                  image: AssetImage(template.bannerUrl),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      template.subtitle,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+          // 1. Immersive Header Section
+          SliverAppBar(
+            expandedHeight: 320,
+            pinned: true,
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.white.withValues(alpha: 0.9),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 18),
+                  onPressed: () => context.pop(),
                 ),
               ),
             ),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    template.bannerUrl,
+                    fit: BoxFit.cover,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomLeft,
+                        end: Alignment.topRight,
+                        stops: const [0.0, 0.4, 1.0],
+                        colors: [
+                          Colors.black.withValues(alpha: 0.8),
+                          Colors.black.withValues(alpha: 0.4),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 24,
+                    left: 24,
+                    right: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          template.title,
+                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          template.subtitle,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
           // Collection Grid
           productsAsync.when(

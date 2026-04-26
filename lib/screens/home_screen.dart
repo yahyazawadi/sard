@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../routes/app_routes.dart';
 import '../utils/snackbar_utils.dart';
 import '../widgets/search_widgets.dart';
+import '../custom/app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -38,9 +39,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Future.microtask(() => ref.read(syncProvider).performInitialSeed());
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final categoriesAsync = ref.watch(categoriesProvider);
     final featuredAsync = ref.watch(featuredTemplatesProvider);
 
@@ -53,44 +54,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             floating: true,
             backgroundColor: Colors.white,
             elevation: 0,
-            centerTitle: true,
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/images/iconSARD.png', height: 40),
-                const Text(
-                  ' v2',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+            title: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 1000),
+              tween: Tween(begin: 0.0, end: 1.0),
+              curve: Curves.elasticOut,
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: value,
+                  child: child,
+                );
+              },
+              child: GestureDetector(
+                onTap: () {
+                  if (_scrollController.hasClients) {
+                    _scrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.fastOutSlowIn,
+                    );
+                  }
+                },
+                child: Image.asset(
+                  'assets/images/TealLogo.png',
+                  height: 45,
+                  fit: BoxFit.contain,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.sync, size: 16, color: Colors.grey),
-                  onPressed: () async {
-                    await ref.read(syncProvider).performInitialSeed();
-                    if (context.mounted) {
-                      SardSnackBar.show(context, 'Syncing data from JSON...');
-                    }
-                  },
-                ),
-              ],
+              ),
             ),
           ),
 
           // 2. Search Bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: SardSearchBar(
-                  readOnly: true,
-                  onTap: () => context.push(AppRoutes.search),
-                ),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: SardSearchBar(
+                readOnly: true,
+                onTap: () => context.push(AppRoutes.search),
               ),
             ),
           ),
@@ -110,7 +109,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       label: category.nameEn,
                       isSelected: true,
                       onSelected: (_) {
-                        context.push('${AppRoutes.search}?category=${category.remoteId}');
+                        context.push(
+                          '${AppRoutes.search}?category=${category.remoteId}',
+                        );
                       },
                     );
                   },
@@ -122,205 +123,192 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
 
           // 4. Featured Section
-          const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-                child: Text(
-                  'Featured',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'serif',
-                  ),
-                ),
-              ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+              child: Text('Featured', style: theme.textTheme.headlineSmall),
             ),
-            featuredAsync.when(
-              data: (templates) {
-                final showAll = templates.length > 2;
-                final itemHeight = 240.0;
-                final itemMargin = 16.0;
-                final totalItemBlock = itemHeight + itemMargin;
+          ),
+          featuredAsync.when(
+            data: (templates) {
+              final showAll = templates.length > 2;
+              final itemHeight = 240.0;
+              final itemMargin = 16.0;
+              final totalItemBlock = itemHeight + itemMargin;
 
-                final collapsedHeight = (itemHeight * 1.3) + itemMargin;
-                final expandedHeight = (totalItemBlock * templates.length);
+              final collapsedHeight = (itemHeight * 1.3) + itemMargin;
+              final expandedHeight = (totalItemBlock * templates.length);
 
-                final currentHeight = _isFeaturedExpanded
-                    ? expandedHeight
-                    : collapsedHeight;
-                const buttonHeight = 64.0; // Total height of button area
+              final currentHeight = _isFeaturedExpanded
+                  ? expandedHeight
+                  : collapsedHeight;
+              const buttonHeight = 64.0; // Total height of button area
 
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverToBoxAdapter(
-                    child: SizedBox(
-                      key: _featuredKey,
-                      // Height includes the main content + half the button height for overlap
-                      height:
-                          (templates.length <= 2
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverToBoxAdapter(
+                  child: SizedBox(
+                    key: _featuredKey,
+                    // Height includes the main content + half the button height for overlap
+                    height:
+                        (templates.length <= 2
+                            ? (totalItemBlock * templates.length)
+                            : currentHeight) +
+                        8.0, // Reduced from buttonHeight / 2 (32.0) to tighten gap
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.topCenter,
+                      children: [
+                        // The List Container
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          height: templates.length <= 2
                               ? (totalItemBlock * templates.length)
-                              : currentHeight) +
-                          8.0, // Reduced from buttonHeight / 2 (32.0) to tighten gap
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.topCenter,
-                        children: [
-                          // The List Container
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.fastLinearToSlowEaseIn,
-                            height: templates.length <= 2
-                                ? (totalItemBlock * templates.length)
-                                : currentHeight,
-                            clipBehavior: Clip.hardEdge,
-                            decoration: const BoxDecoration(),
-                            child: OverflowBox(
-                              alignment: Alignment.topCenter,
-                              minHeight: 0,
-                              maxHeight: double.infinity,
-                              child: Column(
-                                children: [
-                                  ...templates.map(
-                                    (t) => Container(
-                                      height: itemHeight,
-                                      width: double.infinity,
-                                      margin: EdgeInsets.only(
-                                        bottom: itemMargin,
-                                      ),
-                                      child: _FeaturedCard(template: t),
-                                    ),
+                              : currentHeight,
+                          clipBehavior: Clip.hardEdge,
+                          decoration: const BoxDecoration(),
+                          child: OverflowBox(
+                            alignment: Alignment.topCenter,
+                            minHeight: 0,
+                            maxHeight: double.infinity,
+                            child: Column(
+                              children: [
+                                ...templates.map(
+                                  (t) => Container(
+                                    height: itemHeight,
+                                    width: double.infinity,
+                                    margin: EdgeInsets.only(bottom: itemMargin),
+                                    child: _FeaturedCard(template: t),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
+                        ),
 
-                          // The Overlapping Button
-                          if (showAll)
-                            Positioned(
-                              // Position the center of the line exactly at the bottom of the container
-                              top:
-                                  (templates.length <= 2
-                                      ? (totalItemBlock * templates.length)
-                                      : currentHeight) -
-                                  (buttonHeight / 2),
-                              left: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: () {
-                                  if (!_scrollController.hasClients) return;
+                        // The Overlapping Button
+                        if (showAll)
+                          Positioned(
+                            // Position the center of the line exactly at the bottom of the container
+                            top:
+                                (templates.length <= 2
+                                    ? (totalItemBlock * templates.length)
+                                    : currentHeight) -
+                                (buttonHeight / 2),
+                            left: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (!_scrollController.hasClients) return;
 
-                                  final wasExpanded = _isFeaturedExpanded;
-                                  double? targetOffset;
+                                final wasExpanded = _isFeaturedExpanded;
+                                double? targetOffset;
 
-                                  // Capture target BEFORE state change for a stable snapshot
-                                  if (wasExpanded) {
-                                    final RenderBox? renderBox =
-                                        _featuredKey.currentContext
-                                                ?.findRenderObject()
-                                            as RenderBox?;
-                                    if (renderBox != null) {
-                                      final position = renderBox
-                                          .localToGlobal(Offset.zero);
-                                      targetOffset =
-                                          _scrollController.offset +
-                                          position.dy -
-                                          20;
-                                    }
+                                // Capture target BEFORE state change for a stable snapshot
+                                if (wasExpanded) {
+                                  final RenderBox? renderBox =
+                                      _featuredKey.currentContext
+                                              ?.findRenderObject()
+                                          as RenderBox?;
+                                  if (renderBox != null) {
+                                    final position = renderBox.localToGlobal(
+                                      Offset.zero,
+                                    );
+                                    targetOffset =
+                                        _scrollController.offset +
+                                        position.dy -
+                                        20;
                                   }
+                                }
 
-                                  setState(
-                                    () => _isFeaturedExpanded =
-                                        !_isFeaturedExpanded,
+                                setState(
+                                  () => _isFeaturedExpanded =
+                                      !_isFeaturedExpanded,
+                                );
+
+                                if (wasExpanded && targetOffset != null) {
+                                  _scrollController.animateTo(
+                                    targetOffset.clamp(
+                                      0,
+                                      _scrollController
+                                          .position
+                                          .maxScrollExtent,
+                                    ),
+                                    duration: const Duration(milliseconds: 600),
+                                    curve: Curves.fastLinearToSlowEaseIn,
                                   );
-
-                                  if (wasExpanded && targetOffset != null) {
-                                    _scrollController.animateTo(
-                                      targetOffset.clamp(
-                                        0,
-                                        _scrollController
-                                            .position
-                                            .maxScrollExtent,
-                                      ),
+                                }
+                              },
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                height: buttonHeight,
+                                color: Colors.transparent,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Divider(
+                                      color: Colors.grey.shade300,
+                                      thickness: 1,
+                                    ),
+                                    AnimatedRotation(
+                                      turns: _isFeaturedExpanded ? 0.5 : 0,
                                       duration: const Duration(
                                         milliseconds: 600,
                                       ),
-                                      curve: Curves.fastLinearToSlowEaseIn,
-                                    );
-                                  }
-                                },
-                                behavior: HitTestBehavior.opaque,
-                                child: Container(
-                                  height: buttonHeight,
-                                  color: Colors.transparent,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Divider(
-                                        color: Colors.grey.shade300,
-                                        thickness: 1,
-                                      ),
-                                      AnimatedRotation(
-                                        turns: _isFeaturedExpanded ? 0.5 : 0,
-                                        duration: const Duration(
-                                          milliseconds: 600,
-                                        ),
-                                        curve: Curves
-                                            .easeOutBack, // Slight overshoot for a organic feel
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.grey.shade300,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black
-                                                    .withValues(alpha: 0.08),
-                                                blurRadius: 6,
-                                                offset: const Offset(0, 3),
+                                      curve: Curves
+                                          .easeOutBack, // Slight overshoot for a organic feel
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.08,
                                               ),
-                                            ],
-                                          ),
-                                          child: Icon(
-                                            Icons.keyboard_arrow_down,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                            size: 24,
-                                          ),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          Icons.keyboard_arrow_down,
+                                          color: theme.colorScheme.primary,
+                                          size: 24,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
                   ),
-                );
-              },
-              loading: () => const SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 240,
-                  child: Center(child: CircularProgressIndicator()),
                 ),
+              );
+            },
+            loading: () => const SliverToBoxAdapter(
+              child: SizedBox(
+                height: 240,
+                child: Center(child: CircularProgressIndicator()),
               ),
-              error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
             ),
+            error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
+          ),
 
           // 5. Dynamic Categories & Products (or Search Results)
           categoriesAsync.when(
             data: (categories) => SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
                 final category = categories[index];
-                return _CategorySection(
-                  category: category,
-                );
+                return _CategorySection(category: category);
               }, childCount: categories.length),
             ),
             loading: () => const SliverFillRemaining(
@@ -348,7 +336,7 @@ class _FeaturedCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.zero,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
         image: DecorationImage(
           image: AssetImage(template.bannerUrl),
           fit: BoxFit.cover,
@@ -356,7 +344,7 @@ class _FeaturedCard extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.center,
@@ -372,11 +360,8 @@ class _FeaturedCard extends StatelessWidget {
               template.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: theme.textTheme.displaySmall?.copyWith(
                 color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'serif',
               ),
             ),
             const SizedBox(height: 8),
@@ -393,7 +378,7 @@ class _FeaturedCard extends StatelessWidget {
                 backgroundColor: Colors.white,
                 foregroundColor: theme.colorScheme.primary,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -422,6 +407,7 @@ class _CategorySection extends ConsumerWidget {
       productsBySectionProvider(category.remoteId),
     );
     final settings = ref.watch(settingsProvider);
+    final theme = Theme.of(context);
     final branch = settings.selectedBranch;
 
     return productsAsync.when(
@@ -453,15 +439,11 @@ class _CategorySection extends ConsumerWidget {
                 category.nameEn == 'Sard Icons'
                     ? 'Popular Products'
                     : category.nameEn,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'serif',
-                ),
+                style: theme.textTheme.headlineSmall,
               ),
             ),
             SizedBox(
-              height: 280,
+              height: 300,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 scrollDirection: Axis.horizontal,
@@ -524,7 +506,7 @@ class ProductCard extends ConsumerWidget {
                             .addToCart(product, variantIndex: index);
                         Navigator.pop(context);
                         SardSnackBar.show(
-                          context, 
+                          context,
                           "${product.nameEn} added to cart",
                           action: SnackBarAction(
                             label: "VIEW CART",
@@ -544,7 +526,7 @@ class ProductCard extends ConsumerWidget {
       // Add directly
       ref.read(cartProvider.notifier).addToCart(product);
       SardSnackBar.show(
-        context, 
+        context,
         "${product.nameEn} added to cart",
         action: SnackBarAction(
           label: "VIEW CART",
@@ -587,122 +569,133 @@ class ProductCard extends ConsumerWidget {
       child: Container(
         width: 170,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.5,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
-                    image: DecorationImage(
-                      image: AssetImage(product.imageUrl),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                if (gender != null)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: gender == 'boy'
-                            ? Colors.blue.withValues(alpha: 0.8)
-                            : Colors.pink.withValues(alpha: 0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        gender == 'boy' ? Icons.male : Icons.female,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: SizedBox(
-              height:
-                  105, // Fixed height for the text content area to ensure stability
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.nameEn,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
-                        ),
+                  Container(
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(AppTheme.cardRadius),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        product.section,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.grey.shade600,
-                        ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Hero(
+                      tag: 'product_${product.remoteId}',
+                      child: Image.asset(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        height: double.infinity,
+                        width: double.infinity,
                       ),
-                    ],
+                    ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${displayPrice.toStringAsFixed(0)} ₪',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w900,
+                  if (gender != null)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: gender == 'boy'
+                              ? Colors.blue.withValues(alpha: 0.8)
+                              : Colors.pink.withValues(alpha: 0.8),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          gender == 'boy' ? Icons.male : Icons.female,
+                          color: Colors.white,
+                          size: 14,
                         ),
                       ),
-                      InkWell(
-                        onTap: () => _handleAdd(context, ref),
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.8),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFC5A359), width: 1.5),
-                          ),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: SizedBox(
+                height:
+                    120, // Increased from 105 to absorb text size with new premium fonts
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.nameEn,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          product.section,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${displayPrice.toStringAsFixed(0)} ₪',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => _handleAdd(context, ref),
+                          child: TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 200),
+                            tween: Tween(begin: 1.0, end: 1.0), // No auto animation, just structure
+                            builder: (context, value, child) {
+                              return Transform.scale(
+                                scale: value,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 }

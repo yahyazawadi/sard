@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../custom/app_theme.dart';
 
 class SardSearchBar extends StatelessWidget {
   final bool readOnly;
@@ -22,10 +23,13 @@ class SardSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(16),
+        color: theme.brightness == Brightness.light
+            ? Colors.grey.shade200
+            : theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
       ),
       child: TextField(
         controller: controller,
@@ -35,10 +39,12 @@ class SardSearchBar extends StatelessWidget {
         autofocus: autofocus,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey.shade500),
+          hintStyle: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          ),
           prefixIcon: Icon(
             Icons.search,
-            color: Colors.grey.shade500,
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           suffixIcon: (!readOnly && (controller?.text.isNotEmpty ?? false))
               ? IconButton(
@@ -82,12 +88,14 @@ class SardCategoryChip extends StatelessWidget {
         selectedColor: theme.colorScheme.primary,
         checkmarkColor: Colors.white,
         showCheckmark: false, // Cleaner look for this premium design
-        labelStyle: TextStyle(
+        labelStyle: theme.textTheme.labelLarge?.copyWith(
           color: isSelected ? Colors.white : theme.colorScheme.primary,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+          height: 1.0,
         ),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20), // More rounded for premium feel
+          borderRadius: BorderRadius.circular(AppTheme.buttonRadius), // More rounded for premium feel
           side: BorderSide(
             color: theme.colorScheme.tertiary,
             width: 1.5,

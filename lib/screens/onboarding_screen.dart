@@ -14,18 +14,6 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> with TickerProviderStateMixin {
 
-  @override
-  void initState() {
-    super.initState();
-    // If they've already tapped "Get Started" once, they're coming back from
-    // the login/signup screen — auto-reopen the auth sheet so it feels seamless.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = context.read<AuthProvider>();
-      if (auth.hasSeenOnboarding && mounted) {
-        _showAuthBottomSheet(context);
-      }
-    });
-  }
 
   void _showAuthBottomSheet(BuildContext context) {
     // Create a controller for the sheet itself

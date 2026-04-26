@@ -15,14 +15,17 @@ import '../providers/auth_provider.dart';
 import '../screens/search_screen.dart';
 import '../screens/cart_screen.dart';
 import '../screens/checkout_screen.dart';
+import '../screens/collection_screen.dart';
 import '../models/cart_item.dart';
+import '../models/featured_template.dart';
 import 'app_routes.dart';
 
 int _getSelectedIndex(String path) {
   if (path == AppRoutes.settings) return 3;
   if (path == AppRoutes.cart) return 2;
   if (path == AppRoutes.search) return 1;
-  return 0; // Home
+  if (path == AppRoutes.home || path == '/' || path == AppRoutes.collection || path == AppRoutes.productDetail) return 0;
+  return -1; 
 }
 
 GoRouter createRouter(AuthProvider auth) {
@@ -108,7 +111,7 @@ GoRouter createRouter(AuthProvider auth) {
             selectedItemColor: Theme.of(context).colorScheme.primary,
             unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
             backgroundColor: Theme.of(context).colorScheme.surface,
-            currentIndex: _getSelectedIndex(state.uri.path),
+            currentIndex: _getSelectedIndex(state.uri.path) == -1 ? 0 : _getSelectedIndex(state.uri.path),
             onTap: (index) {
               if (index == 0) context.go(AppRoutes.home);
               if (index == 1) context.go(AppRoutes.search);
@@ -134,7 +137,11 @@ GoRouter createRouter(AuthProvider auth) {
             path: AppRoutes.search,
             builder: (context, state) {
               final categoryId = state.uri.queryParameters['category'];
-              return SearchScreen(initialCategoryId: categoryId);
+              final focus = state.uri.queryParameters['focus'] == 'true';
+              return SearchScreen(
+                initialCategoryId: categoryId,
+                autofocus: focus,
+              );
             },
           ),
           GoRoute(
@@ -159,6 +166,13 @@ GoRouter createRouter(AuthProvider auth) {
           GoRoute(
             path: AppRoutes.settings,
             builder: (_, _) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.collection,
+            builder: (context, state) {
+              final template = state.extra as FeaturedTemplate;
+              return CollectionScreen(template: template);
+            },
           ),
         ],
       ),

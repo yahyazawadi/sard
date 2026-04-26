@@ -7,6 +7,7 @@ import '../models/cart_item.dart';
 import '../routes/app_routes.dart';
 import 'package:go_router/go_router.dart';
 import '../utils/snackbar_utils.dart';
+import '../custom/app_theme.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final Product product;
@@ -18,10 +19,16 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _bottomSheetController;
+
   @override
   void initState() {
     super.initState();
+    _bottomSheetController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600), // Slower, smoother entry
+    );
     Future.microtask(() {
       if (widget.editingItem != null) {
         ref.read(productBuilderProvider.notifier).initFromCartItem(widget.editingItem!);
@@ -30,9 +37,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       }
     });
   }
+  
+  @override
+  void dispose() {
+    _bottomSheetController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final state = ref.watch(productBuilderProvider);
     final notifier = ref.read(productBuilderProvider.notifier);
 
@@ -61,7 +75,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                     ),
                   ),
                 ),
@@ -83,49 +97,66 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  background: Image.asset(
-                    widget.product.imageUrl,
-                    fit: BoxFit.cover,
+                  background: Hero(
+                    tag: 'product_${widget.product.remoteId}',
+                    child: Image.asset(
+                      widget.product.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
 
-              // --- Product Details ---
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.product.nameEn.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'serif',
+                child: TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 800),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, child) {
+                    return Transform.translate(
+                      offset: Offset(0, 30 * (1 - value)),
+                      child: Opacity(
+                        opacity: value,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.product.nameEn.toUpperCase(),
+                          style: Theme.of(context).textTheme.headlineMedium,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "A luxurious collection, custom-built or pre-mixed with legendary fillings.",
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Text(
-                            "₪ ",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        const SizedBox(height: 8),
+                        Text(
+                          "A luxurious collection, custom-built or pre-mixed with legendary fillings.",
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
                           ),
-                          Text(
-                            state.totalPrice.toStringAsFixed(2),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Text(
+                              "₪ ",
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              state.totalPrice.toStringAsFixed(2),
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
 
-                      // --- Master Toggle 1: hasVariants (S/M/L) ---
+                        // --- Master Toggle 1: hasVariants (S/M/L) ---
                       if (widget.product.hasVariants && widget.product.variants != null) ...[
                         Row(
                           children: widget.product.variants!.map((v) {
@@ -163,10 +194,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   padding: const EdgeInsets.symmetric(vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1) : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(24),
+                                    color: isSelected ? theme.colorScheme.tertiary.withValues(alpha: 0.1) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                                     border: Border.all(
-                                      color: isSelected ? Theme.of(context).colorScheme.tertiary : Colors.grey.shade300,
+                                      color: isSelected ? theme.colorScheme.tertiary : Colors.grey.shade300,
                                       width: isSelected ? 1.5 : 1.0,
                                     ),
                                   ),
@@ -176,8 +207,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                         v.size.toUpperCase(),
                                         style: TextStyle(
                                           fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
-                                          color: isSelected ? Theme.of(context).colorScheme.tertiary : Colors.black87,
-                                          fontFamily: 'serif',
+                                          color: isSelected ? theme.colorScheme.tertiary : Colors.black87,
                                           letterSpacing: 1.2,
                                         ),
                                       ),
@@ -210,15 +240,25 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: state.selectedGender == 'boy' ? Colors.blue : Colors.blue.withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: state.selectedGender == 'boy' 
+                                      ? theme.colorScheme.primary.withValues(alpha: 0.15) 
+                                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+                                    border: Border.all(
+                                      color: state.selectedGender == 'boy' 
+                                        ? theme.colorScheme.primary 
+                                        : Colors.transparent,
+                                      width: 1.5,
+                                    ),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    "IT'S A BOY 👦",
-                                    style: TextStyle(
+                                    "BOY",
+                                    style: theme.textTheme.labelLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: state.selectedGender == 'boy' ? Colors.white : Colors.blue.shade900,
+                                      color: state.selectedGender == 'boy' 
+                                        ? theme.colorScheme.primary 
+                                        : theme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -231,15 +271,25 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   margin: const EdgeInsets.symmetric(horizontal: 4),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: state.selectedGender == 'girl' ? Colors.pink : Colors.pink.withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: state.selectedGender == 'girl' 
+                                      ? const Color(0xFFFCE4EC) 
+                                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+                                    border: Border.all(
+                                      color: state.selectedGender == 'girl' 
+                                        ? const Color(0xFFE91E63) 
+                                        : Colors.transparent,
+                                      width: 1.5,
+                                    ),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    "IT'S A GIRL 👧",
-                                    style: TextStyle(
+                                    "GIRL",
+                                    style: theme.textTheme.labelLarge?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: state.selectedGender == 'girl' ? Colors.white : Colors.pink.shade900,
+                                      color: state.selectedGender == 'girl' 
+                                        ? const Color(0xFFC2185B) 
+                                        : theme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -366,17 +416,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF49D4D0).withValues(alpha: state.isSelectionValid ? 1.0 : 0.5),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: const Color(0xFFC5A359), width: 2), // Permanent Gold border
-                            boxShadow: [
-                              if (state.isSelectionValid)
-                                BoxShadow(
-                                  color: const Color(0xFFC5A359).withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
-                                ),
-                            ],
+                            color: theme.colorScheme.primary.withValues(alpha: state.isSelectionValid ? 1.0 : 0.5),
+                            borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                            border: Border.all(color: theme.colorScheme.tertiary, width: 2), // Permanent Gold border
+                            boxShadow: state.isSelectionValid ? AppTheme.goldShadow : null,
                           ),
                           alignment: Alignment.center,
                           child: Text(
@@ -392,15 +435,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         ),
                       ),
                     ],
+                    ),
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 40)), // Bottom padding
-            ],
+          const SliverToBoxAdapter(
+            child: SafeArea(
+              top: false,
+              child: SizedBox(height: 60),
+            ),
           ),
         ],
-      );
-  }
+      ),
+    ],
+  );
+}
 
   String _getMockFillingName(String id) {
     final mockNames = {
@@ -419,203 +468,227 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   void _showFillingsBottomSheet(BuildContext context, ProductBuilderState state, ProductBuilderNotifier notifier) {
-    // Capture modal context here so closing the sheet doesn't pop the whole page
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (modalContext) {
-        bool isClosing = false;
-        return Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            DraggableScrollableSheet(
-              initialChildSize: 0.4,
-              minChildSize: 0.01, // Allow going near-zero so snap physics can trigger auto-close
-              maxChildSize: 0.95,
-              expand: false,
-              snap: true,
-              snapSizes: const [0.4, 0.95], // No snap at bottom, so hard drag → goes to minChildSize → triggers close
-              builder: (_, scrollController) {
-                return StatefulBuilder(
-                  builder: (_, setSheetState) {
-                    return NotificationListener<DraggableScrollableNotification>(
-                      onNotification: (notification) {
-                        if (notification.extent <= 0.05 && !isClosing) {
-                          isClosing = true;
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (modalContext.mounted) {
-                              Navigator.of(modalContext).pop();
-                            }
-                          });
-                        }
-                        setSheetState(() {});
-                        return false;
-                      },
-                      child: Consumer(
-                        builder: (ctx, ref, child) {
-                          final sheetState = ref.watch(productBuilderProvider);
+      enableDrag: false,
+      transitionAnimationController: _bottomSheetController,
+      builder: (modalContext) => _FillingsSheetContent(
+        state: state,
+        notifier: notifier,
+        onClose: () {
+          if (modalContext.mounted) {
+            Navigator.pop(modalContext);
+          }
+        },
+      ),
+    );
+  }
+}
 
-                          return LayoutBuilder(
-                            builder: (ctx, constraints) {
-                              final isExpanded = constraints.maxHeight > MediaQuery.of(ctx).size.height * 0.45;
+class _FillingsSheetContent extends StatefulWidget {
+  final ProductBuilderState state;
+  final ProductBuilderNotifier notifier;
+  final VoidCallback onClose;
 
-                              return Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                                ),
-                                // The scrollController MUST cover the full visible surface.
-                                // Putting everything (including handle + header) inside this
-                                // scroll view means ANY upward drag on the sheet expands it.
-                                child: SingleChildScrollView(
-                                  controller: scrollController,
-                                  physics: const AlwaysScrollableScrollPhysics(),
-                                  child: ConstrainedBox(
-                                    // Fill the full sheet height so compact mode has no
-                                    // internal content to scroll — drags go straight to the sheet.
-                                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Drag handle
-                                        Container(
-                                          margin: const EdgeInsets.symmetric(vertical: 12),
-                                          width: 40,
-                                          height: 4,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade300,
-                                            borderRadius: BorderRadius.circular(2),
-                                          ),
-                                        ),
-                                        // Piece counter header
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text("Customize Mix", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                              Text(
-                                                "${sheetState.currentPieces}/${sheetState.maxPieces}",
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: sheetState.currentPieces > sheetState.maxPieces
-                                                      ? Colors.red
-                                                      : Theme.of(ctx).colorScheme.tertiary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        const Divider(height: 1),
+  const _FillingsSheetContent({
+    required this.state,
+    required this.notifier,
+    required this.onClose,
+  });
 
-                                        // Content — switches between compact and full
-                                        AnimatedCrossFade(
-                                          duration: const Duration(milliseconds: 250),
-                                          crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                                          // MODE 1: compact horizontal list
-                                          firstChild: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                child: Text("Swipe up to expand...", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                              ),
-                                              SizedBox(
-                                                height: 110,
-                                                child: ListView.builder(
-                                                  scrollDirection: Axis.horizontal,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                  itemCount: 10,
-                                                  itemBuilder: (context, index) {
-                                                    final fillingId = 'fill_$index';
-                                                    final name = _getMockFillingName(fillingId);
-                                                    final count = sheetState.selectedFillings[fillingId] ?? 0;
-                                                    return Container(
-                                                      width: 90,
-                                                      margin: const EdgeInsets.only(right: 10),
-                                                      child: _buildFillingCard(context, fillingId, name, count, notifier, isCompact: true),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              const SizedBox(height: 12),
-                                            ],
-                                          ),
-                                          // MODE 2: full grid
-                                          secondChild: GridView.builder(
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: 3,
-                                              childAspectRatio: 0.65,
-                                              crossAxisSpacing: 12,
-                                              mainAxisSpacing: 16,
-                                            ),
-                                            itemCount: 10,
-                                            itemBuilder: (context, index) {
-                                              final fillingId = 'fill_$index';
-                                              final name = _getMockFillingName(fillingId);
-                                              final count = sheetState.selectedFillings[fillingId] ?? 0;
-                                              return _buildFillingCard(context, fillingId, name, count, notifier, isCompact: false);
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+  @override
+  State<_FillingsSheetContent> createState() => _FillingsSheetContentState();
+}
+
+class _FillingsSheetContentState extends State<_FillingsSheetContent> {
+  bool _isClosing = false;
+
+  String _getMockFillingName(String id) {
+    const mockNames = {
+      'fill_0': 'Milk Chocolate',
+      'fill_1': 'Pistachio Cream',
+      'fill_2': 'Sea Salt Caramel',
+      'fill_3': 'Dark Truffle',
+      'fill_4': 'Hazelnut',
+      'fill_5': 'White Chocolate',
+      'fill_6': 'Caramel Salt',
+      'fill_7': 'Berry Mix',
+      'fill_8': 'Coffee Bean',
+      'fill_9': 'Almond Crisp',
+    };
+    return mockNames[id] ?? 'Special Mix';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        DraggableScrollableSheet(
+          initialChildSize: 0.4,
+          minChildSize: 0.01,
+          maxChildSize: 0.95,
+          expand: false,
+          snap: true,
+          snapSizes: const [0.4, 0.95],
+          builder: (_, scrollController) {
+            return NotificationListener<DraggableScrollableNotification>(
+              onNotification: (notification) {
+                if (notification.extent <= 0.05 && !_isClosing) {
+                  _isClosing = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    widget.onClose();
+                  });
+                }
+                return false;
+              },
+              child: Consumer(
+                builder: (ctx, ref, child) {
+                  final sheetState = ref.watch(productBuilderProvider);
+                  return LayoutBuilder(
+                    builder: (ctx, constraints) {
+                      final isExpanded = constraints.maxHeight > MediaQuery.of(ctx).size.height * 0.45;
+                      return Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                        ),
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 12),
+                                  width: 40,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade300,
+                                    borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-
-            // --- Pinned Save Button with white backing ---
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text("Customize Mix", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                      Text(
+                                        "${sheetState.currentPieces}/${sheetState.maxPieces}",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: sheetState.currentPieces > sheetState.maxPieces
+                                              ? Colors.red
+                                              : Theme.of(ctx).colorScheme.tertiary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Divider(height: 1),
+                                AnimatedCrossFade(
+                                  duration: const Duration(milliseconds: 250),
+                                  crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                                  firstChild: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        child: Text("Swipe up to expand...", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                      ),
+                                      SizedBox(
+                                        height: 110,
+                                        child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          itemCount: 10,
+                                          itemBuilder: (context, index) {
+                                            final fillingId = 'fill_$index';
+                                            final name = _getMockFillingName(fillingId);
+                                            final count = sheetState.selectedFillings[fillingId] ?? 0;
+                                            return Container(
+                                              width: 90,
+                                              margin: const EdgeInsets.only(right: 10),
+                                              child: _buildFillingCard(context, fillingId, name, count, widget.notifier, isCompact: true),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                    ],
+                                  ),
+                                  secondChild: GridView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      childAspectRatio: 0.65,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 16,
+                                    ),
+                                    itemCount: 10,
+                                    itemBuilder: (context, index) {
+                                      final fillingId = 'fill_$index';
+                                      final name = _getMockFillingName(fillingId);
+                                      final count = sheetState.selectedFillings[fillingId] ?? 0;
+                                      return _buildFillingCard(context, fillingId, name, count, widget.notifier, isCompact: false);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            );
+          },
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, -4),
                 ),
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(modalContext).pop(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.tertiary,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                        elevation: 0,
-                      ),
-                      child: const Text("SAVE SELECTIONS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: widget.onClose,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    elevation: 0,
                   ),
+                  child: const Text("SAVE SELECTIONS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 

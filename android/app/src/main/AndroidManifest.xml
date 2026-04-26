@@ -15,7 +15,7 @@
 
 <uses-feature android:name="android.hardware.camera" android:required="false" />  <!-- Makes camera optional -->
     <application
-        android:label="Sarad"
+        android:label="Sard"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
@@ -61,7 +61,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="sarad" />
+                <data android:scheme="sard" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

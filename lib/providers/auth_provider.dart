@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/painting.dart';
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -267,7 +268,7 @@ class AuthProvider extends ChangeNotifier {
       // Use the project's base URL instead of the internal auth path
       url: 'https://flutter-ai-playground-96a06.firebaseapp.com/home',
       handleCodeInApp: true,
-      androidPackageName: 'com.example.sarad',
+      androidPackageName: 'com.example.sard',
       androidInstallApp: true,
       androidMinimumVersion: '24',
     );
@@ -309,8 +310,14 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _auth.signOut();
       await _googleSignIn.signOut();
-      await prefs.setBool('isGuest', false);
+      
+      // Clear all preferences as requested
+      await prefs.clear();
+      
       _isGuest = false;
+      _hasSeenOnboarding = false;
+      _user = null;
+      
       notifyListeners();
     } finally {
       _setLoading(false);
@@ -320,7 +327,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> fullReset() async {
     _setLoading(true);
     try {
-      // Sign out from all providers, ignoring errors if not currently signed in
+      // 1. Sign out from all providers
       try {
         await _auth.signOut();
       } catch (e) {
@@ -332,10 +339,22 @@ class AuthProvider extends ChangeNotifier {
         debugPrint('Google signOut error: $e');
       }
 
+      // 2. Clear all persistent preferences
       await prefs.clear();
+
+      // 3. Clear Image Cache (Important for "all cache")
+      try {
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
+      } catch (e) {
+        debugPrint('ImageCache clear error: $e');
+      }
+
+      // 4. Reset internal state
       _isGuest = false;
       _hasSeenOnboarding = false;
       _user = null;
+      
       notifyListeners();
     } finally {
       _setLoading(false);

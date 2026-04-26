@@ -13,20 +13,45 @@ class SardSnackBar {
     state.clearSnackBars();
     
     final snackBar = SnackBar(
-      content: Text(
-        message,
-        style: const TextStyle(
-          color: Colors.white, 
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
+      content: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: action != null ? () {
+          action.onPressed();
+          messengerKey.currentState?.hideCurrentSnackBar();
+        } : null,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white, 
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (action != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                action.label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
       duration: const Duration(seconds: 4),
-      action: action,
+      // We don't use the default action anymore to make the whole area clickable
       behavior: SnackBarBehavior.floating,
       backgroundColor: const Color(0xFF49D4D0),
       elevation: 6,
-      // Lower margin to 20 so it's not too high up, but still above the bottom nav
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );

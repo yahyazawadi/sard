@@ -42,7 +42,8 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyDzt3NQ6vAHztbgKSDDo83nMVfHl5ncZpk',
-    appId: '1:313420731986:web:7eb9481b29a25b2fdd718b', // Placeholder web for new project
+    appId:
+        '1:313420731986:web:7eb9481b29a25b2fdd718b', // Placeholder web for new project
     messagingSenderId: '313420731986',
     projectId: 'flutter-ai-playground-96a06',
     authDomain: 'flutter-ai-playground-96a06.firebaseapp.com',
@@ -51,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDzt3NQ6vAHztbgKSDDo83nMVfHl5ncZpk',
-    appId: '1:313420731986:android:e8d7458bfdb07478dd718b',
+    appId: '1:313420731986:android:78d96ebd923988dfdd718b',
     messagingSenderId: '313420731986',
     projectId: 'flutter-ai-playground-96a06',
     storageBucket: 'flutter-ai-playground-96a06.firebasestorage.app',
@@ -59,11 +60,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDzt3NQ6vAHztbgKSDDo83nMVfHl5ncZpk',
-    appId: '1:313420731986:ios:fc174b3d98a25b2fdd718b', // Placeholder iOS for new project
+    appId:
+        '1:313420731986:ios:fc174b3d98a25b2fdd718b', // Placeholder iOS for new project
     messagingSenderId: '313420731986',
     projectId: 'flutter-ai-playground-96a06',
     storageBucket: 'flutter-ai-playground-96a06.firebasestorage.app',
-    iosBundleId: 'com.example.sarad',
+    iosBundleId: 'com.example.sard',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -72,7 +74,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '313420731986',
     projectId: 'flutter-ai-playground-96a06',
     storageBucket: 'flutter-ai-playground-96a06.firebasestorage.app',
-    iosBundleId: 'com.example.sarad',
+    iosBundleId: 'com.example.sard',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

@@ -25,13 +25,29 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+
 subprojects {
-    project.evaluationDependsOn(":app")
+    val project = this
+    if (project.state.executed) {
+        configureProject(project)
+    } else {
+        project.afterEvaluate {
+            configureProject(project)
+        }
+    }
+}
+
+fun configureProject(project: Project) {
+    if (project.hasProperty("android")) {
+        val android = project.extensions.getByName("android") as? com.android.build.gradle.BaseExtension
+        android?.compileSdkVersion(36)
+    }
 }
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
 // Force every subproject (plugin) to use compatible versions
 subprojects {
     project.configurations.all {

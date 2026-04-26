@@ -29,7 +29,7 @@ class AppTextSizes {
 class AppFonts {
   AppFonts._();
 
-  static const String defaultFont = 'DG-Sahabah';
+  static const String defaultFont = 'DG Sahabah';
   static const List<String> available = [
     'DG-Sahabah',
     'Roboto',
@@ -54,6 +54,26 @@ class AppTheme {
   static const Color textPrimaryDark      = Color(0xFFFFFFFF);
   static const Color textSecondaryDark    = Color(0xFFB0B8B8);
 
+  // ── Style Tokens (Centralized UI Consistency) ────────────────────────────
+  static final cardShadow = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.05),
+      blurRadius: 10,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static final goldShadow = [
+    BoxShadow(
+      color: accentGold.withValues(alpha: 0.2),
+      blurRadius: 8,
+      spreadRadius: 1,
+    ),
+  ];
+
+  static const double cardRadius = 16.0;
+  static const double buttonRadius = 24.0;
+
   // ── Text theme factory ────────────────────────────────────────────────────
   static TextTheme _buildTextTheme(
     Color primary,
@@ -67,48 +87,51 @@ class AppTheme {
       Color color,
       double size, {
       FontWeight weight = FontWeight.normal,
+      double? height,
+      double? letterSpacing,
     }) =>
         TextStyle(
           color: color,
           fontSize: s(size),
           fontWeight: weight,
           fontFamily: fontFamily,
+          height: height,
+          letterSpacing: letterSpacing,
         );
 
     return TextTheme(
-      displayLarge:   style(primary, AppTextSizes.displayLarge,  weight: FontWeight.bold),
-      displayMedium:  style(primary, AppTextSizes.displayMedium, weight: FontWeight.bold),
-      displaySmall:   style(primary, AppTextSizes.displaySmall,  weight: FontWeight.bold),
-      headlineLarge:  style(primary, AppTextSizes.headlineLarge,  weight: FontWeight.w900),
-      headlineMedium: style(primary, AppTextSizes.headlineMedium, weight: FontWeight.w800),
-      headlineSmall:  style(primary, AppTextSizes.headlineSmall,  weight: FontWeight.bold),
-      titleLarge:     style(primary, AppTextSizes.titleLarge,  weight: FontWeight.bold),
+      displayLarge:   style(primary, AppTextSizes.displayLarge,  weight: FontWeight.bold, height: 1.1),
+      displayMedium:  style(primary, AppTextSizes.displayMedium, weight: FontWeight.bold, height: 1.1),
+      displaySmall:   style(primary, AppTextSizes.displaySmall,  weight: FontWeight.bold, height: 1.1),
+      headlineLarge:  style(primary, AppTextSizes.headlineLarge,  weight: FontWeight.w900, height: 1.2),
+      headlineMedium: style(primary, AppTextSizes.headlineMedium, weight: FontWeight.w800, height: 1.2),
+      headlineSmall:  style(primary, AppTextSizes.headlineSmall,  weight: FontWeight.bold, height: 1.2),
+      titleLarge:     style(primary, AppTextSizes.titleLarge,  weight: FontWeight.bold, letterSpacing: 0.5),
       titleMedium:    style(primary, AppTextSizes.titleMedium, weight: FontWeight.w600),
       titleSmall:     style(primary, AppTextSizes.titleSmall,  weight: FontWeight.w500),
       bodyLarge:      style(primary,   AppTextSizes.bodyLarge),
       bodyMedium:     style(secondary, AppTextSizes.bodyMedium),
       bodySmall:      style(secondary, AppTextSizes.bodySmall),
-      labelLarge:     style(primary,   AppTextSizes.labelLarge,  weight: FontWeight.bold),
+      labelLarge:     style(primary,   AppTextSizes.labelLarge,  weight: FontWeight.bold, letterSpacing: 1.1),
       labelMedium:    style(secondary, AppTextSizes.labelMedium, weight: FontWeight.w500),
       labelSmall:     style(secondary, AppTextSizes.labelSmall),
     );
   }
 
   // ── Public theme builders ─────────────────────────────────────────────────
-  /// [scale]      – multiplier applied to every font size (default 1.0).
-  /// [fontFamily] – override the font family for the entire app.
   static ThemeData lightTheme({double scale = 1.0, String? fontFamily}) {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       primaryColor: primaryTeal,
       scaffoldBackgroundColor: bgWhite,
-      fontFamily: fontFamily,
+      fontFamily: fontFamily ?? AppFonts.defaultFont,
       colorScheme: const ColorScheme.light(
         primary: primaryTeal,
         secondary: secondaryTeal,
         primaryContainer: Color(0xFFB2EBF2),
         tertiary: accentGold,
+        onTertiary: Colors.white,
         surface: bgWhite,
         surfaceContainerHighest: sectionBgLight,
         error: Colors.redAccent,
@@ -119,13 +142,23 @@ class AppTheme {
       ),
       textTheme: _buildTextTheme(
         textPrimaryLight, textSecondaryLight,
-        scale: scale, fontFamily: fontFamily,
+        scale: scale, fontFamily: fontFamily ?? AppFonts.defaultFont,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryTeal,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(buttonRadius)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: bgWhite,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(cardRadius),
+          side: BorderSide(color: Colors.grey.shade200, width: 1),
         ),
       ),
       appBarTheme: const AppBarTheme(
@@ -154,6 +187,7 @@ class AppTheme {
         secondary: secondaryTeal,
         primaryContainer: Color(0xFF0F3E3E),
         tertiary: accentGold,
+        onTertiary: Colors.white,
         surface: bgDarkTeal,
         surfaceContainerHighest: sectionBgDark,
         error: Colors.redAccent,
@@ -170,7 +204,9 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryTeal,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(buttonRadius)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
       appBarTheme: const AppBarTheme(
