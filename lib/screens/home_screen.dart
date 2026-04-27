@@ -248,7 +248,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             featuredAsync.when(
               data: (templates) {
                 final showAll = templates.length > 2;
-                final itemHeight = 240.0;
+                final itemHeight = 220.0;
                 final itemMargin = 16.0;
                 final totalItemBlock = itemHeight + itemMargin;
                 final collapsedHeight = (itemHeight * 1.3) + itemMargin;
@@ -403,7 +403,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               loading: () => const SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 240,
+                  height: 220,
                   child: Center(child: CircularProgressIndicator()),
                 ),
               ),
@@ -591,7 +591,7 @@ class _CategorySection extends ConsumerWidget {
               ),
             ),
             SizedBox(
-              height: 300,
+              height: 275,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 scrollDirection: Axis.horizontal,
@@ -806,7 +806,7 @@ class ProductCard extends ConsumerWidget {
                 padding: const EdgeInsets.all(12),
                 child: SizedBox(
                   height:
-                      135, // Increased to absorb text size and new quantity pill without overflow
+                      128, // Slightly reduced to make card shorter
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1031,7 +1031,7 @@ class _SearchResultsGrid extends ConsumerWidget {
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.6,
+              childAspectRatio: 0.65,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
