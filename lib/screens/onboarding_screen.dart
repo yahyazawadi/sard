@@ -12,9 +12,8 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> with TickerProviderStateMixin {
-
-
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with TickerProviderStateMixin {
   void _showAuthBottomSheet(BuildContext context) {
     // Create a controller for the sheet itself
     final sheetController = AnimationController(
@@ -32,21 +31,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         final theme = Theme.of(context);
         return TweenAnimationBuilder<double>(
           tween: Tween(begin: 1.0, end: 0.0),
-          duration: const Duration(milliseconds: 800),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
           builder: (context, value, child) {
             return Transform.translate(
               offset: Offset.zero,
-              child: Opacity(
-                opacity: 1.0 - value,
-                child: child,
-              ),
+              child: Opacity(opacity: 1.0 - value, child: child),
             );
           },
           child: Container(
             decoration: BoxDecoration(
               color: theme.colorScheme.primaryContainer,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(40),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
@@ -67,7 +65,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.3,
+                      ),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -146,7 +146,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -163,7 +162,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               );
             },
           ),
-          
+
           // Get Started Button
           Positioned(
             left: 24,

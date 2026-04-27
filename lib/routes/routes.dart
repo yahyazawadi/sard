@@ -3,8 +3,6 @@
 // =============================================================================
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../screens/home_screen.dart';
 import '../screens/product_detail_screen.dart';
 import '../models/product.dart';
 import '../screens/profile_screen.dart';
@@ -19,19 +17,8 @@ import '../screens/collection_screen.dart';
 import '../models/cart_item.dart';
 import '../models/featured_template.dart';
 import 'app_routes.dart';
-import '../custom/app_theme.dart';
 
-int _getSelectedIndex(String path) {
-  if (path == AppRoutes.settings) return 2;
-  if (path == AppRoutes.cart) return 1;
-  if (path == AppRoutes.home ||
-      path == '/' ||
-      path == AppRoutes.collection ||
-      path == AppRoutes.productDetail) {
-    return 0;
-  }
-  return -1;
-}
+import '../screens/main_wrapper_screen.dart';
 
 GoRouter createRouter(AuthProvider auth) {
   return GoRouter(
@@ -113,128 +100,41 @@ GoRouter createRouter(AuthProvider auth) {
       ),
       GoRoute(path: AppRoutes.verify, builder: (_, _) => const VerifyScreen()),
 
-      // ── Authenticated Routes (Shell with bottom nav) ──────────────────────
-      ShellRoute(
-        builder: (context, state, child) => Consumer(
-          builder: (context, ref, _) {
-            final isSearchMode = ref.watch(isSearchModeProvider);
-            return PopScope(
-              canPop: !isSearchMode,
-              onPopInvokedWithResult: (didPop, result) {
-                if (didPop) return;
-                // If we are on home and in search mode, reset it
-                if (isSearchMode && _getSelectedIndex(state.uri.path) == 0) {
-                  ref.read(homeResetProvider.notifier).state++;
-                }
-              },
-              child: Scaffold(
-                body: child,
-            bottomNavigationBar: NavigationBar(
-              selectedIndex: _getSelectedIndex(state.uri.path) == -1
-                  ? 0
-                  : _getSelectedIndex(state.uri.path),
-              onDestinationSelected: (index) {
-                if (index == 0) {
-                  if (_getSelectedIndex(state.uri.path) == 0) {
-                    // Already on home, trigger reset
-                    ref.read(homeResetProvider.notifier).state++;
-                  }
-                  context.go(AppRoutes.home);
-                }
-                if (index == 1) context.go(AppRoutes.cart);
-                if (index == 2) context.go(AppRoutes.settings);
-              },
-              destinations: [
-                NavigationDestination(
-                  icon: const SizedBox(
-                    width: 52,
-                    height: 52,
-                    child: Center(child: Icon(Icons.home_outlined)),
-                  ),
-                  selectedIcon: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryTeal.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(child: Icon(Icons.home_rounded)),
-                  ),
-                  label: 'Home',
-                ),
-                NavigationDestination(
-                  icon: const SizedBox(
-                    width: 52,
-                    height: 52,
-                    child: Center(child: Icon(Icons.shopping_cart_outlined)),
-                  ),
-                  selectedIcon: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryTeal.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(child: Icon(Icons.shopping_cart_rounded)),
-                  ),
-                  label: 'Cart',
-                ),
-                NavigationDestination(
-                  icon: const SizedBox(
-                    width: 52,
-                    height: 52,
-                    child: Center(child: Icon(Icons.person_outline_rounded)),
-                  ),
-                  selectedIcon: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryTeal.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(child: Icon(Icons.person_rounded)),
-                  ),
-                  label: 'Profile',
-                ),
-              ],
-            ),
-              ),
-            );
-          },
-        ),
-        routes: [
-          GoRoute(path: AppRoutes.home, builder: (_, _) => const HomeScreen()),
+      // ── Authenticated Routes (Main Wrapper with bottom nav) ──────────────────────
+      GoRoute(
+        path: AppRoutes.home,
+        builder: (_, _) => const MainWrapperScreen(),
+      ),
 
-          GoRoute(path: AppRoutes.cart, builder: (_, _) => const CartScreen()),
-          GoRoute(
-            path: AppRoutes.productDetail,
-            builder: (context, state) {
-              if (state.extra is Product) {
-                return ProductDetailScreen(product: state.extra as Product);
-              } else if (state.extra is Map<String, dynamic>) {
-                final map = state.extra as Map<String, dynamic>;
-                return ProductDetailScreen(
-                  product: map['product'] as Product,
-                  editingItem: map['editingItem'] as CartItem?,
-                );
-              }
-              return const Scaffold(
-                body: Center(child: Text("Product data missing")),
-              );
-            },
-          ),
-          GoRoute(
-            path: AppRoutes.settings,
-            builder: (_, _) => const ProfileScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.collection,
-            builder: (context, state) {
-              final template = state.extra as FeaturedTemplate;
-              return CollectionScreen(template: template);
-            },
-          ),
-        ],
+      // Standalone routes (these push over the main wrapper, hiding the bottom nav bar)
+      GoRoute(path: AppRoutes.cart, builder: (_, _) => const CartScreen()),
+      GoRoute(
+        path: AppRoutes.productDetail,
+        builder: (context, state) {
+          if (state.extra is Product) {
+            return ProductDetailScreen(product: state.extra as Product);
+          } else if (state.extra is Map<String, dynamic>) {
+            final map = state.extra as Map<String, dynamic>;
+            return ProductDetailScreen(
+              product: map['product'] as Product,
+              editingItem: map['editingItem'] as CartItem?,
+            );
+          }
+          return const Scaffold(
+            body: Center(child: Text("Product data missing")),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (_, _) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.collection,
+        builder: (context, state) {
+          final template = state.extra as FeaturedTemplate;
+          return CollectionScreen(template: template);
+        },
       ),
       GoRoute(
         path: AppRoutes.checkout,

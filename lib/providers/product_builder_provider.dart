@@ -12,6 +12,7 @@ class ProductBuilderState {
   final Map<String, int> selectedFillings;
   final bool isLoading;
   final bool isEdited;
+  final int quantity;
 
   ProductBuilderState({
     this.product,
@@ -21,6 +22,7 @@ class ProductBuilderState {
     this.selectedFillings = const {},
     this.isLoading = false,
     this.isEdited = false,
+    this.quantity = 1,
   });
 
   ProductBuilderState copyWith({
@@ -31,6 +33,7 @@ class ProductBuilderState {
     Map<String, int>? selectedFillings,
     bool? isLoading,
     bool? isEdited,
+    int? quantity,
   }) {
     return ProductBuilderState(
       product: product ?? this.product,
@@ -40,6 +43,7 @@ class ProductBuilderState {
       selectedFillings: selectedFillings ?? this.selectedFillings,
       isLoading: isLoading ?? this.isLoading,
       isEdited: isEdited ?? this.isEdited,
+      quantity: quantity ?? this.quantity,
     );
   }
 
@@ -85,7 +89,7 @@ class ProductBuilderState {
        return product!.variants?.isNotEmpty == true ? product!.variants!.first.price : 0.0;
     }
     
-    return selectedVariant?.price ?? 0.0;
+    return (selectedVariant?.price ?? 0.0) * quantity;
   }
 }
 
@@ -101,6 +105,7 @@ class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
       selectedFillings: item.selectedFillings != null ? Map<String, int>.from(item.selectedFillings!) : {},
       isLoading: false,
       isEdited: true, 
+      quantity: item.quantity,
     );
   }
 
@@ -155,6 +160,7 @@ class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
       selectedWeight: initialWeight,
       selectedFillings: initialFillings,
       isLoading: false,
+      quantity: 1,
     );
   }
 
@@ -226,6 +232,12 @@ class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
 
   void clearFillings() {
     state = state.copyWith(selectedFillings: {}, isEdited: true);
+  }
+
+  void setQuantity(int q) {
+    if (q >= 1) {
+      state = state.copyWith(quantity: q);
+    }
   }
 }
 

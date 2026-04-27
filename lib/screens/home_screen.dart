@@ -46,13 +46,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Future.microtask(() => ref.read(syncProvider).performInitialSeed());
   }
 
-
-
   Future<void> _loadSearchHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final query = prefs.getString('last_search_query') ?? '';
     final categories = prefs.getStringList('last_search_categories') ?? [];
-    
+
     if (mounted) {
       setState(() {
         _searchQuery = query;
@@ -65,7 +63,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _saveSearchHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('last_search_query', _searchQuery);
-    await prefs.setStringList('last_search_categories', _selectedCategoryIds.toList());
+    await prefs.setStringList(
+      'last_search_categories',
+      _selectedCategoryIds.toList(),
+    );
   }
 
   void _exitSearchMode() {
@@ -84,7 +85,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // If entering fresh, restore the last saved search as "autofill"
       final prefs = await SharedPreferences.getInstance();
       final lastQuery = prefs.getString('last_search_query') ?? '';
-      final lastCategories = prefs.getStringList('last_search_categories') ?? [];
+      final lastCategories =
+          prefs.getStringList('last_search_categories') ?? [];
 
       setState(() {
         _isSearchMode = true;
@@ -134,41 +136,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       key: const ValueKey('search_title'),
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 20,
+                            color: AppTheme.gradientStart,
+                          ),
                           onPressed: _exitSearchMode,
                         ),
-                        Text(
-                          'Search',
-                          style: theme.textTheme.headlineSmall,
-                        ),
+                        Text('Search', style: theme.textTheme.headlineSmall),
                       ],
                     )
-                  : TweenAnimationBuilder<double>(
-                      key: const ValueKey('logo_title'),
-                      duration: const Duration(milliseconds: 1000),
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      curve: Curves.elasticOut,
-                      builder: (context, value, child) {
-                        return Transform.scale(
-                          scale: value,
-                          child: child,
-                        );
-                      },
-                      child: GestureDetector(
-                        onTap: () {
-                          if (_scrollController.hasClients) {
-                            _scrollController.animateTo(
-                              0,
-                              duration: const Duration(milliseconds: 600),
-                              curve: Curves.fastOutSlowIn,
-                            );
-                          }
-                        },
-                        child: Image.asset(
-                          'assets/images/TealLogo.png',
-                          height: 45,
-                          fit: BoxFit.contain,
-                        ),
+                  : Hero(
+                      tag: 'logo',
+                      child: Image.asset(
+                        'assets/images/TealLogo.png',
+                        height: 45,
+                        fit: BoxFit.contain,
                       ),
                     ),
             ),
@@ -177,7 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 2. Search Bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
               child: SardSearchBar(
                 controller: _searchController,
                 onTap: _enterSearchMode,
@@ -203,9 +186,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverToBoxAdapter(
             child: categoriesAsync.when(
               data: (categories) => SizedBox(
-                height: 56,
+                height: 40,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: ClampingScrollPhysics(),
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   itemCount: categories.length + 1,
                   itemBuilder: (context, index) {
@@ -224,7 +210,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       );
                     }
                     final category = categories[index - 1];
-                    final isSelected = _selectedCategoryIds.contains(category.remoteId);
+                    final isSelected = _selectedCategoryIds.contains(
+                      category.remoteId,
+                    );
                     return SardCategoryChip(
                       label: category.nameEn,
                       isSelected: isSelected,
@@ -243,7 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                 ),
               ),
-              loading: () => const SizedBox(height: 56),
+              loading: () => const SizedBox(height: 40),
               error: (error, stackTrace) => const SizedBox.shrink(),
             ),
           ),
@@ -260,12 +248,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             featuredAsync.when(
               data: (templates) {
                 final showAll = templates.length > 2;
-                final itemHeight = 240.0;
+                final itemHeight = 220.0;
                 final itemMargin = 16.0;
                 final totalItemBlock = itemHeight + itemMargin;
                 final collapsedHeight = (itemHeight * 1.3) + itemMargin;
                 final expandedHeight = (totalItemBlock * templates.length);
-                final currentHeight = _isFeaturedExpanded ? expandedHeight : collapsedHeight;
+                final currentHeight = _isFeaturedExpanded
+                    ? expandedHeight
+                    : collapsedHeight;
                 const buttonHeight = 64.0;
 
                 return SliverPadding(
@@ -273,7 +263,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   sliver: SliverToBoxAdapter(
                     child: SizedBox(
                       key: _featuredKey,
-                      height: (templates.length <= 2 ? (totalItemBlock * templates.length) : currentHeight) + 8.0,
+                      height:
+                          (templates.length <= 2
+                              ? (totalItemBlock * templates.length)
+                              : currentHeight) +
+                          8.0,
                       child: Stack(
                         clipBehavior: Clip.none,
                         alignment: Alignment.topCenter,
@@ -281,7 +275,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 600),
                             curve: Curves.fastLinearToSlowEaseIn,
-                            height: templates.length <= 2 ? (totalItemBlock * templates.length) : currentHeight,
+                            height: templates.length <= 2
+                                ? (totalItemBlock * templates.length)
+                                : currentHeight,
                             clipBehavior: Clip.hardEdge,
                             decoration: const BoxDecoration(),
                             child: OverflowBox(
@@ -290,19 +286,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               maxHeight: double.infinity,
                               child: Column(
                                 children: [
-                                  ...templates.map((t) => Container(
-                                        height: itemHeight,
-                                        width: double.infinity,
-                                        margin: EdgeInsets.only(bottom: itemMargin),
-                                        child: _FeaturedCard(template: t),
-                                      )),
+                                  ...templates.map(
+                                    (t) => Container(
+                                      height: itemHeight,
+                                      width: double.infinity,
+                                      margin: EdgeInsets.only(
+                                        bottom: itemMargin,
+                                      ),
+                                      child: _FeaturedCard(template: t),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                           if (showAll)
                             Positioned(
-                              top: (templates.length <= 2 ? (totalItemBlock * templates.length) : currentHeight) - (buttonHeight / 2),
+                              top:
+                                  (templates.length <= 2
+                                      ? (totalItemBlock * templates.length)
+                                      : currentHeight) -
+                                  (buttonHeight / 2),
                               left: 0,
                               right: 0,
                               child: GestureDetector(
@@ -311,17 +315,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   final wasExpanded = _isFeaturedExpanded;
                                   double? targetOffset;
                                   if (wasExpanded) {
-                                    final RenderBox? renderBox = _featuredKey.currentContext?.findRenderObject() as RenderBox?;
+                                    final RenderBox? renderBox =
+                                        _featuredKey.currentContext
+                                                ?.findRenderObject()
+                                            as RenderBox?;
                                     if (renderBox != null) {
-                                      final position = renderBox.localToGlobal(Offset.zero);
-                                      targetOffset = _scrollController.offset + position.dy - 20;
+                                      final position = renderBox.localToGlobal(
+                                        Offset.zero,
+                                      );
+                                      targetOffset =
+                                          _scrollController.offset +
+                                          position.dy -
+                                          20;
                                     }
                                   }
-                                  setState(() => _isFeaturedExpanded = !_isFeaturedExpanded);
+                                  setState(
+                                    () => _isFeaturedExpanded =
+                                        !_isFeaturedExpanded,
+                                  );
                                   if (wasExpanded && targetOffset != null) {
                                     _scrollController.animateTo(
-                                      targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
-                                      duration: const Duration(milliseconds: 600),
+                                      targetOffset.clamp(
+                                        0,
+                                        _scrollController
+                                            .position
+                                            .maxScrollExtent,
+                                      ),
+                                      duration: const Duration(
+                                        milliseconds: 600,
+                                      ),
                                       curve: Curves.fastLinearToSlowEaseIn,
                                     );
                                   }
@@ -333,26 +355,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   child: Stack(
                                     alignment: Alignment.center,
                                     children: [
-                                      Divider(color: Colors.grey.shade300, thickness: 1),
+                                      Divider(
+                                        color: Colors.grey.shade300,
+                                        thickness: 1,
+                                      ),
                                       AnimatedRotation(
                                         turns: _isFeaturedExpanded ? 0.5 : 0,
-                                        duration: const Duration(milliseconds: 600),
+                                        duration: const Duration(
+                                          milliseconds: 600,
+                                        ),
                                         curve: Curves.easeOutBack,
                                         child: Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             shape: BoxShape.circle,
-                                            border: Border.all(color: Colors.grey.shade300),
+                                            border: Border.all(
+                                              color: Colors.grey.shade300,
+                                            ),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.black.withValues(alpha: 0.08),
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.08,
+                                                ),
                                                 blurRadius: 6,
                                                 offset: const Offset(0, 3),
                                               ),
                                             ],
                                           ),
-                                          child: Icon(Icons.keyboard_arrow_down_rounded, color: theme.colorScheme.primary, size: 24),
+                                          child: Icon(
+                                            Icons.keyboard_arrow_down_rounded,
+                                            color: AppTheme.gradientStart,
+                                            size: 24,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -366,7 +401,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 );
               },
-              loading: () => const SliverToBoxAdapter(child: SizedBox(height: 240, child: Center(child: CircularProgressIndicator()))),
+              loading: () => const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 220,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
               error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
             ),
 
@@ -378,8 +418,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return _CategorySection(category: category);
                 }, childCount: categories.length),
               ),
-              loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
-              error: (e, s) => SliverFillRemaining(child: Center(child: Text('Error loading catalog: $e'))),
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, s) => SliverFillRemaining(
+                child: Center(child: Text('Error loading catalog: $e')),
+              ),
             ),
           ] else ...[
             // Search Results Mode
@@ -396,78 +440,105 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-
-
 class _FeaturedCard extends StatelessWidget {
   final FeaturedTemplate template;
   const _FeaturedCard({required this.template});
 
+  void _navigate(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CollectionScreen(template: template),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      margin: EdgeInsets.zero,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
-        border: Border.all(
-          color: AppTheme.accentGold.withValues(alpha: 0.5),
-          width: 1.5,
-        ),
-        boxShadow: AppTheme.cardShadow,
-        image: DecorationImage(
-          image: AssetImage(template.bannerUrl),
-          fit: BoxFit.cover,
-        ),
-      ),
+    return GestureDetector(
+      onTap: () => _navigate(context),
       child: Container(
+        margin: EdgeInsets.zero,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 6), // Slightly smaller to fit inside border
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.center,
-            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
+          border: Border.all(
+            color: AppTheme.accentGold.withValues(alpha: 0.5),
+            width: 1.5,
+          ),
+          boxShadow: AppTheme.cardShadow,
+          image: DecorationImage(
+            image: AssetImage(template.bannerUrl),
+            fit: BoxFit.cover,
           ),
         ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              template.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.displaySmall?.copyWith(
-                color: Colors.white,
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius + 6),
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              end: const Alignment(0, -0.3),
+              colors: [
+                Colors.black.withValues(alpha: 0.75),
+                Colors.transparent,
+              ],
             ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CollectionScreen(template: template),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                template.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.displaySmall?.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // "try now" chip
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 40,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.getCardGradient(theme),
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.buttonRadius,
+                      ),
+                      border: Border.all(
+                        color: AppTheme.accentGold,
+                        width: 1.5,
+                      ),
+                      boxShadow: AppTheme.cardShadow,
+                    ),
+                    child: Text(
+                      'TRY NOW',
+                      textAlign: TextAlign.center,
+                      strutStyle: const StrutStyle(
+                        fontSize: 14,
+                        height: 1.0,
+                        forceStrutHeight: true,
+                        leading: 0,
+                      ),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                        height: 1.0,
+                        leadingDistribution: TextLeadingDistribution.even,
+                      ),
+                    ),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: theme.colorScheme.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
+                ],
               ),
-              child: const Text(
-                'try now',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -520,10 +591,13 @@ class _CategorySection extends ConsumerWidget {
               ),
             ),
             SizedBox(
-              height: 300,
+              height: 275,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 scrollDirection: Axis.horizontal,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: ClampingScrollPhysics(),
+                ),
                 itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
                   return ProductCard(product: filteredProducts[index]);
@@ -544,23 +618,41 @@ class ProductCard extends ConsumerWidget {
   const ProductCard({super.key, required this.product});
 
   void _handleAdd(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final variants = product.variants ?? [];
     if (variants.length > 1) {
       // Show variant picker
       showModalBottomSheet(
         context: context,
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        showDragHandle: false, // Using custom handle for color control
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         builder: (context) {
+          final searchBg = theme.brightness == Brightness.light
+              ? Colors.grey.shade200
+              : theme.colorScheme.surfaceContainerHighest;
+
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Custom Handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: searchBg,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   Text(
                     'Select Size',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -619,6 +711,12 @@ class ProductCard extends ConsumerWidget {
     final variants = product.variants ?? [];
     double displayPrice = 0.0;
 
+    final cartItems = ref.watch(cartProvider);
+    final productItems = cartItems
+        .where((item) => item.product.remoteId == product.remoteId)
+        .toList();
+    final totalQty = productItems.fold(0, (sum, item) => sum + item.quantity);
+
     if (variants.isNotEmpty) {
       // Find the "starting" price or the price for the smallest size
       // 1. Try to find a variant labeled 'Small'
@@ -638,143 +736,211 @@ class ProductCard extends ConsumerWidget {
     }
 
     final gender = product.gender;
+    final onCardColor = AppTheme.getOnCardColor(theme);
 
     return GestureDetector(
       onTap: () {
         context.push(AppRoutes.productDetail, extra: product);
       },
-      child: Container(
-        width: 170,
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.5,
+      child: RepaintBoundary(
+        child: Container(
+          width: 170,
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            gradient: AppTheme.getCardGradient(theme),
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+            border: Border.all(color: AppTheme.accentGold, width: 1.5),
+            boxShadow: AppTheme.cardShadow,
           ),
-          borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-          border: Border.all(
-            color: AppTheme.accentGold.withValues(alpha: 0.4),
-            width: 1,
-          ),
-          boxShadow: AppTheme.cardShadow,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(AppTheme.cardRadius),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Hero(
-                      tag: 'product_${product.remoteId}',
-                      child: Image.asset(
-                        product.imageUrl,
-                        fit: BoxFit.cover,
-                        height: double.infinity,
-                        width: double.infinity,
-                      ),
-                    ),
-                  ),
-                  if (gender != null)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: gender == 'boy'
-                              ? Colors.blue.withValues(alpha: 0.8)
-                              : Colors.pink.withValues(alpha: 0.8),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          gender == 'boy' ? Icons.male_rounded : Icons.female_rounded,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: SizedBox(
-                height:
-                    120, // Increased from 105 to absorb text size with new premium fonts
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.nameEn,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                          ),
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(AppTheme.cardRadius),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          product.section,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Hero(
+                        tag: 'product_${product.remoteId}',
+                        child: Image.asset(
+                          product.imageUrl,
+                          fit: BoxFit.cover,
+                          height: double.infinity,
+                          width: double.infinity,
+                          cacheWidth:
+                              400, // Optimize image memory and decoding time
                         ),
-                      ],
+                      ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${displayPrice.toStringAsFixed(0)} ₪',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w900,
+                    if (gender != null)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: gender == 'boy'
+                                ? Colors.blue.withValues(alpha: 0.8)
+                                : Colors.pink.withValues(alpha: 0.8),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            gender == 'boy'
+                                ? Icons.male_rounded
+                                : Icons.female_rounded,
+                            color: Colors.white,
+                            size: 14,
                           ),
                         ),
-                        InkWell(
-                          onTap: () => _handleAdd(context, ref),
-                          child: TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 200),
-                            tween: Tween(begin: 1.0, end: 1.0), // No auto animation, just structure
-                            builder: (context, value, child) {
-                              return Transform.scale(
-                                scale: value,
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.add_rounded,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
                   ],
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SizedBox(
+                  height:
+                      128, // Slightly reduced to make card shorter
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.nameEn,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              height: 1.2,
+                              color: onCardColor,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            product.section,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: onCardColor.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${displayPrice.toStringAsFixed(0)} ₪',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: onCardColor,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          if (totalQty == 0)
+                            InkWell(
+                              onTap: () => _handleAdd(context, ref),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: theme.scaffoldBackgroundColor,
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.buttonRadius / 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add_rounded,
+                                  color: AppTheme.gradientStart,
+                                  size: 18,
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: theme.scaffoldBackgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.buttonRadius / 2,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      final target = productItems.last;
+                                      ref
+                                          .read(cartProvider.notifier)
+                                          .updateQuantity(
+                                            target.id,
+                                            target.quantity - 1,
+                                          );
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      child: Icon(
+                                        Icons.remove_rounded,
+                                        color: AppTheme.gradientStart,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    '$totalQty',
+                                    strutStyle: const StrutStyle(
+                                      fontSize: 13,
+                                      height: 1.0,
+                                      forceStrutHeight: true,
+                                    ),
+                                    style: const TextStyle(
+                                      color: AppTheme.gradientStart,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                      height: 1.0,
+                                      leadingDistribution:
+                                          TextLeadingDistribution.even,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () => _handleAdd(context, ref),
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      child: Icon(
+                                        Icons.add_rounded,
+                                        color: AppTheme.gradientStart,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -820,12 +986,14 @@ class _SearchResultsGrid extends ConsumerWidget {
           if (branchStockCount == 0) return false;
 
           // b. Search Text Filter
-          final matchesSearch = query.isEmpty ||
+          final matchesSearch =
+              query.isEmpty ||
               p.nameEn.toLowerCase().contains(query.toLowerCase()) ||
               p.nameAr.contains(query);
 
           // c. Category Filter
-          final matchesCategory = selectedCategoryIds.isEmpty ||
+          final matchesCategory =
+              selectedCategoryIds.isEmpty ||
               selectedCategoryIds.contains(p.section);
 
           return matchesSearch && matchesCategory;
@@ -838,16 +1006,19 @@ class _SearchResultsGrid extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search_off_outlined,
-                      size: 64, color: Colors.grey.shade300),
+                  Icon(
+                    Icons.search_off_outlined,
+                    size: 64,
+                    color: Colors.grey.shade300,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'No products found',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant
-                            .withValues(alpha: 0.5)),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    ),
                   ),
                 ],
               ),
@@ -860,7 +1031,7 @@ class _SearchResultsGrid extends ConsumerWidget {
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.6,
+              childAspectRatio: 0.65,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),

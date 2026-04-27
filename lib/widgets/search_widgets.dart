@@ -26,10 +26,12 @@ class SardSearchBar extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.brightness == Brightness.light
-            ? Colors.grey.shade200
-            : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: AppTheme.accentGold.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
       ),
       child: TextField(
         controller: controller,
@@ -37,26 +39,29 @@ class SardSearchBar extends StatelessWidget {
         onTap: onTap,
         onChanged: onChanged,
         autofocus: autofocus,
+        textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
+          isDense: true,
           hintText: hintText,
           hintStyle: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            fontSize: 13,
           ),
-          prefixIcon: Icon(
+          contentPadding: const EdgeInsets.fromLTRB(0, 11, 0, 5),
+          prefixIcon: const Icon(
             Icons.search_rounded,
-            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: AppTheme.gradientStart,
           ),
           suffixIcon: (!readOnly && (controller?.text.isNotEmpty ?? false))
               ? IconButton(
-                  icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppTheme.gradientStart,
+                  ),
                   onPressed: onClear,
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 8,
-          ),
         ),
       ),
     );
@@ -79,37 +84,50 @@ class SardCategoryChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: FilterChip(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? Icons.check_rounded : Icons.close_rounded,
-              size: 16,
-              color: isSelected ? Colors.white : theme.colorScheme.primary,
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      child: GestureDetector(
+        onTap: () => onSelected?.call(!isSelected),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            gradient: isSelected ? AppTheme.getCardGradient(theme) : null,
+            color: isSelected ? null : theme.scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+            border: Border.all(
+              color: isSelected
+                  ? AppTheme.accentGold
+                  : AppTheme.gradientStart.withValues(alpha: 0.5),
+              width: 1.5,
             ),
-            const SizedBox(width: 6),
-            Text(label),
-          ],
-        ),
-        selected: isSelected,
-        onSelected: onSelected,
-        backgroundColor: theme.colorScheme.surface,
-        selectedColor: theme.colorScheme.primary,
-        checkmarkColor: Colors.white,
-        showCheckmark: false, // We use our custom Row-based checkmark
-        labelStyle: theme.textTheme.labelLarge?.copyWith(
-          color: isSelected ? Colors.white : theme.colorScheme.primary,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-          height: 1.0,
-        ),
-        labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.buttonRadius), // More rounded for premium feel
-          side: BorderSide(
-            color: theme.colorScheme.tertiary,
-            width: 1.5,
+            boxShadow: isSelected ? AppTheme.cardShadow : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                isSelected ? Icons.check_rounded : Icons.close_rounded,
+                size: 13,
+                color: isSelected ? Colors.white : AppTheme.gradientStart,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                strutStyle: const StrutStyle(
+                  fontSize: 12,
+                  height: 1.2,
+                  forceStrutHeight: true,
+                ),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: isSelected ? Colors.white : AppTheme.gradientStart,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                  fontSize: 12,
+                  height: 1.2,
+                  leadingDistribution: TextLeadingDistribution.even,
+                ),
+              ),
+            ],
           ),
         ),
       ),
