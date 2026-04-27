@@ -467,83 +467,88 @@ class _FeaturedCard extends StatelessWidget {
   final FeaturedTemplate template;
   const _FeaturedCard({required this.template});
 
+  void _navigate(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CollectionScreen(template: template),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      margin: EdgeInsets.zero,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
-        border: Border.all(
-          color: AppTheme.accentGold.withValues(alpha: 0.5),
-          width: 1.5,
-        ),
-        boxShadow: AppTheme.cardShadow,
-        image: DecorationImage(
-          image: AssetImage(template.bannerUrl),
-          fit: BoxFit.cover,
-        ),
-      ),
+    return GestureDetector(
+      onTap: () => _navigate(context),
       child: Container(
+        margin: EdgeInsets.zero,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(
-            AppTheme.cardRadius + 6,
-          ), // Slightly smaller to fit inside border
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.center,
-            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
+          border: Border.all(
+            color: AppTheme.accentGold.withValues(alpha: 0.5),
+            width: 1.5,
+          ),
+          boxShadow: AppTheme.cardShadow,
+          image: DecorationImage(
+            image: AssetImage(template.bannerUrl),
+            fit: BoxFit.cover,
           ),
         ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              template.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.displaySmall?.copyWith(
-                color: Colors.white,
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppTheme.cardRadius + 6),
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              end: const Alignment(0, -0.3),
+              colors: [
+                Colors.black.withValues(alpha: 0.75),
+                Colors.transparent,
+              ],
             ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CollectionScreen(template: template),
-                  ),
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                backgroundColor: theme.colorScheme.surface,
-                foregroundColor: theme.colorScheme.primary,
-                side: BorderSide(
-                  color: theme.colorScheme.tertiary,
-                  width: 1.5,
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                template.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.displaySmall?.copyWith(
+                  color: Colors.white,
                 ),
-                shape: RoundedRectangleBorder(
+              ),
+              const SizedBox(height: 8),
+              // "try now" chip — same look as unselected SardCategoryChip
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                  border: Border.all(
+                    color: theme.colorScheme.primary,
+                    width: 1.2,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
-                textStyle: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
+                child: Text(
+                  'try now',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              child: const Text('try now'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+
 
 class _CategorySection extends ConsumerWidget {
   final Category category;
@@ -621,23 +626,41 @@ class ProductCard extends ConsumerWidget {
   const ProductCard({super.key, required this.product});
 
   void _handleAdd(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final variants = product.variants ?? [];
     if (variants.length > 1) {
       // Show variant picker
       showModalBottomSheet(
         context: context,
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        showDragHandle: false, // Using custom handle for color control
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         builder: (context) {
+          final searchBg = theme.brightness == Brightness.light
+              ? Colors.grey.shade200
+              : theme.colorScheme.surfaceContainerHighest;
+              
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Custom Handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: searchBg,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   Text(
                     'Select Size',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -695,6 +718,10 @@ class ProductCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final variants = product.variants ?? [];
     double displayPrice = 0.0;
+    
+    final cartItems = ref.watch(cartProvider);
+    final productItems = cartItems.where((item) => item.product.remoteId == product.remoteId).toList();
+    final totalQty = productItems.fold(0, (sum, item) => sum + item.quantity);
 
     if (variants.isNotEmpty) {
       // Find the "starting" price or the price for the smallest size
@@ -790,7 +817,7 @@ class ProductCard extends ConsumerWidget {
                 padding: const EdgeInsets.all(12),
                 child: SizedBox(
                   height:
-                      120, // Increased from 105 to absorb text size with new premium fonts
+                      135, // Increased to absorb text size and new quantity pill without overflow
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -821,40 +848,77 @@ class ProductCard extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '${displayPrice.toStringAsFixed(0)} ₪',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w900,
+                          Expanded(
+                            child: Text(
+                              '${displayPrice.toStringAsFixed(0)} ₪',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
                           ),
-                          InkWell(
-                            onTap: () => _handleAdd(context, ref),
-                            child: TweenAnimationBuilder<double>(
-                              duration: const Duration(milliseconds: 200),
-                              tween: Tween(
-                                begin: 1.0,
-                                end: 1.0,
-                              ), // No auto animation, just structure
-                              builder: (context, value, child) {
-                                return Transform.scale(
-                                  scale: value,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary,
-                                      borderRadius: BorderRadius.circular(8),
+                          if (totalQty == 0)
+                            InkWell(
+                              onTap: () => _handleAdd(context, ref),
+                              child: TweenAnimationBuilder<double>(
+                                duration: const Duration(milliseconds: 200),
+                                tween: Tween(begin: 1.0, end: 1.0),
+                                builder: (context, value, child) {
+                                  return Transform.scale(
+                                    scale: value,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.add_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.add_rounded,
-                                      color: Colors.white,
-                                      size: 20,
+                                  );
+                                },
+                              ),
+                            )
+                          else
+                            Container(
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      final target = productItems.last;
+                                      ref.read(cartProvider.notifier).updateQuantity(target.id, target.quantity - 1);
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                                      child: Icon(Icons.remove_rounded, color: Colors.white, size: 18),
                                     ),
                                   ),
-                                );
-                              },
+                                  Text(
+                                    '$totalQty',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () => _handleAdd(context, ref),
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                                      child: Icon(Icons.add_rounded, color: Colors.white, size: 18),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ],

@@ -85,34 +85,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
     // Guard against uninitialized state handled implicitly because product fields are used from widget.product
 
-    return Stack(
-      children: [
-        CustomScrollView(
-          slivers: [
-            // --- Hero Image ---
-            SliverAppBar(
-              expandedHeight: 300,
-              pinned: true,
-              backgroundColor: theme.appBarTheme.backgroundColor,
-              leading: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: Colors.black,
-                      size: 20,
-                    ),
-                    onPressed: () => context.pop(),
-                  ),
-                ),
-              ),
-              actions: [
-                Padding(
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              // --- Hero Image ---
+              SliverAppBar(
+                expandedHeight: 300,
+                pinned: true,
+                backgroundColor: theme.appBarTheme.backgroundColor,
+                leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     decoration: const BoxDecoration(
@@ -121,504 +105,605 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                     child: IconButton(
                       icon: const Icon(
-                        Icons.shopping_cart_outlined,
+                        Icons.arrow_back_ios_new_rounded,
                         color: Colors.black,
+                        size: 20,
                       ),
-                      onPressed: () {
-                        context.push(AppRoutes.cart);
-                      },
+                      onPressed: () => context.pop(),
                     ),
                   ),
                 ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: Hero(
-                  tag: 'product_${widget.product.remoteId}',
-                  child: Image.asset(
-                    widget.product.imageUrl,
-                    fit: BoxFit.cover,
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.shopping_cart_outlined,
+                          color: Colors.black,
+                        ),
+                        onPressed: () {
+                          context.push(AppRoutes.cart);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Hero(
+                    tag: 'product_${widget.product.remoteId}',
+                    child: Image.asset(
+                      widget.product.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.product.nameEn.toUpperCase(),
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "A luxurious collection, custom-built or pre-mixed with legendary fillings.",
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey.shade600,
+              SliverToBoxAdapter(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.product.nameEn.toUpperCase(),
+                            style: Theme.of(context).textTheme.headlineMedium,
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Text(
-                              "₪ ",
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "A luxurious collection, custom-built or pre-mixed with legendary fillings.",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey.shade600,
                             ),
-                            Text(
-                              state.totalPrice.toStringAsFixed(2),
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Text(
+                                "₪ ",
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                state.totalPrice.toStringAsFixed(2),
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+
+                          // --- Master Toggle 1: hasVariants (S/M/L) ---
+                          if (widget.product.hasVariants &&
+                              widget.product.variants != null) ...[
+                            Row(
+                              children: widget.product.variants!.map((v) {
+                                final isSelected =
+                                    state.selectedVariant?.size == v.size;
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      if (state.isEdited) {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: const Text("Change Size?"),
+                                            content: const Text(
+                                              "Changing the box size will reset your custom mix. Are you sure?",
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                  context,
+                                                  false,
+                                                ),
+                                                child: const Text(
+                                                  "CANCEL",
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () => Navigator.pop(
+                                                  context,
+                                                  true,
+                                                ),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Theme.of(
+                                                    context,
+                                                  ).colorScheme.tertiary,
+                                                ),
+                                                child: const Text(
+                                                  "YES, RESET",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        if (confirm == true) {
+                                          notifier.selectVariant(v);
+                                        }
+                                      } else {
+                                        notifier.selectVariant(v);
+                                      }
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? theme.colorScheme.tertiary
+                                                  .withValues(alpha: 0.1)
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.buttonRadius,
+                                        ),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? theme.colorScheme.tertiary
+                                              : Colors.grey.shade300,
+                                          width: isSelected ? 1.5 : 1.0,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            v.size.toUpperCase(),
+                                            style: TextStyle(
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w900
+                                                  : FontWeight.w500,
+                                              color: isSelected
+                                                  ? theme.colorScheme.tertiary
+                                                  : Colors.black87,
+                                              letterSpacing: 1.2,
+                                            ),
+                                          ),
+                                          if (v.pieces != null)
+                                            Text(
+                                              "(${v.pieces} PCS)",
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: isSelected
+                                                    ? Theme.of(context)
+                                                          .colorScheme
+                                                          .tertiary
+                                                          .withValues(
+                                                            alpha: 0.8,
+                                                          )
+                                                    : Colors.grey.shade500,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+
+                          // --- Master Toggle 2: isGendered (Boy/Girl) ---
+                          if (widget.product.isGendered) ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => notifier.selectGender('boy'),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: state.selectedGender == 'boy'
+                                            ? theme.colorScheme.primary
+                                                  .withValues(alpha: 0.15)
+                                            : theme
+                                                  .colorScheme
+                                                  .surfaceContainerHighest
+                                                  .withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.cardRadius,
+                                        ),
+                                        border: Border.all(
+                                          color: state.selectedGender == 'boy'
+                                              ? theme.colorScheme.primary
+                                              : Colors.transparent,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "BOY",
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  state.selectedGender == 'boy'
+                                                  ? theme.colorScheme.primary
+                                                  : theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => notifier.selectGender('girl'),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: state.selectedGender == 'girl'
+                                            ? const Color(0xFFFCE4EC)
+                                            : theme
+                                                  .colorScheme
+                                                  .surfaceContainerHighest
+                                                  .withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(
+                                          AppTheme.cardRadius,
+                                        ),
+                                        border: Border.all(
+                                          color: state.selectedGender == 'girl'
+                                              ? const Color(0xFFE91E63)
+                                              : Colors.transparent,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "GIRL",
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  state.selectedGender == 'girl'
+                                                  ? const Color(0xFFC2185B)
+                                                  : theme
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+
+                          // --- Master Toggle 3: isCustomizable (Fillings Grid) ---
+                          if (widget.product.isCustomizable) ...[
+                            const Divider(height: 32),
+                            // Custom selections expanded
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 8.0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "SELECTED FILLINGS",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            _showFillingsBottomSheet(
+                                              context,
+                                              state,
+                                              notifier,
+                                            ),
+                                        child: Text(
+                                          "Edit Mix",
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.tertiary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Horizontally scrollable selected fillings
+                                  SizedBox(
+                                    height: 100,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: state.selectedFillings.length,
+                                      itemBuilder: (context, index) {
+                                        final fillingId = state
+                                            .selectedFillings
+                                            .keys
+                                            .elementAt(index);
+                                        final count =
+                                            state.selectedFillings[fillingId]!;
+                                        final name = _getMockFillingName(
+                                          fillingId,
+                                        );
+
+                                        return Container(
+                                          width: 80,
+                                          margin: const EdgeInsets.only(
+                                            right: 12,
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Stack(
+                                                alignment: Alignment.topRight,
+                                                children: [
+                                                  Image.asset(
+                                                    'assets/images/filling.png',
+                                                    height: 50,
+                                                    cacheWidth: 200,
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(4),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                          color: Color(
+                                                            0xFF49D4D0,
+                                                          ),
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                    child: Text(
+                                                      "$count",
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                name,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 32),
 
-                        // --- Master Toggle 1: hasVariants (S/M/L) ---
-                        if (widget.product.hasVariants &&
-                            widget.product.variants != null) ...[
                           Row(
-                            children: widget.product.variants!.map((v) {
-                              final isSelected =
-                                  state.selectedVariant?.size == v.size;
-                              return Expanded(
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    if (state.isEdited) {
-                                      final confirm = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text("Change Size?"),
-                                          content: const Text(
-                                            "Changing the box size will reset your custom mix. Are you sure?",
+                            children: [
+                              // Quantity Selector
+                              Container(
+                                height: 54,
+                                width: 100, // Compact width
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.buttonRadius,
+                                  ),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    IconButton(
+                                      iconSize: 18,
+                                      visualDensity: VisualDensity.compact,
+                                      icon: const Icon(Icons.remove_rounded),
+                                      onPressed: state.quantity > 1
+                                          ? () => notifier.setQuantity(
+                                              state.quantity - 1,
+                                            )
+                                          : null,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    Text(
+                                      '${state.quantity}',
+                                      style: theme.textTheme.bodyLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.colorScheme.primary,
                                           ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, false),
-                                              child: const Text(
-                                                "CANCEL",
-                                                style: TextStyle(
-                                                  color: Colors.grey,
+                                    ),
+                                    IconButton(
+                                      iconSize: 18,
+                                      visualDensity: VisualDensity.compact,
+                                      icon: const Icon(Icons.add_rounded),
+                                      onPressed: () => notifier.setQuantity(
+                                        state.quantity + 1,
+                                      ),
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: InkWell(
+                                  onTap: state.isSelectionValid
+                                      ? () {
+                                          final variantIndex =
+                                              widget.product.variants
+                                                  ?.indexWhere(
+                                                    (v) =>
+                                                        v.size ==
+                                                        state
+                                                            .selectedVariant
+                                                            ?.size,
+                                                  ) ??
+                                              0;
+
+                                          if (widget.editingItem != null) {
+                                            // Update existing item
+                                            ref
+                                                .read(cartProvider.notifier)
+                                                .updateCartItem(
+                                                  CartItem(
+                                                    id: widget.editingItem!.id,
+                                                    product: widget.product,
+                                                    selectedVariantIndex:
+                                                        variantIndex >= 0
+                                                        ? variantIndex
+                                                        : 0,
+                                                    selectedGender:
+                                                        state.selectedGender,
+                                                    selectedWeight:
+                                                        state.selectedWeight,
+                                                    selectedFillings:
+                                                        state.selectedFillings,
+                                                    quantity: state.quantity,
+                                                  ),
+                                                );
+                                            SardSnackBar.show(
+                                              context,
+                                              "Changes saved successfully",
+                                            );
+                                            context.pop(); // Go back to cart
+                                          } else {
+                                            // Add new item
+                                            ref
+                                                .read(cartProvider.notifier)
+                                                .addToCart(
+                                                  widget.product,
+                                                  variantIndex:
+                                                      variantIndex >= 0
+                                                      ? variantIndex
+                                                      : 0,
+                                                  gender: state.selectedGender,
+                                                  weight: state.selectedWeight,
+                                                  fillings:
+                                                      state.selectedFillings,
+                                                  quantity: state.quantity,
+                                                );
+                                            SardSnackBar.show(
+                                              context,
+                                              "${widget.product.nameEn} added to cart",
+                                              action: SnackBarAction(
+                                                label: "VIEW CART",
+                                                onPressed: () => context.push(
+                                                  AppRoutes.cart,
                                                 ),
                                               ),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, true),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Theme.of(
-                                                  context,
-                                                ).colorScheme.tertiary,
-                                              ),
-                                              child: const Text(
-                                                "YES, RESET",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      if (confirm == true) {
-                                        notifier.selectVariant(v);
-                                      }
-                                    } else {
-                                      notifier.selectVariant(v);
-                                    }
-                                  },
+                                            );
+                                          }
+                                        }
+                                      : null,
                                   child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                    ),
+                                    width: double.infinity,
+                                    height: 54, // Consistent height
                                     decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? theme.colorScheme.tertiary
-                                                .withValues(alpha: 0.1)
-                                          : Colors.transparent,
+                                      color: theme.colorScheme.primary
+                                          .withValues(
+                                            alpha: state.isSelectionValid
+                                                ? 1.0
+                                                : 0.5,
+                                          ),
                                       borderRadius: BorderRadius.circular(
                                         AppTheme.buttonRadius,
                                       ),
                                       border: Border.all(
-                                        color: isSelected
-                                            ? theme.colorScheme.tertiary
-                                            : Colors.grey.shade300,
-                                        width: isSelected ? 1.5 : 1.0,
-                                      ),
+                                        color: theme.colorScheme.tertiary,
+                                        width: 2,
+                                      ), // Permanent Gold border
+                                      boxShadow: state.isSelectionValid
+                                          ? AppTheme.goldShadow
+                                          : null,
                                     ),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          v.size.toUpperCase(),
-                                          style: TextStyle(
-                                            fontWeight: isSelected
-                                                ? FontWeight.w900
-                                                : FontWeight.w500,
-                                            color: isSelected
-                                                ? theme.colorScheme.tertiary
-                                                : Colors.black87,
-                                            letterSpacing: 1.2,
+                                    alignment: Alignment.center,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          widget.editingItem != null
+                                              ? "SAVE CHANGES"
+                                              : "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PCS, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
                                           ),
                                         ),
-                                        if (v.pieces != null)
-                                          Text(
-                                            "(${v.pieces} PCS)",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: isSelected
-                                                  ? Theme.of(context)
-                                                        .colorScheme
-                                                        .tertiary
-                                                        .withValues(alpha: 0.8)
-                                                  : Colors.grey.shade500,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-
-                        // --- Master Toggle 2: isGendered (Boy/Girl) ---
-                        if (widget.product.isGendered) ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => notifier.selectGender('boy'),
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: state.selectedGender == 'boy'
-                                          ? theme.colorScheme.primary
-                                                .withValues(alpha: 0.15)
-                                          : theme
-                                                .colorScheme
-                                                .surfaceContainerHighest
-                                                .withValues(alpha: 0.3),
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.cardRadius,
                                       ),
-                                      border: Border.all(
-                                        color: state.selectedGender == 'boy'
-                                            ? theme.colorScheme.primary
-                                            : Colors.transparent,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "BOY",
-                                      style: theme.textTheme.labelLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: state.selectedGender == 'boy'
-                                                ? theme.colorScheme.primary
-                                                : theme
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => notifier.selectGender('girl'),
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: state.selectedGender == 'girl'
-                                          ? const Color(0xFFFCE4EC)
-                                          : theme
-                                                .colorScheme
-                                                .surfaceContainerHighest
-                                                .withValues(alpha: 0.3),
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.cardRadius,
-                                      ),
-                                      border: Border.all(
-                                        color: state.selectedGender == 'girl'
-                                            ? const Color(0xFFE91E63)
-                                            : Colors.transparent,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "GIRL",
-                                      style: theme.textTheme.labelLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                state.selectedGender == 'girl'
-                                                ? const Color(0xFFC2185B)
-                                                : theme
-                                                      .colorScheme
-                                                      .onSurfaceVariant,
-                                          ),
                                     ),
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 24),
                         ],
-
-                        // --- Master Toggle 3: isCustomizable (Fillings Grid) ---
-                        if (widget.product.isCustomizable) ...[
-                          const Divider(height: 32),
-                          // Custom selections expanded
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 8.0,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      "SELECTED FILLINGS",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => _showFillingsBottomSheet(
-                                        context,
-                                        state,
-                                        notifier,
-                                      ),
-                                      child: Text(
-                                        "Edit Mix",
-                                        style: TextStyle(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.tertiary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                // Horizontally scrollable selected fillings
-                                SizedBox(
-                                  height: 100,
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: state.selectedFillings.length,
-                                    itemBuilder: (context, index) {
-                                      final fillingId = state
-                                          .selectedFillings
-                                          .keys
-                                          .elementAt(index);
-                                      final count =
-                                          state.selectedFillings[fillingId]!;
-                                      final name = _getMockFillingName(
-                                        fillingId,
-                                      );
-
-                                      return Container(
-                                        width: 80,
-                                        margin: const EdgeInsets.only(
-                                          right: 12,
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Stack(
-                                              alignment: Alignment.topRight,
-                                              children: [
-                                                Image.asset(
-                                                  'assets/images/filling.png',
-                                                  height: 50,
-                                                  cacheWidth: 200,
-                                                ),
-                                                Container(
-                                                  padding: const EdgeInsets.all(
-                                                    4,
-                                                  ),
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                        color: Color(
-                                                          0xFF49D4D0,
-                                                        ),
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                  child: Text(
-                                                    "$count",
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 10,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              name,
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 32),
-
-                        // --- Add to Cart Button (Moved from bottom bar) ---
-                        InkWell(
-                          onTap: state.isSelectionValid
-                              ? () {
-                                  final variantIndex =
-                                      widget.product.variants?.indexWhere(
-                                        (v) =>
-                                            v.size ==
-                                            state.selectedVariant?.size,
-                                      ) ??
-                                      0;
-
-                                  if (widget.editingItem != null) {
-                                    // Update existing item
-                                    ref
-                                        .read(cartProvider.notifier)
-                                        .updateCartItem(
-                                          CartItem(
-                                            id: widget.editingItem!.id,
-                                            product: widget.product,
-                                            selectedVariantIndex:
-                                                variantIndex >= 0
-                                                ? variantIndex
-                                                : 0,
-                                            selectedGender:
-                                                state.selectedGender,
-                                            selectedWeight:
-                                                state.selectedWeight,
-                                            selectedFillings:
-                                                state.selectedFillings,
-                                            quantity:
-                                                widget.editingItem!.quantity,
-                                          ),
-                                        );
-                                    SardSnackBar.show(
-                                      context,
-                                      "Changes saved successfully",
-                                    );
-                                    context.pop(); // Go back to cart
-                                  } else {
-                                    // Add new item
-                                    ref
-                                        .read(cartProvider.notifier)
-                                        .addToCart(
-                                          widget.product,
-                                          variantIndex: variantIndex >= 0
-                                              ? variantIndex
-                                              : 0,
-                                          gender: state.selectedGender,
-                                          weight: state.selectedWeight,
-                                          fillings: state.selectedFillings,
-                                        );
-                                    SardSnackBar.show(
-                                      context,
-                                      "${widget.product.nameEn} added to cart",
-                                      action: SnackBarAction(
-                                        label: "VIEW CART",
-                                        onPressed: () =>
-                                            context.push(AppRoutes.cart),
-                                      ),
-                                    );
-                                  }
-                                }
-                              : null,
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(
-                                alpha: state.isSelectionValid ? 1.0 : 0.5,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                AppTheme.buttonRadius,
-                              ),
-                              border: Border.all(
-                                color: theme.colorScheme.tertiary,
-                                width: 2,
-                              ), // Permanent Gold border
-                              boxShadow: state.isSelectionValid
-                                  ? AppTheme.goldShadow
-                                  : null,
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              widget.editingItem != null
-                                  ? "SAVE CHANGES"
-                                  : "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PIECES, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SliverToBoxAdapter(
-              child: SafeArea(top: false, child: SizedBox(height: 60)),
-            ),
-          ],
-        ),
-      ],
+              const SliverToBoxAdapter(
+                child: SafeArea(top: false, child: SizedBox(height: 60)),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -654,7 +739,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         notifier: notifier,
         onClose: () {
           if (modalContext.mounted) {
-            Navigator.pop(modalContext);
+            // Prevent double-popping if the modal is already being dismissed (e.g., by tapping the scrim)
+            final isCurrent = ModalRoute.of(modalContext)?.isCurrent ?? false;
+            if (isCurrent) {
+              Navigator.pop(modalContext);
+            }
           }
         },
       ),
@@ -947,39 +1036,38 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
     ProductBuilderNotifier notifier, {
     bool isCompact = false,
   }) {
-    return RepaintBoundary(
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: count > 0
-                ? Theme.of(context).colorScheme.tertiary
-                : Colors.grey.shade200,
+    return GestureDetector(
+      onTap: () => notifier.addFilling(fillingId),
+      child: RepaintBoundary(
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: count > 0
+                  ? Theme.of(context).colorScheme.tertiary
+                  : Colors.grey.shade200,
+            ),
+            borderRadius: BorderRadius.circular(8),
           ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // filling.png always shown
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 1),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        'assets/images/filling.png',
-                        height: isCompact ? 60 : 50,
-                        width: double.infinity,
-                        fit: BoxFit.contain,
-                        cacheWidth: 200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 1),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.asset(
+                          'assets/images/filling.png',
+                          height: isCompact ? 60 : 50,
+                          width: double.infinity,
+                          fit: BoxFit.contain,
+                          cacheWidth: 200,
+                        ),
                       ),
-                    ),
-                    // cover.png below filling.png — only in full card mode
-                    if (!isCompact)
-                      ...([
+                      if (!isCompact) ...[
                         const SizedBox(height: 2),
                         SizedBox(
                           height: 50,
@@ -991,10 +1079,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                               fit: BoxFit.contain,
                               cacheWidth: 200,
                               errorBuilder: (context, error, stackTrace) =>
-                                  const SizedBox(
-                                    height: 50,
-                                    width: double.infinity,
-                                  ),
+                                  const SizedBox(height: 50),
                             ),
                           ),
                         ),
@@ -1009,49 +1094,56 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ]),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(7),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => notifier.removeFilling(fillingId),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        child: Icon(Icons.remove_rounded, size: 16),
+                      ),
+                    ),
+                    Text(
+                      "$count",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 8,
+                      ),
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-
-            // +/- controls
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(7),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  GestureDetector(
-                    onTap: () => notifier.removeFilling(fillingId),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4.0),
-                      child: Icon(Icons.remove_rounded, size: 14),
-                    ),
-                  ),
-                  Text(
-                    "$count",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => notifier.addFilling(fillingId),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4.0),
-                      child: Icon(Icons.add_rounded, size: 14),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

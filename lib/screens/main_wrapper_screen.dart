@@ -39,13 +39,16 @@ class MainWrapperScreen extends ConsumerStatefulWidget {
 
 class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
   late final PageController _pageController;
-  int _navSelectedIndex = 0; // Drives the navbar - only set on tap or final settle
+  // Tracks the navbar highlight — set immediately on tap to avoid flicker
+  // through intermediate pages during animation.
+  int _navIndex = 0;
+  bool _isProgrammaticScroll = false;
 
   @override
   void initState() {
     super.initState();
     final initialPage = ref.read(mainWrapperPageProvider);
-    _navSelectedIndex = initialPage;
+    _navIndex = initialPage;
     _pageController = PageController(initialPage: initialPage);
   }
 
@@ -55,22 +58,32 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
     super.dispose();
   }
 
+  void _goToPage(int index) {
+    // Immediately highlight the destination in the navbar
+    setState(() => _navIndex = index);
+    // Animate the PageView through intermediate pages (visual flow)
+    if (_pageController.hasClients && _pageController.page?.round() != index) {
+      _isProgrammaticScroll = true;
+      _pageController
+          .animateToPage(
+            index,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+          )
+          .then((_) => _isProgrammaticScroll = false);
+    }
+    ref.read(mainWrapperPageProvider.notifier).state = index;
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentPage = ref.watch(mainWrapperPageProvider);
     final isSearchMode = ref.watch(isSearchModeProvider);
 
-    // Sync PageController if state changed externally (e.g. from checkout screen)
+    // Sync when state changed externally (e.g. from checkout screen)
     ref.listen<int>(mainWrapperPageProvider, (previous, next) {
-      if (next != _navSelectedIndex) {
-        setState(() => _navSelectedIndex = next);
-      }
-      if (_pageController.hasClients && _pageController.page?.round() != next) {
-        _pageController.animateToPage(
-          next,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutCubic,
-        );
+      if (next != _navIndex) {
+        _goToPage(next);
       }
     });
 
@@ -81,7 +94,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
         if (isSearchMode && currentPage == 0) {
           ref.read(homeResetProvider.notifier).state++;
         } else if (currentPage != 0) {
-          ref.read(mainWrapperPageProvider.notifier).state = 0;
+          _goToPage(0);
         }
       },
       child: Scaffold(
@@ -99,12 +112,11 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                 ? const NeverScrollableScrollPhysics()
                 : const SardPageScrollPhysics(parent: BouncingScrollPhysics()),
             onPageChanged: (index) {
-              // Only update the provider when the page fully settles.
-              // Do NOT update _navSelectedIndex here to avoid intermediate flicker.
-              ref.read(mainWrapperPageProvider.notifier).state = index;
-              // If user physically swiped (not a tap), sync the navbar at the end.
-              if (index != _navSelectedIndex) {
-                setState(() => _navSelectedIndex = index);
+              // During programmatic animation, don't update navbar (already set)
+              // Only update for manual finger swipes
+              if (!_isProgrammaticScroll) {
+                setState(() => _navIndex = index);
+                ref.read(mainWrapperPageProvider.notifier).state = index;
               }
             },
             children: const [
@@ -115,15 +127,14 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
           ),
         ),
         bottomNavigationBar: NavigationBar(
-          selectedIndex: _navSelectedIndex,
+          selectedIndex: _navIndex,
           onDestinationSelected: (index) {
-            if (index == 0 && currentPage == 0) {
+            if (index == 0 && _navIndex == 0) {
               ref.read(homeResetProvider.notifier).state++;
             }
-            // Update navbar immediately on tap — no flicker from animation
-            setState(() => _navSelectedIndex = index);
-            ref.read(mainWrapperPageProvider.notifier).state = index;
+            _goToPage(index);
           },
+
           destinations: [
             NavigationDestination(
               icon: const SizedBox(

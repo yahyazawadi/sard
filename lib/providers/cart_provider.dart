@@ -39,6 +39,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
     String? gender,
     double? weight,
     Map<String, int>? fillings,
+    int quantity = 1,
   }) {
     final existingIndex = state.indexWhere((item) {
       bool basicMatch = item.product.remoteId == product.remoteId && item.selectedVariantIndex == variantIndex;
@@ -72,7 +73,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
 
     if (existingIndex >= 0) {
       final newList = List<CartItem>.from(state);
-      newList[existingIndex].quantity += 1;
+      newList[existingIndex].quantity += quantity;
       state = newList;
     } else {
       state = [
@@ -83,6 +84,7 @@ class CartNotifier extends Notifier<List<CartItem>> {
           selectedGender: gender,
           selectedWeight: weight,
           selectedFillings: fillings != null ? Map<String, int>.from(fillings) : null,
+          quantity: quantity,
         )
       ];
     }
