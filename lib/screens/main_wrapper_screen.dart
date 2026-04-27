@@ -1,13 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'home_screen.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
 import '../custom/app_theme.dart';
 
 final mainWrapperPageProvider = StateProvider<int>((ref) => 0);
+final tabHistoryProvider = StateProvider<List<int>>((ref) => [0]);
 
 class SardPageScrollPhysics extends PageScrollPhysics {
   const SardPageScrollPhysics({super.parent});
@@ -59,8 +59,17 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
   }
 
   void _goToPage(int index) {
+    if (index == _navIndex) return;
+
     // Immediately highlight the destination in the navbar
     setState(() => _navIndex = index);
+
+    // Update history
+    final history = ref.read(tabHistoryProvider);
+    if (history.isEmpty || history.last != index) {
+      ref.read(tabHistoryProvider.notifier).state = [...history, index];
+    }
+
     // Animate the PageView through intermediate pages (visual flow)
     if (_pageController.hasClients && _pageController.page?.round() != index) {
       _isProgrammaticScroll = true;
@@ -94,7 +103,14 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
         if (isSearchMode && currentPage == 0) {
           ref.read(homeResetProvider.notifier).state++;
         } else if (currentPage != 0) {
-          _goToPage(0);
+          final history = ref.read(tabHistoryProvider);
+          if (history.length > 1) {
+            final newHistory = List<int>.from(history)..removeLast();
+            ref.read(tabHistoryProvider.notifier).state = newHistory;
+            _goToPage(newHistory.last);
+          } else {
+            _goToPage(0);
+          }
         }
       },
       child: Scaffold(
@@ -117,6 +133,15 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
               if (!_isProgrammaticScroll) {
                 setState(() => _navIndex = index);
                 ref.read(mainWrapperPageProvider.notifier).state = index;
+
+                // Update history
+                final history = ref.read(tabHistoryProvider);
+                if (history.isEmpty || history.last != index) {
+                  ref.read(tabHistoryProvider.notifier).state = [
+                    ...history,
+                    index,
+                  ];
+                }
               }
             },
             children: const [
@@ -146,7 +171,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                  color: AppTheme.gradientStart.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(child: Icon(Icons.home_rounded)),
@@ -163,7 +188,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                  color: AppTheme.gradientStart.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(child: Icon(Icons.shopping_cart_rounded)),
@@ -180,7 +205,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryTeal.withValues(alpha: 0.25),
+                  color: AppTheme.gradientStart.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(child: Icon(Icons.person_rounded)),

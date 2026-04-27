@@ -147,9 +147,12 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
-          leading: CupertinoButton(
+          leading: IconButton(
             padding: EdgeInsets.zero,
-            child: const Icon(CupertinoIcons.back),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+            ),
             onPressed: () => context.go(AppRoutes.onboarding),
           ),
           previousPageTitle: '',

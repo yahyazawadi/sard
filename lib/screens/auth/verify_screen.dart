@@ -17,9 +17,12 @@ class VerifyScreen extends StatelessWidget {
       },
       child: CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
-          leading: CupertinoButton(
+          leading: IconButton(
             padding: EdgeInsets.zero,
-            child: const Icon(CupertinoIcons.back),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+            ),
             onPressed: () => context.go(AppRoutes.login),
           ),
           previousPageTitle: '',

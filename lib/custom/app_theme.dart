@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Central font-size table.
 /// All sizes in this app derive from these constants × the user's scale factor.
@@ -29,38 +30,70 @@ class AppTextSizes {
 class AppFonts {
   AppFonts._();
 
-  static const String defaultFont = 'DG Sahabah';
-  static const List<String> available = ['DG-Sahabah', 'Roboto', 'Inter'];
+  static const String defaultFont = 'Tajawal';
+  static const List<String> available = [
+    'Tajawal',
+    'DG-Sahabah',
+    'Roboto',
+    'Inter',
+  ];
 }
 
 class AppTheme {
   // ── Palette ──────────────────────────────────────────────────────────────
   static const Color primaryTeal = Color(0xFF49D4D0); // Sard Teal
   static const Color secondaryTeal = Color(0xFF1A8F85);
-  static const Color accentGold = Color(0xFFC5A359); // Elegant Gold
-  static const Color bgWhite = Color(0xFFE5F2F2); // Soft Ice Teal (Reduced glare)
+  //static const Color accentGold = Color(0xFFC66900); // Updated Stroke Color
+  static const Color accentGold = Color(0xFFC07F00); // Updated Stroke Color
+
+  static const Color gradientStart = Color(0xFF0075A0); // New Gradient Start
+  static const Color bgWhite = Color(
+    0xFFE5F2F2,
+  ); // Soft Ice Teal (Reduced glare)
   static const Color appBarTeal = bgWhite; // Matches background exactly
   static const Color darkCocoa = Color(0xFF3C2415); // Dark Cocoa
-  static const Color sectionBgLight = Color(
-    0xFFE5F2F2,
-  ); // Soft Teal for sections
+  static const Color sectionBgLight = bgWhite; // Soft Teal for sections
   static const Color textPrimaryLight = Color(
     0xFF3C2415,
   ); // Using Dark Cocoa for text
   static const Color textSecondaryLight = Color(0xFF757575);
   static const Color successGreen = Color(0xFF4CAF88);
 
+  static const Color navbarTeal = Color(0xFFD9E8E8);
   static const Color bgDarkTeal = Color(0xFF0F2A2A);
   static const Color sectionBgDark = Color(0xFF1E3F3D);
   static const Color textPrimaryDark = Color(0xFFFFFFFF);
   static const Color textSecondaryDark = Color(0xFFB0B8B8);
 
+  // Card specific backgrounds
+  static const Color cardBgLight = primaryTeal; // Sard Teal
+  static const Color cardBgDark = Color(0xFF163333); // Deep Teal
+  static const Color onCardLight =
+      Colors.white; // High contrast white for content
+  static const Color onCardDark = Colors.white;
+
+  static Color getCardColor(ThemeData theme) {
+    return theme.brightness == Brightness.light ? cardBgLight : cardBgDark;
+  }
+
+  static LinearGradient getCardGradient(ThemeData theme) {
+    return const LinearGradient(
+      colors: [gradientStart, primaryTeal],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
+  static Color getOnCardColor(ThemeData theme) {
+    return theme.brightness == Brightness.light ? onCardLight : onCardDark;
+  }
+
   // ── Style Tokens (Centralized UI Consistency) ────────────────────────────
   static final cardShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
+      color: Colors.black.withValues(alpha: 0.1),
       blurRadius: 12,
-      offset: const Offset(0, 6),
+      offset: const Offset(0, 4),
     ),
   ];
 
@@ -80,7 +113,6 @@ class AppTheme {
     Color primary,
     Color secondary, {
     double scale = 1.0,
-    String? fontFamily,
   }) {
     double s(double base) => base * scale;
 
@@ -90,11 +122,10 @@ class AppTheme {
       FontWeight weight = FontWeight.normal,
       double? height,
       double? letterSpacing,
-    }) => TextStyle(
+    }) => GoogleFonts.tajawal(
       color: color,
       fontSize: s(size),
       fontWeight: weight,
-      fontFamily: fontFamily,
       height: height,
       letterSpacing: letterSpacing,
     );
@@ -177,7 +208,7 @@ class AppTheme {
       brightness: Brightness.light,
       primaryColor: primaryTeal,
       scaffoldBackgroundColor: bgWhite,
-      fontFamily: fontFamily ?? AppFonts.defaultFont,
+      fontFamily: GoogleFonts.tajawal().fontFamily,
       colorScheme: const ColorScheme.light(
         primary: primaryTeal,
         secondary: secondaryTeal,
@@ -196,7 +227,6 @@ class AppTheme {
         textPrimaryLight,
         textSecondaryLight,
         scale: scale,
-        fontFamily: fontFamily ?? AppFonts.defaultFont,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -221,10 +251,12 @@ class AppTheme {
         backgroundColor: appBarTeal,
         foregroundColor: primaryTeal,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: true,
       ),
       snackBarTheme: const SnackBarThemeData(
-        backgroundColor: primaryTeal,
+        backgroundColor: gradientStart,
         behavior: SnackBarBehavior.floating,
         contentTextStyle: TextStyle(
           color: Colors.white,
@@ -232,29 +264,29 @@ class AppTheme {
         ),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: const Color(0xFFD9E8E8),
-        selectedItemColor: primaryTeal,
-        unselectedItemColor: secondaryTeal.withValues(alpha: 0.4),
+        backgroundColor: navbarTeal,
+        selectedItemColor: gradientStart,
+        unselectedItemColor: gradientStart.withValues(alpha: 0.5),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
         showSelectedLabels: false,
         showUnselectedLabels: false,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xFFD9E8E8),
+        backgroundColor: navbarTeal,
         indicatorColor: Colors.transparent,
         indicatorShape: const CircleBorder(),
         overlayColor: WidgetStateProperty.all(
-          primaryTeal.withValues(alpha: 0.1),
+          gradientStart.withValues(alpha: 0.1),
         ),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         height: 70,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: primaryTeal, size: 32);
+            return const IconThemeData(color: gradientStart, size: 32);
           }
           return IconThemeData(
-            color: secondaryTeal.withValues(alpha: 0.6),
+            color: gradientStart.withValues(alpha: 0.5),
             size: 24,
           );
         }),
@@ -268,7 +300,7 @@ class AppTheme {
       brightness: Brightness.dark,
       primaryColor: primaryTeal,
       scaffoldBackgroundColor: bgDarkTeal,
-      fontFamily: fontFamily,
+      fontFamily: GoogleFonts.tajawal().fontFamily,
       colorScheme: const ColorScheme.dark(
         primary: primaryTeal,
         secondary: secondaryTeal,
@@ -287,7 +319,6 @@ class AppTheme {
         textPrimaryDark,
         textSecondaryDark,
         scale: scale,
-        fontFamily: fontFamily,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -304,10 +335,12 @@ class AppTheme {
         backgroundColor: bgDarkTeal,
         foregroundColor: primaryTeal,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: true,
       ),
       snackBarTheme: const SnackBarThemeData(
-        backgroundColor: primaryTeal,
+        backgroundColor: gradientStart,
         behavior: SnackBarBehavior.floating,
         contentTextStyle: TextStyle(
           color: Colors.white,
@@ -316,8 +349,8 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: Colors.black,
-        selectedItemColor: primaryTeal,
-        unselectedItemColor: Colors.white.withValues(alpha: 0.5),
+        selectedItemColor: gradientStart,
+        unselectedItemColor: gradientStart.withValues(alpha: 0.5),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
         showSelectedLabels: false,
@@ -328,15 +361,18 @@ class AppTheme {
         indicatorColor: Colors.transparent,
         indicatorShape: const CircleBorder(),
         overlayColor: WidgetStateProperty.all(
-          primaryTeal.withValues(alpha: 0.1),
+          gradientStart.withValues(alpha: 0.1),
         ),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
         height: 70,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: primaryTeal, size: 32);
+            return const IconThemeData(color: gradientStart, size: 32);
           }
-          return IconThemeData(color: textSecondaryDark, size: 24);
+          return IconThemeData(
+            color: gradientStart.withValues(alpha: 0.5),
+            size: 24,
+          );
         }),
       ),
     );

@@ -131,53 +131,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             elevation: 0,
             title: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child:
-                  _isSearchMode
-                      ? Row(
-                        key: const ValueKey('search_title'),
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              size: 20,
-                            ),
-                            onPressed: _exitSearchMode,
+              child: _isSearchMode
+                  ? Row(
+                      key: const ValueKey('search_title'),
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 20,
+                            color: AppTheme.gradientStart,
                           ),
-                          Text('Search', style: theme.textTheme.headlineSmall),
-                        ],
-                      )
-                      : TweenAnimationBuilder<double>(
-                        key: const ValueKey('logo_title'),
-                        duration: const Duration(milliseconds: 1000),
-                        tween: Tween(begin: 0.0, end: 1.0),
-                        curve: Curves.elasticOut,
-                        builder: (context, value, child) {
-                          return Transform.scale(scale: value, child: child);
-                        },
-                        child: GestureDetector(
-                          onTap: () {
-                            if (_scrollController.hasClients) {
-                              _scrollController.animateTo(
-                                0,
-                                duration: const Duration(milliseconds: 600),
-                                curve: Curves.fastOutSlowIn,
-                              );
-                            }
-                          },
-                          child: Image.asset(
-                            'assets/images/TealLogo.png',
-                            height: 45,
-                            fit: BoxFit.contain,
-                          ),
+                          onPressed: _exitSearchMode,
                         ),
+                        Text('Search', style: theme.textTheme.headlineSmall),
+                      ],
+                    )
+                  : Hero(
+                      tag: 'logo',
+                      child: Image.asset(
+                        'assets/images/TealLogo.png',
+                        height: 45,
+                        fit: BoxFit.contain,
                       ),
+                    ),
             ),
           ),
 
           // 2. Search Bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
               child: SardSearchBar(
                 controller: _searchController,
                 onTap: _enterSearchMode,
@@ -202,54 +185,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 3. Dynamic Category Filter Pills
           SliverToBoxAdapter(
             child: categoriesAsync.when(
-              data:
-                  (categories) => SizedBox(
-                    height: 56,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: ClampingScrollPhysics(),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: categories.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          final isAllSelected = _selectedCategoryIds.isEmpty;
-                          return SardCategoryChip(
-                            label: 'ALL',
-                            isSelected: isAllSelected,
-                            onSelected: (_) {
-                              setState(() {
-                                _selectedCategoryIds.clear();
-                                _isSearchMode = true;
-                              });
-                              _saveSearchHistory();
-                            },
-                          );
-                        }
-                        final category = categories[index - 1];
-                        final isSelected = _selectedCategoryIds.contains(
-                          category.remoteId,
-                        );
-                        return SardCategoryChip(
-                          label: category.nameEn,
-                          isSelected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedCategoryIds.add(category.remoteId);
-                                _isSearchMode = true;
-                              } else {
-                                _selectedCategoryIds.remove(category.remoteId);
-                              }
-                            });
-                            _saveSearchHistory();
-                          },
-                        );
-                      },
-                    ),
+              data: (categories) => SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: ClampingScrollPhysics(),
                   ),
-              loading: () => const SizedBox(height: 56),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: categories.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      final isAllSelected = _selectedCategoryIds.isEmpty;
+                      return SardCategoryChip(
+                        label: 'ALL',
+                        isSelected: isAllSelected,
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedCategoryIds.clear();
+                            _isSearchMode = true;
+                          });
+                          _saveSearchHistory();
+                        },
+                      );
+                    }
+                    final category = categories[index - 1];
+                    final isSelected = _selectedCategoryIds.contains(
+                      category.remoteId,
+                    );
+                    return SardCategoryChip(
+                      label: category.nameEn,
+                      isSelected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedCategoryIds.add(category.remoteId);
+                            _isSearchMode = true;
+                          } else {
+                            _selectedCategoryIds.remove(category.remoteId);
+                          }
+                        });
+                        _saveSearchHistory();
+                      },
+                    );
+                  },
+                ),
+              ),
+              loading: () => const SizedBox(height: 40),
               error: (error, stackTrace) => const SizedBox.shrink(),
             ),
           ),
@@ -271,8 +253,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final totalItemBlock = itemHeight + itemMargin;
                 final collapsedHeight = (itemHeight * 1.3) + itemMargin;
                 final expandedHeight = (totalItemBlock * templates.length);
-                final currentHeight =
-                    _isFeaturedExpanded ? expandedHeight : collapsedHeight;
+                final currentHeight = _isFeaturedExpanded
+                    ? expandedHeight
+                    : collapsedHeight;
                 const buttonHeight = 64.0;
 
                 return SliverPadding(
@@ -292,10 +275,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 600),
                             curve: Curves.fastLinearToSlowEaseIn,
-                            height:
-                                templates.length <= 2
-                                    ? (totalItemBlock * templates.length)
-                                    : currentHeight,
+                            height: templates.length <= 2
+                                ? (totalItemBlock * templates.length)
+                                : currentHeight,
                             clipBehavior: Clip.hardEdge,
                             decoration: const BoxDecoration(),
                             child: OverflowBox(
@@ -348,9 +330,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     }
                                   }
                                   setState(
-                                    () =>
-                                        _isFeaturedExpanded =
-                                            !_isFeaturedExpanded,
+                                    () => _isFeaturedExpanded =
+                                        !_isFeaturedExpanded,
                                   );
                                   if (wasExpanded && targetOffset != null) {
                                     _scrollController.animateTo(
@@ -404,7 +385,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           ),
                                           child: Icon(
                                             Icons.keyboard_arrow_down_rounded,
-                                            color: theme.colorScheme.primary,
+                                            color: AppTheme.gradientStart,
                                             size: 24,
                                           ),
                                         ),
@@ -420,33 +401,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 );
               },
-              loading:
-                  () => const SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: 240,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  ),
+              loading: () => const SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 240,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
               error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
             ),
 
             // 5. Dynamic Categories & Products
             categoriesAsync.when(
-              data:
-                  (categories) => SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final category = categories[index];
-                      return _CategorySection(category: category);
-                    }, childCount: categories.length),
-                  ),
-              loading:
-                  () => const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-              error:
-                  (e, s) => SliverFillRemaining(
-                    child: Center(child: Text('Error loading catalog: $e')),
-                  ),
+              data: (categories) => SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final category = categories[index];
+                  return _CategorySection(category: category);
+                }, childCount: categories.length),
+              ),
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, s) => SliverFillRemaining(
+                child: Center(child: Text('Error loading catalog: $e')),
+              ),
             ),
           ] else ...[
             // Search Results Mode
@@ -521,24 +498,44 @@ class _FeaturedCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              // "try now" chip — same look as unselected SardCategoryChip
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
-                  border: Border.all(
-                    color: theme.colorScheme.primary,
-                    width: 1.2,
+              // "try now" chip
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 40,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.getCardGradient(theme),
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.buttonRadius,
+                      ),
+                      border: Border.all(
+                        color: AppTheme.accentGold,
+                        width: 1.5,
+                      ),
+                      boxShadow: AppTheme.cardShadow,
+                    ),
+                    child: Text(
+                      'TRY NOW',
+                      textAlign: TextAlign.center,
+                      strutStyle: const StrutStyle(
+                        fontSize: 14,
+                        height: 1.0,
+                        forceStrutHeight: true,
+                        leading: 0,
+                      ),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                        height: 1.0,
+                        leadingDistribution: TextLeadingDistribution.even,
+                      ),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'try now',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                ],
               ),
             ],
           ),
@@ -547,8 +544,6 @@ class _FeaturedCard extends StatelessWidget {
     );
   }
 }
-
-
 
 class _CategorySection extends ConsumerWidget {
   final Category category;
@@ -565,24 +560,21 @@ class _CategorySection extends ConsumerWidget {
 
     return productsAsync.when(
       data: (products) {
-        final filteredProducts =
-            products.where((p) {
-              // 1. Stock Filtering
-              final stock = p.branchStock;
-              int branchStockCount = 0;
-              if (stock != null) {
-                if (branch == 'nablus') branchStockCount = stock.nablus ?? 0;
-                if (branch == 'bethlehem')
-                  branchStockCount = stock.bethlehem ?? 0;
-                if (branch == 'ramallah')
-                  branchStockCount = stock.ramallah ?? 0;
-              } else {
-                branchStockCount = 99; // Assume in stock if no stock data
-              }
+        final filteredProducts = products.where((p) {
+          // 1. Stock Filtering
+          final stock = p.branchStock;
+          int branchStockCount = 0;
+          if (stock != null) {
+            if (branch == 'nablus') branchStockCount = stock.nablus ?? 0;
+            if (branch == 'bethlehem') branchStockCount = stock.bethlehem ?? 0;
+            if (branch == 'ramallah') branchStockCount = stock.ramallah ?? 0;
+          } else {
+            branchStockCount = 99; // Assume in stock if no stock data
+          }
 
-              if (branchStockCount == 0) return false;
-              return true;
-            }).toList();
+          if (branchStockCount == 0) return false;
+          return true;
+        }).toList();
 
         if (filteredProducts.isEmpty) return const SizedBox.shrink();
 
@@ -641,7 +633,7 @@ class ProductCard extends ConsumerWidget {
           final searchBg = theme.brightness == Brightness.light
               ? Colors.grey.shade200
               : theme.colorScheme.surfaceContainerHighest;
-              
+
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -718,9 +710,11 @@ class ProductCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final variants = product.variants ?? [];
     double displayPrice = 0.0;
-    
+
     final cartItems = ref.watch(cartProvider);
-    final productItems = cartItems.where((item) => item.product.remoteId == product.remoteId).toList();
+    final productItems = cartItems
+        .where((item) => item.product.remoteId == product.remoteId)
+        .toList();
     final totalQty = productItems.fold(0, (sum, item) => sum + item.quantity);
 
     if (variants.isNotEmpty) {
@@ -742,6 +736,7 @@ class ProductCard extends ConsumerWidget {
     }
 
     final gender = product.gender;
+    final onCardColor = AppTheme.getOnCardColor(theme);
 
     return GestureDetector(
       onTap: () {
@@ -752,14 +747,9 @@ class ProductCard extends ConsumerWidget {
           width: 170,
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest.withValues(
-              alpha: 0.5,
-            ),
+            gradient: AppTheme.getCardGradient(theme),
             borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-            border: Border.all(
-              color: AppTheme.accentGold.withValues(alpha: 0.6),
-              width: 1.2,
-            ),
+            border: Border.all(color: AppTheme.accentGold, width: 1.5),
             boxShadow: AppTheme.cardShadow,
           ),
           child: Column(
@@ -769,9 +759,9 @@ class ProductCard extends ConsumerWidget {
                 child: Stack(
                   children: [
                     Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: const BorderRadius.vertical(
+                      decoration: const BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.vertical(
                           top: Radius.circular(AppTheme.cardRadius),
                         ),
                       ),
@@ -795,10 +785,9 @@ class ProductCard extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color:
-                                gender == 'boy'
-                                    ? Colors.blue.withValues(alpha: 0.8)
-                                    : Colors.pink.withValues(alpha: 0.8),
+                            color: gender == 'boy'
+                                ? Colors.blue.withValues(alpha: 0.8)
+                                : Colors.pink.withValues(alpha: 0.8),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -832,6 +821,7 @@ class ProductCard extends ConsumerWidget {
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               height: 1.2,
+                              color: onCardColor,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -840,7 +830,7 @@ class ProductCard extends ConsumerWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.grey.shade600,
+                              color: onCardColor.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -852,7 +842,7 @@ class ProductCard extends ConsumerWidget {
                             child: Text(
                               '${displayPrice.toStringAsFixed(0)} ₪',
                               style: theme.textTheme.titleMedium?.copyWith(
-                                color: theme.colorScheme.primary,
+                                color: onCardColor,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -860,60 +850,84 @@ class ProductCard extends ConsumerWidget {
                           if (totalQty == 0)
                             InkWell(
                               onTap: () => _handleAdd(context, ref),
-                              child: TweenAnimationBuilder<double>(
-                                duration: const Duration(milliseconds: 200),
-                                tween: Tween(begin: 1.0, end: 1.0),
-                                builder: (context, value, child) {
-                                  return Transform.scale(
-                                    scale: value,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.add_rounded,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  );
-                                },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: theme.scaffoldBackgroundColor,
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.buttonRadius / 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add_rounded,
+                                  color: AppTheme.gradientStart,
+                                  size: 18,
+                                ),
                               ),
                             )
                           else
                             Container(
+                              height: 32,
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary,
-                                borderRadius: BorderRadius.circular(8),
+                                color: theme.scaffoldBackgroundColor,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.buttonRadius / 2,
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   InkWell(
                                     onTap: () {
                                       final target = productItems.last;
-                                      ref.read(cartProvider.notifier).updateQuantity(target.id, target.quantity - 1);
+                                      ref
+                                          .read(cartProvider.notifier)
+                                          .updateQuantity(
+                                            target.id,
+                                            target.quantity - 1,
+                                          );
                                     },
                                     child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                                      child: Icon(Icons.remove_rounded, color: Colors.white, size: 18),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      child: Icon(
+                                        Icons.remove_rounded,
+                                        color: AppTheme.gradientStart,
+                                        size: 16,
+                                      ),
                                     ),
                                   ),
                                   Text(
                                     '$totalQty',
+                                    strutStyle: const StrutStyle(
+                                      fontSize: 13,
+                                      height: 1.0,
+                                      forceStrutHeight: true,
+                                    ),
                                     style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      color: AppTheme.gradientStart,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                      height: 1.0,
+                                      leadingDistribution:
+                                          TextLeadingDistribution.even,
                                     ),
                                   ),
                                   InkWell(
                                     onTap: () => _handleAdd(context, ref),
                                     child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                                      child: Icon(Icons.add_rounded, color: Colors.white, size: 18),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      child: Icon(
+                                        Icons.add_rounded,
+                                        color: AppTheme.gradientStart,
+                                        size: 16,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -958,35 +972,32 @@ class _SearchResultsGrid extends ConsumerWidget {
         }
 
         final allProducts = snapshot.data!;
-        final filteredProducts =
-            allProducts.where((p) {
-              // a. Stock Filtering
-              final stock = p.branchStock;
-              int branchStockCount = 0;
-              if (stock != null) {
-                if (branch == 'nablus') branchStockCount = stock.nablus ?? 0;
-                if (branch == 'bethlehem')
-                  branchStockCount = stock.bethlehem ?? 0;
-                if (branch == 'ramallah')
-                  branchStockCount = stock.ramallah ?? 0;
-              } else {
-                branchStockCount = 99;
-              }
-              if (branchStockCount == 0) return false;
+        final filteredProducts = allProducts.where((p) {
+          // a. Stock Filtering
+          final stock = p.branchStock;
+          int branchStockCount = 0;
+          if (stock != null) {
+            if (branch == 'nablus') branchStockCount = stock.nablus ?? 0;
+            if (branch == 'bethlehem') branchStockCount = stock.bethlehem ?? 0;
+            if (branch == 'ramallah') branchStockCount = stock.ramallah ?? 0;
+          } else {
+            branchStockCount = 99;
+          }
+          if (branchStockCount == 0) return false;
 
-              // b. Search Text Filter
-              final matchesSearch =
-                  query.isEmpty ||
-                  p.nameEn.toLowerCase().contains(query.toLowerCase()) ||
-                  p.nameAr.contains(query);
+          // b. Search Text Filter
+          final matchesSearch =
+              query.isEmpty ||
+              p.nameEn.toLowerCase().contains(query.toLowerCase()) ||
+              p.nameAr.contains(query);
 
-              // c. Category Filter
-              final matchesCategory =
-                  selectedCategoryIds.isEmpty ||
-                  selectedCategoryIds.contains(p.section);
+          // c. Category Filter
+          final matchesCategory =
+              selectedCategoryIds.isEmpty ||
+              selectedCategoryIds.contains(p.section);
 
-              return matchesSearch && matchesCategory;
-            }).toList();
+          return matchesSearch && matchesCategory;
+        }).toList();
 
         if (filteredProducts.isEmpty) {
           return SliverFillRemaining(

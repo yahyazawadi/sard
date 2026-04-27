@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../custom/app_theme.dart';
 import '../models/featured_template.dart';
 import '../providers/catalog_provider.dart';
 import 'home_screen.dart'; // To reuse _ProductCard if possible, or I'll copy the logic
@@ -22,15 +23,13 @@ class CollectionScreen extends ConsumerWidget {
           SliverAppBar(
             expandedHeight: 320,
             pinned: true,
-            leading: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CircleAvatar(
-                backgroundColor: Colors.white.withValues(alpha: 0.9),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 18),
-                  onPressed: () => context.pop(),
-                ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 20,
+                color: AppTheme.gradientStart,
               ),
+              onPressed: () => context.pop(),
             ),
             backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
             elevation: 0,

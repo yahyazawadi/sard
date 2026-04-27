@@ -87,6 +87,178 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          MediaQuery.of(context).padding.bottom + 12,
+        ),
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          border: Border(
+            top: BorderSide(
+              color: AppTheme.gradientStart.withValues(alpha: 0.05),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Quantity Selector
+            Container(
+              height: 54,
+              width: 124,
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                border: Border.all(color: AppTheme.gradientStart, width: 1.5),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: state.quantity > 1
+                        ? () => notifier.setQuantity(state.quantity - 1)
+                        : null,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: Icon(
+                        Icons.remove_rounded,
+                        size: 20,
+                        color: state.quantity > 1
+                            ? AppTheme.gradientStart
+                            : AppTheme.gradientStart.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${state.quantity}',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.gradientStart,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () => notifier.setQuantity(state.quantity + 1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        size: 20,
+                        color: AppTheme.gradientStart,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  if (widget.product.isGendered &&
+                      state.selectedGender == null) {
+                    SardSnackBar.show(
+                      context,
+                      "Please select a gender (Boy or Girl)",
+                    );
+                    return;
+                  }
+                  if (widget.product.isCustomizable && !state.isSelectionValid) {
+                    SardSnackBar.show(
+                      context,
+                      "Please complete your mix selection (${state.currentPieces}/${state.maxPieces} PCS)",
+                    );
+                    return;
+                  }
+                  if (!state.isSelectionValid) {
+                    SardSnackBar.show(
+                      context,
+                      "Please complete all selection requirements",
+                    );
+                    return;
+                  }
+
+                  final variantIndex = widget.product.variants?.indexWhere(
+                        (v) => v.size == state.selectedVariant?.size,
+                      ) ??
+                      0;
+
+                  if (widget.editingItem != null) {
+                    ref.read(cartProvider.notifier).updateCartItem(
+                          CartItem(
+                            id: widget.editingItem!.id,
+                            product: widget.product,
+                            selectedVariantIndex:
+                                variantIndex >= 0 ? variantIndex : 0,
+                            selectedGender: state.selectedGender,
+                            selectedWeight: state.selectedWeight,
+                            selectedFillings: state.selectedFillings,
+                            quantity: state.quantity,
+                          ),
+                        );
+                    SardSnackBar.show(context, "Changes saved successfully");
+                    context.pop();
+                  } else {
+                    ref.read(cartProvider.notifier).addToCart(
+                          widget.product,
+                          variantIndex: variantIndex >= 0 ? variantIndex : 0,
+                          gender: state.selectedGender,
+                          weight: state.selectedWeight,
+                          fillings: state.selectedFillings,
+                          quantity: state.quantity,
+                        );
+                    SardSnackBar.show(
+                      context,
+                      "${widget.product.nameEn} added to cart",
+                      action: SnackBarAction(
+                        label: "VIEW CART",
+                        onPressed: () => context.push(AppRoutes.cart),
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  height: 54,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.getCardGradient(theme),
+                    borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                    border: Border.all(color: AppTheme.accentGold, width: 1.5),
+                    boxShadow: AppTheme.goldShadow,
+                  ),
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        widget.editingItem != null
+                            ? "SAVE CHANGES"
+                            : "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PCS, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: Stack(
         children: [
           CustomScrollView(
@@ -96,18 +268,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 expandedHeight: 300,
                 pinned: true,
                 backgroundColor: theme.appBarTheme.backgroundColor,
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                leading: Center(
                   child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: AppTheme.bgWhite.withValues(alpha: 0.86),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
                       icon: const Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        color: Colors.black,
                         size: 20,
+                        color: AppTheme.gradientStart,
                       ),
                       onPressed: () => context.pop(),
                     ),
@@ -117,14 +288,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: AppTheme.bgWhite.withValues(alpha: 0.86),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
                         icon: const Icon(
                           Icons.shopping_cart_outlined,
-                          color: Colors.black,
+                          color: AppTheme.gradientStart,
                         ),
                         onPressed: () {
                           context.push(AppRoutes.cart);
@@ -251,17 +422,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                       ),
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? theme.colorScheme.tertiary
-                                                  .withValues(alpha: 0.1)
-                                            : Colors.transparent,
+                                            ? null
+                                            : theme.scaffoldBackgroundColor,
+                                        gradient: isSelected
+                                            ? AppTheme.getCardGradient(theme)
+                                            : null,
                                         borderRadius: BorderRadius.circular(
                                           AppTheme.buttonRadius,
                                         ),
                                         border: Border.all(
                                           color: isSelected
-                                              ? theme.colorScheme.tertiary
-                                              : Colors.grey.shade300,
-                                          width: isSelected ? 1.5 : 1.0,
+                                              ? AppTheme.accentGold
+                                              : AppTheme.primaryTeal.withValues(
+                                                  alpha: 0.2,
+                                                ),
+                                          width: 1.5,
                                         ),
                                       ),
                                       child: Column(
@@ -273,8 +448,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                                   ? FontWeight.w900
                                                   : FontWeight.w500,
                                               color: isSelected
-                                                  ? theme.colorScheme.tertiary
-                                                  : Colors.black87,
+                                                  ? Colors.white
+                                                  : AppTheme.primaryTeal,
                                               letterSpacing: 1.2,
                                             ),
                                           ),
@@ -284,13 +459,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 color: isSelected
-                                                    ? Theme.of(context)
-                                                          .colorScheme
-                                                          .tertiary
+                                                    ? Colors.white.withValues(
+                                                        alpha: 0.8,
+                                                      )
+                                                    : AppTheme.primaryTeal
                                                           .withValues(
                                                             alpha: 0.8,
-                                                          )
-                                                    : Colors.grey.shade500,
+                                                          ),
                                               ),
                                             ),
                                         ],
@@ -319,19 +494,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                       ),
                                       decoration: BoxDecoration(
                                         color: state.selectedGender == 'boy'
-                                            ? theme.colorScheme.primary
-                                                  .withValues(alpha: 0.15)
-                                            : theme
-                                                  .colorScheme
-                                                  .surfaceContainerHighest
-                                                  .withValues(alpha: 0.3),
+                                            ? null
+                                            : theme.scaffoldBackgroundColor,
+                                        gradient: state.selectedGender == 'boy'
+                                            ? AppTheme.getCardGradient(theme)
+                                            : null,
                                         borderRadius: BorderRadius.circular(
                                           AppTheme.cardRadius,
                                         ),
                                         border: Border.all(
                                           color: state.selectedGender == 'boy'
-                                              ? theme.colorScheme.primary
-                                              : Colors.transparent,
+                                              ? AppTheme.accentGold
+                                              : AppTheme.primaryTeal.withValues(
+                                                  alpha: 0.2,
+                                                ),
                                           width: 1.5,
                                         ),
                                       ),
@@ -343,10 +519,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                               fontWeight: FontWeight.bold,
                                               color:
                                                   state.selectedGender == 'boy'
-                                                  ? theme.colorScheme.primary
-                                                  : theme
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
+                                                  ? Colors.white
+                                                  : AppTheme.primaryTeal,
                                             ),
                                       ),
                                     ),
@@ -364,18 +538,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                       ),
                                       decoration: BoxDecoration(
                                         color: state.selectedGender == 'girl'
-                                            ? const Color(0xFFFCE4EC)
-                                            : theme
-                                                  .colorScheme
-                                                  .surfaceContainerHighest
-                                                  .withValues(alpha: 0.3),
+                                            ? null
+                                            : theme.scaffoldBackgroundColor,
+                                        gradient: state.selectedGender == 'girl'
+                                            ? AppTheme.getCardGradient(theme)
+                                            : null,
                                         borderRadius: BorderRadius.circular(
                                           AppTheme.cardRadius,
                                         ),
                                         border: Border.all(
                                           color: state.selectedGender == 'girl'
-                                              ? const Color(0xFFE91E63)
-                                              : Colors.transparent,
+                                              ? AppTheme.accentGold
+                                              : AppTheme.primaryTeal.withValues(
+                                                  alpha: 0.2,
+                                                ),
                                           width: 1.5,
                                         ),
                                       ),
@@ -387,10 +563,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                               fontWeight: FontWeight.bold,
                                               color:
                                                   state.selectedGender == 'girl'
-                                                  ? const Color(0xFFC2185B)
-                                                  : theme
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
+                                                  ? Colors.white
+                                                  : AppTheme.primaryTeal,
                                             ),
                                       ),
                                     ),
@@ -403,7 +577,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
                           // --- Master Toggle 3: isCustomizable (Fillings Grid) ---
                           if (widget.product.isCustomizable) ...[
-                            const Divider(height: 32),
+                            const Divider(
+                              height: 32,
+                              color: AppTheme.gradientStart,
+                              thickness: 0.5,
+                            ),
                             // Custom selections expanded
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -477,23 +655,32 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                                     cacheWidth: 200,
                                                   ),
                                                   Container(
-                                                    padding:
-                                                        const EdgeInsets.all(4),
+                                                    width: 18,
+                                                    height: 18,
+                                                    alignment: Alignment.center,
                                                     decoration:
-                                                        const BoxDecoration(
-                                                          color: Color(
-                                                            0xFF49D4D0,
-                                                          ),
+                                                        BoxDecoration(
+                                                          color: AppTheme.primaryTeal,
                                                           shape:
                                                               BoxShape.circle,
                                                         ),
                                                     child: Text(
                                                       "$count",
+                                                      strutStyle:
+                                                          const StrutStyle(
+                                                            forceStrutHeight:
+                                                                true,
+                                                            height: 1.0,
+                                                          ),
                                                       style: const TextStyle(
                                                         color: Colors.white,
                                                         fontSize: 10,
                                                         fontWeight:
                                                             FontWeight.bold,
+                                                        height: 1.0,
+                                                        leadingDistribution:
+                                                            TextLeadingDistribution
+                                                                .even,
                                                       ),
                                                     ),
                                                   ),
@@ -521,184 +708,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                             ),
                           ],
                           const SizedBox(height: 32),
-
-                          Row(
-                            children: [
-                              // Quantity Selector
-                              Container(
-                                height: 54,
-                                width: 100, // Compact width
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.buttonRadius,
-                                  ),
-                                  border: Border.all(
-                                    color: theme.colorScheme.primary.withValues(
-                                      alpha: 0.3,
-                                    ),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    IconButton(
-                                      iconSize: 18,
-                                      visualDensity: VisualDensity.compact,
-                                      icon: const Icon(Icons.remove_rounded),
-                                      onPressed: state.quantity > 1
-                                          ? () => notifier.setQuantity(
-                                              state.quantity - 1,
-                                            )
-                                          : null,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                    Text(
-                                      '${state.quantity}',
-                                      style: theme.textTheme.bodyLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.primary,
-                                          ),
-                                    ),
-                                    IconButton(
-                                      iconSize: 18,
-                                      visualDensity: VisualDensity.compact,
-                                      icon: const Icon(Icons.add_rounded),
-                                      onPressed: () => notifier.setQuantity(
-                                        state.quantity + 1,
-                                      ),
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: InkWell(
-                                  onTap: state.isSelectionValid
-                                      ? () {
-                                          final variantIndex =
-                                              widget.product.variants
-                                                  ?.indexWhere(
-                                                    (v) =>
-                                                        v.size ==
-                                                        state
-                                                            .selectedVariant
-                                                            ?.size,
-                                                  ) ??
-                                              0;
-
-                                          if (widget.editingItem != null) {
-                                            // Update existing item
-                                            ref
-                                                .read(cartProvider.notifier)
-                                                .updateCartItem(
-                                                  CartItem(
-                                                    id: widget.editingItem!.id,
-                                                    product: widget.product,
-                                                    selectedVariantIndex:
-                                                        variantIndex >= 0
-                                                        ? variantIndex
-                                                        : 0,
-                                                    selectedGender:
-                                                        state.selectedGender,
-                                                    selectedWeight:
-                                                        state.selectedWeight,
-                                                    selectedFillings:
-                                                        state.selectedFillings,
-                                                    quantity: state.quantity,
-                                                  ),
-                                                );
-                                            SardSnackBar.show(
-                                              context,
-                                              "Changes saved successfully",
-                                            );
-                                            context.pop(); // Go back to cart
-                                          } else {
-                                            // Add new item
-                                            ref
-                                                .read(cartProvider.notifier)
-                                                .addToCart(
-                                                  widget.product,
-                                                  variantIndex:
-                                                      variantIndex >= 0
-                                                      ? variantIndex
-                                                      : 0,
-                                                  gender: state.selectedGender,
-                                                  weight: state.selectedWeight,
-                                                  fillings:
-                                                      state.selectedFillings,
-                                                  quantity: state.quantity,
-                                                );
-                                            SardSnackBar.show(
-                                              context,
-                                              "${widget.product.nameEn} added to cart",
-                                              action: SnackBarAction(
-                                                label: "VIEW CART",
-                                                onPressed: () => context.push(
-                                                  AppRoutes.cart,
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        }
-                                      : null,
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 54, // Consistent height
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary
-                                          .withValues(
-                                            alpha: state.isSelectionValid
-                                                ? 1.0
-                                                : 0.5,
-                                          ),
-                                      borderRadius: BorderRadius.circular(
-                                        AppTheme.buttonRadius,
-                                      ),
-                                      border: Border.all(
-                                        color: theme.colorScheme.tertiary,
-                                        width: 2,
-                                      ), // Permanent Gold border
-                                      boxShadow: state.isSelectionValid
-                                          ? AppTheme.goldShadow
-                                          : null,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          widget.editingItem != null
-                                              ? "SAVE CHANGES"
-                                              : "ADD TO CART (${state.product?.isCustomizable == true ? '${state.currentPieces}/${state.maxPieces} PCS, ' : ''}₪ ${state.totalPrice.toStringAsFixed(2)})",
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SliverToBoxAdapter(
-                child: SafeArea(top: false, child: SizedBox(height: 60)),
               ),
             ],
           ),
@@ -788,6 +802,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
@@ -875,7 +890,11 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              const Divider(height: 1),
+                              const Divider(
+                                height: 1,
+                                color: AppTheme.gradientStart,
+                                thickness: 0.5,
+                              ),
                               AnimatedCrossFade(
                                 duration: const Duration(milliseconds: 250),
                                 crossFadeState: _isExpanded
@@ -1001,21 +1020,37 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: widget.onClose,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.tertiary,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                  child: InkWell(
+                    onTap: widget.onClose,
+                    child: Container(
+                      width: double.infinity,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.getCardGradient(theme),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.buttonRadius,
+                        ),
+                        border: Border.all(
+                          color: AppTheme.accentGold,
+                          width: 1.5,
+                        ),
+                        boxShadow: AppTheme.goldShadow,
                       ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      "SAVE SELECTIONS",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "SAVE SELECTIONS",
+                        strutStyle: StrutStyle(
+                          forceStrutHeight: true,
+                          height: 1.0,
+                        ),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          letterSpacing: 1.1,
+                          height: 1.0,
+                          leadingDistribution: TextLeadingDistribution.even,
+                        ),
                       ),
                     ),
                   ),
@@ -1036,15 +1071,20 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
     ProductBuilderNotifier notifier, {
     bool isCompact = false,
   }) {
+    final onCardColor = AppTheme.getOnCardColor(Theme.of(context));
     return GestureDetector(
       onTap: () => notifier.addFilling(fillingId),
       child: RepaintBoundary(
         child: Container(
           decoration: BoxDecoration(
+            color: count > 0
+                ? AppTheme.gradientStart.withValues(alpha: 0.05)
+                : Colors.transparent,
             border: Border.all(
               color: count > 0
-                  ? Theme.of(context).colorScheme.tertiary
-                  : Colors.grey.shade200,
+                  ? AppTheme.gradientStart
+                  : AppTheme.gradientStart.withValues(alpha: 0.3),
+              width: count > 0 ? 1.5 : 1.0,
             ),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -1087,9 +1127,10 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                         Text(
                           name,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
+                            color: onCardColor,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -1101,7 +1142,9 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: Theme.of(
+                    context,
+                  ).scaffoldBackgroundColor.withValues(alpha: 0.5),
                   borderRadius: const BorderRadius.vertical(
                     bottom: Radius.circular(7),
                   ),
@@ -1118,25 +1161,34 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                           horizontal: 10,
                           vertical: 8,
                         ),
-                        child: Icon(Icons.remove_rounded, size: 16),
+                        child: Icon(
+                          Icons.remove_rounded,
+                          size: 16,
+                          color: AppTheme.gradientStart,
+                        ),
                       ),
                     ),
                     Text(
                       "$count",
+                      strutStyle: const StrutStyle(
+                        fontSize: 12,
+                        height: 1.0,
+                        forceStrutHeight: true,
+                      ),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
+                        color: AppTheme.gradientStart,
+                        height: 1.0,
+                        leadingDistribution: TextLeadingDistribution.even,
                       ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 8,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                       child: Icon(
                         Icons.add_rounded,
                         size: 16,
-                        color: Colors.grey,
+                        color: AppTheme.gradientStart,
                       ),
                     ),
                   ],

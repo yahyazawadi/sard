@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../custom/app_theme.dart';
 
 class SardSnackBar {
   static final GlobalKey<ScaffoldMessengerState> messengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -13,47 +14,61 @@ class SardSnackBar {
     state.clearSnackBars();
     
     final snackBar = SnackBar(
-      content: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: action != null ? () {
-          action.onPressed();
-          messengerKey.currentState?.hideCurrentSnackBar();
-        } : null,
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: Colors.white, 
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+      content: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppTheme.gradientStart, AppTheme.primaryTeal],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFFC66900),
+            width: 1.0,
+          ),
+        ),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: action != null ? () {
+            action.onPressed();
+            messengerKey.currentState?.hideCurrentSnackBar();
+          } : null,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white, 
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
-            ),
-            if (action != null) ...[
-              const SizedBox(width: 8),
-              Text(
-                action.label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                  letterSpacing: 0.5,
-                  decoration: TextDecoration.underline,
+              if (action != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  action.label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       duration: const Duration(seconds: 4),
-      // We don't use the default action anymore to make the whole area clickable
       behavior: SnackBarBehavior.floating,
-      backgroundColor: const Color(0xFF49D4D0),
-      elevation: 6,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      padding: EdgeInsets.zero,
     );
 
     state.showSnackBar(snackBar);

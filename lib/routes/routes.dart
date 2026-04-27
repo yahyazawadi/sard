@@ -3,8 +3,6 @@
 // =============================================================================
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../screens/home_screen.dart';
 import '../screens/product_detail_screen.dart';
 import '../models/product.dart';
 import '../screens/profile_screen.dart';
@@ -19,21 +17,8 @@ import '../screens/collection_screen.dart';
 import '../models/cart_item.dart';
 import '../models/featured_template.dart';
 import 'app_routes.dart';
-import '../custom/app_theme.dart';
 
 import '../screens/main_wrapper_screen.dart';
-
-int _getSelectedIndex(String path) {
-  if (path == AppRoutes.settings) return 2;
-  if (path == AppRoutes.cart) return 1;
-  if (path == AppRoutes.home ||
-      path == '/' ||
-      path == AppRoutes.collection ||
-      path == AppRoutes.productDetail) {
-    return 0;
-  }
-  return -1;
-}
 
 GoRouter createRouter(AuthProvider auth) {
   return GoRouter(
