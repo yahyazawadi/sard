@@ -47,7 +47,7 @@ class SardSearchBar extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             fontSize: 13,
           ),
-          contentPadding: const EdgeInsets.fromLTRB(0, 11, 0, 5),
+          contentPadding: const EdgeInsets.only(top: 10, bottom: 6),
           prefixIcon: const Icon(
             Icons.search_rounded,
             color: AppTheme.gradientStart,

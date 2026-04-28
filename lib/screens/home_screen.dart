@@ -241,7 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Default View: Featured Section
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                 child: Text('Featured', style: theme.textTheme.headlineSmall),
               ),
             ),
@@ -258,145 +258,156 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     : collapsedHeight;
                 const buttonHeight = 64.0;
 
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverToBoxAdapter(
-                    child: SizedBox(
-                      key: _featuredKey,
-                      height:
-                          (templates.length <= 2
+                return SliverToBoxAdapter(
+                  child: SizedBox(
+                    key: _featuredKey,
+                    height:
+                        (templates.length <= 2
+                            ? (totalItemBlock * templates.length)
+                            : currentHeight) +
+                        8.0,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.topCenter,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          height: templates.length <= 2
                               ? (totalItemBlock * templates.length)
-                              : currentHeight) +
-                          8.0,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.topCenter,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.fastLinearToSlowEaseIn,
-                            height: templates.length <= 2
-                                ? (totalItemBlock * templates.length)
-                                : currentHeight,
-                            clipBehavior: Clip.hardEdge,
-                            decoration: const BoxDecoration(),
-                            child: OverflowBox(
-                              alignment: Alignment.topCenter,
-                              minHeight: 0,
-                              maxHeight: double.infinity,
-                              child: Column(
-                                children: [
-                                  ...templates.map(
-                                    (t) => Container(
-                                      height: itemHeight,
-                                      width: double.infinity,
-                                      margin: EdgeInsets.only(
-                                        bottom: itemMargin,
-                                      ),
-                                      child: _FeaturedCard(template: t),
-                                    ),
+                              : currentHeight,
+                          clipBehavior: Clip.hardEdge,
+                          decoration: const BoxDecoration(),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: OverflowBox(
+                            alignment: Alignment.topCenter,
+                            minHeight: 0,
+                            maxHeight: double.infinity,
+                            child: Column(
+                              children: [
+                                ...templates.map(
+                                  (t) => Container(
+                                    height: itemHeight,
+                                    width: double.infinity,
+                                    margin: EdgeInsets.only(bottom: itemMargin),
+                                    child: _FeaturedCard(template: t),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                          if (showAll)
-                            Positioned(
-                              top:
-                                  (templates.length <= 2
-                                      ? (totalItemBlock * templates.length)
-                                      : currentHeight) -
-                                  (buttonHeight / 2),
-                              left: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: () {
-                                  if (!_scrollController.hasClients) return;
-                                  final wasExpanded = _isFeaturedExpanded;
-                                  double? targetOffset;
-                                  if (wasExpanded) {
-                                    final RenderBox? renderBox =
-                                        _featuredKey.currentContext
-                                                ?.findRenderObject()
-                                            as RenderBox?;
-                                    if (renderBox != null) {
-                                      final position = renderBox.localToGlobal(
-                                        Offset.zero,
-                                      );
-                                      targetOffset =
-                                          _scrollController.offset +
-                                          position.dy -
-                                          20;
-                                    }
+                        ),
+                        if (showAll)
+                          Positioned(
+                            top:
+                                (templates.length <= 2
+                                    ? (totalItemBlock * templates.length)
+                                    : currentHeight) -
+                                (buttonHeight / 2),
+                            left: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (!_scrollController.hasClients) return;
+                                final wasExpanded = _isFeaturedExpanded;
+                                double? targetOffset;
+                                if (wasExpanded) {
+                                  final RenderBox? renderBox =
+                                      _featuredKey.currentContext
+                                              ?.findRenderObject()
+                                          as RenderBox?;
+                                  if (renderBox != null) {
+                                    final position = renderBox.localToGlobal(
+                                      Offset.zero,
+                                    );
+                                    targetOffset =
+                                        _scrollController.offset +
+                                        position.dy -
+                                        20;
                                   }
-                                  setState(
-                                    () => _isFeaturedExpanded =
-                                        !_isFeaturedExpanded,
+                                }
+                                setState(
+                                  () => _isFeaturedExpanded =
+                                      !_isFeaturedExpanded,
+                                );
+                                if (wasExpanded && targetOffset != null) {
+                                  _scrollController.animateTo(
+                                    targetOffset.clamp(
+                                      0,
+                                      _scrollController
+                                          .position
+                                          .maxScrollExtent,
+                                    ),
+                                    duration: const Duration(milliseconds: 600),
+                                    curve: Curves.fastLinearToSlowEaseIn,
                                   );
-                                  if (wasExpanded && targetOffset != null) {
-                                    _scrollController.animateTo(
-                                      targetOffset.clamp(
-                                        0,
-                                        _scrollController
-                                            .position
-                                            .maxScrollExtent,
+                                }
+                              },
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                height: buttonHeight,
+                                color: Colors.transparent,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Positioned(
+                                      top: buttonHeight / 2,
+                                      left: 0,
+                                      right: 0,
+                                      height: buttonHeight / 2,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            top: BorderSide(
+                                              color: AppTheme.gradientStart
+                                                  .withValues(alpha: 0.8),
+                                              width: 2,
+                                            ),
+                                          ),
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(20),
+                                              ),
+                                        ),
                                       ),
+                                    ),
+                                    AnimatedRotation(
+                                      turns: _isFeaturedExpanded ? 0.5 : 0,
                                       duration: const Duration(
                                         milliseconds: 600,
                                       ),
-                                      curve: Curves.fastLinearToSlowEaseIn,
-                                    );
-                                  }
-                                },
-                                behavior: HitTestBehavior.opaque,
-                                child: Container(
-                                  height: buttonHeight,
-                                  color: Colors.transparent,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Divider(
-                                        color: Colors.grey.shade300,
-                                        thickness: 1,
-                                      ),
-                                      AnimatedRotation(
-                                        turns: _isFeaturedExpanded ? 0.5 : 0,
-                                        duration: const Duration(
-                                          milliseconds: 600,
-                                        ),
-                                        curve: Curves.easeOutBack,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.grey.shade300,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(
-                                                  alpha: 0.08,
-                                                ),
-                                                blurRadius: 6,
-                                                offset: const Offset(0, 3),
+                                      curve: Curves.easeOutBack,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.08,
                                               ),
-                                            ],
-                                          ),
-                                          child: Icon(
-                                            Icons.keyboard_arrow_down_rounded,
-                                            color: AppTheme.gradientStart,
-                                            size: 24,
-                                          ),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          Icons.keyboard_arrow_down_rounded,
+                                          color: AppTheme.gradientStart,
+                                          size: 24,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
                   ),
                 );
@@ -415,7 +426,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               data: (categories) => SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final category = categories[index];
-                  return _CategorySection(category: category);
+                  return _CategorySection(
+                    category: category,
+                    showDivider: index < categories.length - 1,
+                  );
                 }, childCount: categories.length),
               ),
               loading: () => const SliverFillRemaining(
@@ -433,7 +447,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
 
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          const SliverToBoxAdapter(child: SizedBox(height: 50)),
         ],
       ),
     );
@@ -547,7 +561,8 @@ class _FeaturedCard extends StatelessWidget {
 
 class _CategorySection extends ConsumerWidget {
   final Category category;
-  const _CategorySection({required this.category});
+  final bool showDivider;
+  const _CategorySection({required this.category, this.showDivider = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -582,7 +597,7 @@ class _CategorySection extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
               child: Text(
                 category.nameEn == 'Sard Icons'
                     ? 'Popular Products'
@@ -591,7 +606,7 @@ class _CategorySection extends ConsumerWidget {
               ),
             ),
             SizedBox(
-              height: 275,
+              height: 260,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 scrollDirection: Axis.horizontal,
@@ -604,6 +619,14 @@ class _CategorySection extends ConsumerWidget {
                 },
               ),
             ),
+            if (showDivider)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
+                child: Divider(
+                  color: AppTheme.gradientStart.withValues(alpha: 0.2),
+                  thickness: 1,
+                ),
+              ),
           ],
         );
       },
@@ -744,8 +767,8 @@ class ProductCard extends ConsumerWidget {
       },
       child: RepaintBoundary(
         child: Container(
-          width: 170,
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          width: 145,
+          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
             gradient: AppTheme.getCardGradient(theme),
             borderRadius: BorderRadius.circular(AppTheme.cardRadius),
@@ -803,10 +826,9 @@ class ProductCard extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 child: SizedBox(
-                  height:
-                      128, // Slightly reduced to make card shorter
+                  height: 115, // Reduced for a more compact look
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1031,7 +1053,7 @@ class _SearchResultsGrid extends ConsumerWidget {
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.65,
+              childAspectRatio: 0.68,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),

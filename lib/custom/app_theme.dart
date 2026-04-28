@@ -13,7 +13,7 @@ class AppTextSizes {
   static const double displaySmall = 24;
   static const double headlineLarge = 36;
   static const double headlineMedium = 24;
-  static const double headlineSmall = 20;
+  static const double headlineSmall = 24;
   static const double titleLarge = 22;
   static const double titleMedium = 18;
   static const double titleSmall = 16;
