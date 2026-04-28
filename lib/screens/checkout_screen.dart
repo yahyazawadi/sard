@@ -203,7 +203,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double total,
   ) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
         border: Border.all(
@@ -411,7 +411,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+                    SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
                   ],
                 ),
               ),

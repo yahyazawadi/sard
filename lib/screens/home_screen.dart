@@ -803,7 +803,7 @@ class ProductCard extends ConsumerWidget {
                           height: double.infinity,
                           width: double.infinity,
                           cacheWidth:
-                              400, // Optimize image memory and decoding time
+                              600, // Optimize image memory and decoding time
                         ),
                       ),
                     ),

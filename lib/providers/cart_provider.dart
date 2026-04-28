@@ -138,6 +138,11 @@ class CartNotifier extends Notifier<List<CartItem>> {
     _saveCart();
   }
 
+  void restoreItem(CartItem item) {
+    state = [...state, item];
+    _saveCart();
+  }
+
   void _saveCart() {
     final prefs = ref.read(prefsProvider);
     final cartString = jsonEncode(state.map((item) => item.toJson()).toList());

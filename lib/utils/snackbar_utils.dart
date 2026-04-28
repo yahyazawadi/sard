@@ -63,7 +63,7 @@ class SardSnackBar {
           ),
         ),
       ),
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 3),
       behavior: SnackBarBehavior.floating,
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -73,8 +73,8 @@ class SardSnackBar {
 
     state.showSnackBar(snackBar);
 
-    // Fallback: Manually hide after 4.2 seconds if the system duration fails for any reason
-    Future.delayed(const Duration(milliseconds: 4200), () {
+    // Fallback: Manually hide after 3.2 seconds if the system duration fails for any reason
+    Future.delayed(const Duration(milliseconds: 3200), () {
       try {
         messengerKey.currentState?.hideCurrentSnackBar();
       } catch (_) {}

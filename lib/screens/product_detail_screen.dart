@@ -92,7 +92,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           16,
           12,
           16,
-          MediaQuery.of(context).padding.bottom + 12,
+          MediaQuery.of(context).padding.bottom + 20,
         ),
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
