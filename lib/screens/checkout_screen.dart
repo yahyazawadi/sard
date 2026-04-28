@@ -24,10 +24,12 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String _selectedPayment = 'cash';
-  final PageController _cardPageController = PageController(viewportFraction: 0.85);
+  final PageController _cardPageController = PageController(
+    viewportFraction: 0.85,
+  );
   String _currentAddress = "Your home\nShuhada'a roundabout, Nablus city";
   final TextEditingController _phoneController = TextEditingController();
-  
+
   // Controllers for credit card form
   final TextEditingController _cardNumberController = TextEditingController();
   final TextEditingController _expiryController = TextEditingController();
@@ -44,7 +46,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProfile = ref.read(userProfileProvider);
-      if (userProfile.phoneNumber != null && userProfile.phoneNumber!.isNotEmpty) {
+      if (userProfile.phoneNumber != null &&
+          userProfile.phoneNumber!.isNotEmpty) {
         _phoneController.text = userProfile.phoneNumber!;
       }
       if (userProfile.preferredPayment != null) {
@@ -68,7 +71,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cartItems = ref.watch(cartProvider);
-    final subtotal = cartItems.fold(0.0, (sum, item) => sum + (item.variant.price * item.quantity));
+    final subtotal = cartItems.fold(
+      0.0,
+      (sum, item) => sum + (item.variant.price * item.quantity),
+    );
     final total = subtotal + 5.0;
 
     return PopScope(
@@ -87,7 +93,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           backgroundColor: theme.colorScheme.surface,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppTheme.gradientStart),
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: theme.colorScheme.primary,
+            ),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -100,7 +110,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           centerTitle: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.shopping_cart_outlined, color: AppTheme.gradientStart, size: 24),
+              icon: const Icon(
+                Icons.shopping_cart_outlined,
+                color: AppTheme.gradientStart,
+                size: 24,
+              ),
               onPressed: () {
                 ref.read(mainWrapperPageProvider.notifier).state = 1;
                 context.go(AppRoutes.home);
@@ -120,13 +134,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               SardInfoCard(
                 icon: Icons.location_on_outlined,
                 title: 'Shipping Address',
-                subtitle: _currentAddress.contains('\n') ? _currentAddress.split('\n').last : _currentAddress,
+                subtitle: _currentAddress.contains('\n')
+                    ? _currentAddress.split('\n').last
+                    : _currentAddress,
                 onTap: () => LocationPopup.show(
                   context,
                   currentAddress: _currentAddress,
                   onAddressChanged: (newAddress) {
                     setState(() => _currentAddress = newAddress);
-                    ref.read(userProfileProvider.notifier).updateAddress(newAddress);
+                    ref
+                        .read(userProfileProvider.notifier)
+                        .updateAddress(newAddress);
                   },
                 ),
               ),
@@ -136,13 +154,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               SardInfoCard(
                 icon: Icons.phone_android_outlined,
                 title: 'Phone Number',
-                subtitle: _phoneController.text.isEmpty ? 'Not set' : _phoneController.text,
+                subtitle: _phoneController.text.isEmpty
+                    ? 'Not set'
+                    : _phoneController.text,
                 onTap: () => PhoneNumberPopup.show(
                   context,
                   initialNumber: _phoneController.text,
                   onConfirm: (newNumber) {
                     setState(() => _phoneController.text = newNumber);
-                    ref.read(userProfileProvider.notifier).updatePhoneNumber(newNumber);
+                    ref
+                        .read(userProfileProvider.notifier)
+                        .updatePhoneNumber(newNumber);
                   },
                 ),
               ),
@@ -152,7 +174,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 selectedMethod: _selectedPayment,
                 onSelected: (method) {
                   setState(() => _selectedPayment = method);
-                  ref.read(userProfileProvider.notifier).updatePreferredPayment(method);
+                  ref
+                      .read(userProfileProvider.notifier)
+                      .updatePreferredPayment(method);
                   if (method == 'Credit') {
                     _showCreditCardSheet(context, total);
                   }
@@ -162,19 +186,36 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: _buildBottomSummary(theme, cartItems, subtotal, total),
+        bottomNavigationBar: _buildBottomSummary(
+          theme,
+          cartItems,
+          subtotal,
+          total,
+        ),
       ),
     );
   }
 
-  Widget _buildBottomSummary(ThemeData theme, List<CartItem> cartItems, double subtotal, double total) {
+  Widget _buildBottomSummary(
+    ThemeData theme,
+    List<CartItem> cartItems,
+    double subtotal,
+    double total,
+  ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.4), width: 1.5),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, -4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
         ],
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -182,22 +223,40 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildSummaryRow(theme, 'Subtotal', '₪ ${subtotal.toStringAsFixed(2)}'),
+            _buildSummaryRow(
+              theme,
+              'Subtotal',
+              '₪ ${subtotal.toStringAsFixed(2)}',
+            ),
             const SizedBox(height: 8),
             _buildSummaryRow(theme, 'Shipping', '₪ 5.00'),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Divider(color: Colors.grey.shade300, height: 1),
+              child: Divider(color: theme.colorScheme.outlineVariant, height: 1),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Total", style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                Text("₪ ${total.toStringAsFixed(2)}", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: theme.colorScheme.primary)),
+                Text(
+                  "Total",
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  "₪ ${total.toStringAsFixed(2)}",
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 18),
-            SardPrimaryButton(label: 'PLACE ORDER', onTap: () => _handlePlaceOrder(total)),
+            SardPrimaryButton(
+              label: 'PLACE ORDER',
+              onTap: () => _handlePlaceOrder(total),
+            ),
           ],
         ),
       ),
@@ -208,8 +267,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700, fontWeight: FontWeight.w600)),
-        Text(value, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: Colors.grey.shade700,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          value,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -257,13 +327,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // The Sliding Menu container
               Container(
                 padding: const EdgeInsets.only(top: 16, bottom: 24),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -274,7 +346,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                          color: theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.2,
+                          ),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -285,16 +359,45 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Payment Method', style: theme.textTheme.titleLarge),
-                          Text('Enter your card details', style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 14)),
+                          Text(
+                            'Payment Method',
+                            style: theme.textTheme.titleLarge,
+                          ),
+                          Text(
+                            'Enter your card details',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontSize: 14,
+                            ),
+                          ),
                           const SizedBox(height: 24),
-                          _buildFormTextField(theme, '0000 0000 0000 0000', Icons.credit_card_outlined, controller: _cardNumberController),
+                          _buildFormTextField(
+                            theme,
+                            '0000 0000 0000 0000',
+                            Icons.credit_card_outlined,
+                            controller: _cardNumberController,
+                          ),
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              Expanded(child: _buildFormTextField(theme, 'MM/YY', null, controller: _expiryController)),
+                              Expanded(
+                                child: _buildFormTextField(
+                                  theme,
+                                  'MM/YY',
+                                  null,
+                                  controller: _expiryController,
+                                ),
+                              ),
                               const SizedBox(width: 16),
-                              Expanded(child: _buildFormTextField(theme, '***', null, isObscure: true, controller: _cvvController)),
+                              Expanded(
+                                child: _buildFormTextField(
+                                  theme,
+                                  '***',
+                                  null,
+                                  isObscure: true,
+                                  controller: _cvvController,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -320,12 +423,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildCreditCardItem(ThemeData theme, int index) {
-    final colors = [theme.colorScheme.onSurface, theme.colorScheme.primary, theme.colorScheme.tertiary];
+    final colors = [
+      theme.colorScheme.onSurface,
+      theme.colorScheme.primary,
+      theme.colorScheme.tertiary,
+    ];
     final card = _fakeCards[index];
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(color: colors[index % 3], borderRadius: BorderRadius.circular(AppTheme.cardRadius + 4)),
+      decoration: BoxDecoration(
+        color: colors[index % 3],
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius + 4),
+      ),
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,19 +444,49 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.wifi_rounded, color: Colors.white.withValues(alpha: 0.5), size: 20),
-              const Text('VISA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+              Icon(
+                Icons.wifi_rounded,
+                color: Colors.white.withValues(alpha: 0.5),
+                size: 20,
+              ),
+              const Text(
+                'VISA',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
             ],
           ),
           Text(
             card['number']!,
-            style: const TextStyle(color: Colors.white, fontSize: 20, letterSpacing: 2, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              letterSpacing: 2,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('YOUR NAME', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-              Text(card['expiry']!, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              const Text(
+                'YOUR NAME',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                card['expiry']!,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ],
@@ -354,7 +494,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  Widget _buildFormTextField(ThemeData theme, String hint, IconData? icon, {bool isObscure = false, TextEditingController? controller}) {
+  Widget _buildFormTextField(
+    ThemeData theme,
+    String hint,
+    IconData? icon, {
+    bool isObscure = false,
+    TextEditingController? controller,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -395,9 +541,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_outline_rounded, size: 80, color: Theme.of(context).colorScheme.primary),
+            Icon(
+              Icons.check_circle_outline_rounded,
+              size: 80,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             const SizedBox(height: 24),
-            Text('Order Placed!', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Order Placed!',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 32),
           ],
         ),

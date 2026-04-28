@@ -66,7 +66,10 @@ class _CartScreenState extends ConsumerState<CartScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+            child: Text(
+              "CANCEL",
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -367,10 +370,7 @@ class _CartItemCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: AppTheme.getCardGradient(theme),
           borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-          border: Border.all(
-            color: AppTheme.accentGold,
-            width: 1.5,
-          ),
+          border: Border.all(color: AppTheme.accentGold, width: 1.5),
           boxShadow: AppTheme.cardShadow,
         ),
         child: Row(
@@ -623,7 +623,7 @@ class _CartSummaryBar extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Divider(color: Colors.grey.shade300, height: 1),
+              child: Divider(color: theme.colorScheme.outlineVariant, height: 1),
             ),
 
             // Total
@@ -648,10 +648,7 @@ class _CartSummaryBar extends StatelessWidget {
             const SizedBox(height: 18),
 
             // Checkout Button (matching ProductDetailScreen's Add to Cart button)
-            SardPrimaryButton(
-              label: 'GO TO PAYMENT',
-              onTap: onCheckout,
-            ),
+            SardPrimaryButton(label: 'GO TO PAYMENT', onTap: onCheckout),
           ],
         ),
       ),

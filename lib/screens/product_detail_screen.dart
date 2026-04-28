@@ -174,7 +174,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     );
                     return;
                   }
-                  if (widget.product.isCustomizable && !state.isSelectionValid) {
+                  if (widget.product.isCustomizable &&
+                      !state.isSelectionValid) {
                     SardSnackBar.show(
                       context,
                       "Please complete your mix selection (${state.currentPieces}/${state.maxPieces} PCS)",
@@ -189,18 +190,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     return;
                   }
 
-                  final variantIndex = widget.product.variants?.indexWhere(
+                  final variantIndex =
+                      widget.product.variants?.indexWhere(
                         (v) => v.size == state.selectedVariant?.size,
                       ) ??
                       0;
 
                   if (widget.editingItem != null) {
-                    ref.read(cartProvider.notifier).updateCartItem(
+                    ref
+                        .read(cartProvider.notifier)
+                        .updateCartItem(
                           CartItem(
                             id: widget.editingItem!.id,
                             product: widget.product,
-                            selectedVariantIndex:
-                                variantIndex >= 0 ? variantIndex : 0,
+                            selectedVariantIndex: variantIndex >= 0
+                                ? variantIndex
+                                : 0,
                             selectedGender: state.selectedGender,
                             selectedWeight: state.selectedWeight,
                             selectedFillings: state.selectedFillings,
@@ -210,7 +215,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     SardSnackBar.show(context, "Changes saved successfully");
                     context.pop();
                   } else {
-                    ref.read(cartProvider.notifier).addToCart(
+                    ref
+                        .read(cartProvider.notifier)
+                        .addToCart(
                           widget.product,
                           variantIndex: variantIndex >= 0 ? variantIndex : 0,
                           gender: state.selectedGender,
@@ -271,7 +278,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 leading: Center(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.bgWhite.withValues(alpha: 0.86),
+                      color: theme.colorScheme.surface.withValues(alpha: 0.86),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -289,7 +296,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.bgWhite.withValues(alpha: 0.86),
+                        color: theme.colorScheme.surface.withValues(alpha: 0.86),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
@@ -333,7 +340,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           Text(
                             "A luxurious collection, custom-built or pre-mixed with legendary fillings.",
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey.shade600,
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -379,10 +386,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                                   context,
                                                   false,
                                                 ),
-                                                child: const Text(
+                                                child: Text(
                                                   "CANCEL",
                                                   style: TextStyle(
-                                                    color: Colors.grey,
+                                                    color: theme.colorScheme.onSurfaceVariant,
                                                   ),
                                                 ),
                                               ),
@@ -658,12 +665,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                                     width: 18,
                                                     height: 18,
                                                     alignment: Alignment.center,
-                                                    decoration:
-                                                        BoxDecoration(
-                                                          color: AppTheme.primaryTeal,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          AppTheme.primaryTeal,
+                                                      shape: BoxShape.circle,
+                                                    ),
                                                     child: Text(
                                                       "$count",
                                                       strutStyle:
@@ -853,7 +859,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                                 width: 40,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade300,
+                                  color: theme.colorScheme.outlineVariant,
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               ),
@@ -890,9 +896,9 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              const Divider(
+                              Divider(
                                 height: 1,
-                                color: AppTheme.gradientStart,
+                                color: theme.colorScheme.primary,
                                 thickness: 0.5,
                               ),
                               AnimatedCrossFade(
@@ -903,15 +909,15 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                                 firstChild: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
                                         vertical: 8,
                                       ),
                                       child: Text(
                                         "Swipe up to expand...",
                                         style: TextStyle(
-                                          color: Colors.grey,
+                                          color: theme.colorScheme.onSurfaceVariant,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -1031,7 +1037,7 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
                           AppTheme.buttonRadius,
                         ),
                         border: Border.all(
-                          color: AppTheme.accentGold,
+                          color: theme.colorScheme.tertiary,
                           width: 1.5,
                         ),
                         boxShadow: AppTheme.goldShadow,
@@ -1078,12 +1084,12 @@ class _FillingsSheetContentState extends State<_FillingsSheetContent> {
         child: Container(
           decoration: BoxDecoration(
             color: count > 0
-                ? AppTheme.gradientStart.withValues(alpha: 0.05)
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05)
                 : Colors.transparent,
             border: Border.all(
               color: count > 0
-                  ? AppTheme.gradientStart
-                  : AppTheme.gradientStart.withValues(alpha: 0.3),
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
               width: count > 0 ? 1.5 : 1.0,
             ),
             borderRadius: BorderRadius.circular(8),

@@ -481,75 +481,81 @@ class _FeaturedCard extends StatelessWidget {
             width: 1.5,
           ),
           boxShadow: AppTheme.cardShadow,
-          image: DecorationImage(
-            image: AssetImage(template.bannerUrl),
-            fit: BoxFit.cover,
-          ),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppTheme.cardRadius + 6),
-            gradient: LinearGradient(
-              begin: Alignment.bottomLeft,
-              end: const Alignment(0, -0.3),
-              colors: [
-                Colors.black.withValues(alpha: 0.75),
-                Colors.transparent,
-              ],
-            ),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 6.5),
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Text(
-                template.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
+              Image.asset(template.bannerUrl, fit: BoxFit.cover),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomLeft,
+                    end: const Alignment(0, -0.3),
+                    colors: [
+                      Colors.black.withValues(alpha: 0.75),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              // "try now" chip
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 40,
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.getCardGradient(theme),
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.buttonRadius,
-                      ),
-                      border: Border.all(
-                        color: AppTheme.accentGold,
-                        width: 1.5,
-                      ),
-                      boxShadow: AppTheme.cardShadow,
-                    ),
-                    child: Text(
-                      'TRY NOW',
-                      textAlign: TextAlign.center,
-                      strutStyle: const StrutStyle(
-                        fontSize: 14,
-                        height: 1.0,
-                        forceStrutHeight: true,
-                        leading: 0,
-                      ),
-                      style: theme.textTheme.labelLarge?.copyWith(
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      template.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.displaySmall?.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.0,
-                        height: 1.0,
-                        leadingDistribution: TextLeadingDistribution.even,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    // "try now" chip
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 40,
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.getCardGradient(theme),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.buttonRadius,
+                            ),
+                            border: Border.all(
+                              color: AppTheme.accentGold,
+                              width: 1.5,
+                            ),
+                            boxShadow: AppTheme.cardShadow,
+                          ),
+                          child: Text(
+                            'TRY NOW',
+                            textAlign: TextAlign.center,
+                            strutStyle: const StrutStyle(
+                              fontSize: 14,
+                              height: 1.0,
+                              forceStrutHeight: true,
+                              leading: 0,
+                            ),
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                              height: 1.0,
+                              leadingDistribution: TextLeadingDistribution.even,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -597,7 +603,7 @@ class _CategorySection extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Text(
                 category.nameEn == 'Sard Icons'
                     ? 'Popular Products'
@@ -606,7 +612,7 @@ class _CategorySection extends ConsumerWidget {
               ),
             ),
             SizedBox(
-              height: 260,
+              height: 275,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 scrollDirection: Axis.horizontal,
@@ -767,7 +773,7 @@ class ProductCard extends ConsumerWidget {
       },
       child: RepaintBoundary(
         child: Container(
-          width: 145,
+          width: 152,
           margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
             gradient: AppTheme.getCardGradient(theme),
@@ -828,7 +834,7 @@ class ProductCard extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: SizedBox(
-                  height: 115, // Reduced for a more compact look
+                  height: 128, // Adjusted to 128 to fix 3px overflow
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -863,7 +869,7 @@ class ProductCard extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               '${displayPrice.toStringAsFixed(0)} ₪',
-                              style: theme.textTheme.titleMedium?.copyWith(
+                              style: theme.textTheme.titleSmall?.copyWith(
                                 color: onCardColor,
                                 fontWeight: FontWeight.w900,
                               ),

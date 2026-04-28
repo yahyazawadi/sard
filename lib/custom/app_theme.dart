@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Central font-size table.
@@ -291,6 +292,15 @@ class AppTheme {
           );
         }),
       ),
+      cupertinoOverrideTheme: CupertinoThemeData(
+        brightness: Brightness.light,
+        primaryColor: primaryTeal,
+        scaffoldBackgroundColor: bgWhite,
+        textTheme: CupertinoTextThemeData(
+          primaryColor: primaryTeal,
+          textStyle: GoogleFonts.tajawal(color: textPrimaryLight),
+        ),
+      ),
     );
   }
 
@@ -357,7 +367,7 @@ class AppTheme {
         showUnselectedLabels: false,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.black,
+        backgroundColor: const Color(0xFF071414), // Darker than bgDarkTeal for contrast
         indicatorColor: Colors.transparent,
         indicatorShape: const CircleBorder(),
         overlayColor: WidgetStateProperty.all(
@@ -367,13 +377,23 @@ class AppTheme {
         height: 70,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: gradientStart, size: 32);
+            return const IconThemeData(color: primaryTeal, size: 32);
           }
           return IconThemeData(
-            color: gradientStart.withValues(alpha: 0.5),
+            color: primaryTeal.withValues(alpha: 0.5),
             size: 24,
           );
         }),
+      ),
+      cupertinoOverrideTheme: CupertinoThemeData(
+        brightness: Brightness.dark,
+        primaryColor: primaryTeal,
+        scaffoldBackgroundColor: bgDarkTeal,
+        barBackgroundColor: const Color(0xFF071414),
+        textTheme: CupertinoTextThemeData(
+          primaryColor: primaryTeal,
+          textStyle: GoogleFonts.tajawal(color: textPrimaryDark),
+        ),
       ),
     );
   }

@@ -182,7 +182,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       title: 'Sard - Chocolate Shop',
       theme: AppTheme.lightTheme(scale: scale, fontFamily: fontFamily),
       darkTheme: AppTheme.darkTheme(scale: scale, fontFamily: fontFamily),
-      themeMode: settings.themeMode,
+      themeMode: ThemeMode.light,
       locale: settings.locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [

@@ -30,8 +30,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.initState();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -104,7 +102,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   context,
                   currentAddress: userProfile.address,
                   onAddressChanged: (newAddress) {
-                    ref.read(userProfileProvider.notifier).updateAddress(newAddress);
+                    ref
+                        .read(userProfileProvider.notifier)
+                        .updateAddress(newAddress);
                   },
                 ),
               ),
@@ -116,7 +116,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   context,
                   initialNumber: userProfile.phoneNumber,
                   onConfirm: (newNumber) {
-                    ref.read(userProfileProvider.notifier).updatePhoneNumber(newNumber);
+                    ref
+                        .read(userProfileProvider.notifier)
+                        .updatePhoneNumber(newNumber);
                   },
                 ),
               ),
@@ -128,7 +130,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   context,
                   initialMethod: userProfile.preferredPayment,
                   onSelected: (newMethod) {
-                    ref.read(userProfileProvider.notifier).updatePreferredPayment(newMethod);
+                    ref
+                        .read(userProfileProvider.notifier)
+                        .updatePreferredPayment(newMethod);
                   },
                 ),
               ),
@@ -136,7 +140,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 24),
               _buildSectionLabel('APP', theme),
               SardInfoCard(
-                icon: isDarkMode ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+                icon: isDarkMode
+                    ? Icons.dark_mode_outlined
+                    : Icons.light_mode_outlined,
                 title: 'Appearance',
                 subtitle: isDarkMode ? 'Dark Mode' : 'Light Mode',
                 trailing: Transform.scale(
@@ -144,16 +150,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Switch(
                     value: isDarkMode,
                     onChanged: (val) {
-                      ref.read(settingsProvider.notifier).setThemeMode(
-                        val ? ThemeMode.dark : ThemeMode.light,
-                      );
+                      ref
+                          .read(settingsProvider.notifier)
+                          .setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
                     },
-                    thumbColor:
-                        WidgetStateProperty.all(AppTheme.gradientStart),
-                    trackColor:
-                        WidgetStateProperty.all(AppTheme.bgWhite),
-                    trackOutlineColor:
-                        WidgetStateProperty.all(Colors.transparent),
+                    thumbColor: WidgetStateProperty.all(AppTheme.gradientStart),
+                    trackColor: WidgetStateProperty.all(theme.colorScheme.surface),
+                    trackOutlineColor: WidgetStateProperty.all(
+                      Colors.transparent,
+                    ),
                   ),
                 ),
               ),
@@ -161,7 +166,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               if (orderHistory.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 _buildSectionLabel('ORDER HISTORY', theme),
-                ...orderHistory.map((order) => _buildOrderCard(order, theme, ref)),
+                ...orderHistory.map(
+                  (order) => _buildOrderCard(order, theme, ref),
+                ),
               ],
 
               const SizedBox(height: 100),
@@ -211,8 +218,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-
-
   Widget _buildActionButton({
     required String label,
     required IconData icon,
@@ -229,7 +234,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         decoration: BoxDecoration(
           color: isDestructive
               ? Colors.red.withValues(alpha: 0.1)
-              : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              : theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
+                ),
           borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
           border: Border.all(
             color: isDestructive
@@ -266,7 +273,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,24 +297,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           const Divider(height: 24),
-          ...order.items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              children: [
-                Text('${item.quantity}x ', style: const TextStyle(fontWeight: FontWeight.bold)),
-                Expanded(child: Text(item.product.nameEn)),
-                Text('₪${(item.variant.price * item.quantity).toStringAsFixed(2)}'),
-              ],
+          ...order.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Text(
+                    '${item.quantity}x ',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Expanded(child: Text(item.product.nameEn)),
+                  Text(
+                    '₪${(item.variant.price * item.quantity).toStringAsFixed(2)}',
+                  ),
+                ],
+              ),
             ),
-          )),
+          ),
           const Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Total',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               Text(
                 '₪${order.total.toStringAsFixed(2)}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ],
           ),
@@ -313,7 +335,4 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
   }
-
-
-
 }

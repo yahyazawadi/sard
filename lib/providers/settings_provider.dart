@@ -59,7 +59,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     final prefs = ref.watch(prefsProvider);
     
     // Theme mode
-    final modeIndex = prefs.getInt('themeMode') ?? ThemeMode.system.index;
+    final modeIndex = prefs.getInt('themeMode') ?? ThemeMode.light.index;
     final themeMode = ThemeMode.values[modeIndex];
 
     // Locale

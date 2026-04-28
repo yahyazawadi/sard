@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../custom/app_theme.dart';
 
+
 class SardSearchBar extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
@@ -29,7 +30,7 @@ class SardSearchBar extends StatelessWidget {
         color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: AppTheme.accentGold.withValues(alpha: 0.5),
+          color: theme.colorScheme.tertiary.withValues(alpha: 0.5),
           width: 1.5,
         ),
       ),
@@ -48,15 +49,15 @@ class SardSearchBar extends StatelessWidget {
             fontSize: 13,
           ),
           contentPadding: const EdgeInsets.only(top: 10, bottom: 6),
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search_rounded,
-            color: AppTheme.gradientStart,
+            color: theme.colorScheme.primary,
           ),
           suffixIcon: (!readOnly && (controller?.text.isNotEmpty ?? false))
               ? IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close_rounded,
-                    color: AppTheme.gradientStart,
+                    color: theme.colorScheme.primary,
                   ),
                   onPressed: onClear,
                 )
@@ -95,8 +96,8 @@ class SardCategoryChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
             border: Border.all(
               color: isSelected
-                  ? AppTheme.accentGold
-                  : AppTheme.gradientStart.withValues(alpha: 0.5),
+                  ? theme.colorScheme.tertiary
+                  : theme.colorScheme.primary.withValues(alpha: 0.5),
               width: 1.5,
             ),
             boxShadow: isSelected ? AppTheme.cardShadow : null,
@@ -109,7 +110,7 @@ class SardCategoryChip extends StatelessWidget {
               Icon(
                 isSelected ? Icons.check_rounded : Icons.close_rounded,
                 size: 13,
-                color: isSelected ? Colors.white : AppTheme.gradientStart,
+                color: isSelected ? Colors.white : theme.colorScheme.primary,
               ),
               const SizedBox(width: 4),
               Text(
@@ -120,7 +121,7 @@ class SardCategoryChip extends StatelessWidget {
                   forceStrutHeight: true,
                 ),
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: isSelected ? Colors.white : AppTheme.gradientStart,
+                  color: isSelected ? Colors.white : theme.colorScheme.primary,
                   fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
                   fontSize: 12,
                   height: 1.2,

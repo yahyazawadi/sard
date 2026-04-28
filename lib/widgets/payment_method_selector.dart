@@ -16,7 +16,7 @@ class PaymentMethodSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,7 +43,7 @@ class PaymentMethodSelector extends StatelessWidget {
   Widget _buildPaymentOption(ThemeData theme, String title, IconData icon) {
     final isSelected = selectedMethod == title;
     final onCardColor = AppTheme.getOnCardColor(theme);
-    
+
     return GestureDetector(
       onTap: () => onSelected(title),
       child: Container(
@@ -80,7 +80,9 @@ class PaymentMethodSelector extends StatelessWidget {
             const Spacer(),
             Icon(
               isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
-              color: isSelected ? Colors.white : onCardColor.withValues(alpha: 0.3),
+              color: isSelected
+                  ? Colors.white
+                  : onCardColor.withValues(alpha: 0.3),
               size: 22,
             ),
           ],

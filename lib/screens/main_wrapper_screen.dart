@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'home_screen.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
-import '../custom/app_theme.dart';
+
 
 final mainWrapperPageProvider = StateProvider<int>((ref) => 0);
 final tabHistoryProvider = StateProvider<List<int>>((ref) => [0]);
@@ -171,7 +171,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.gradientStart.withValues(alpha: 0.25),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(child: Icon(Icons.home_rounded)),
@@ -188,7 +188,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.gradientStart.withValues(alpha: 0.25),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(child: Icon(Icons.shopping_cart_rounded)),
@@ -205,7 +205,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.gradientStart.withValues(alpha: 0.25),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(child: Icon(Icons.person_rounded)),

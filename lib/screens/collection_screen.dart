@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../custom/app_theme.dart';
+
 import '../models/featured_template.dart';
 import '../providers/catalog_provider.dart';
 import 'home_screen.dart'; // To reuse _ProductCard if possible, or I'll copy the logic
@@ -27,7 +27,7 @@ class CollectionScreen extends ConsumerWidget {
               icon: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 20,
-                color: AppTheme.gradientStart,
+                color: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () => context.pop(),
             ),
@@ -102,7 +102,7 @@ class CollectionScreen extends ConsumerWidget {
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.68,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
