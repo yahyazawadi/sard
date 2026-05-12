@@ -89,6 +89,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final currentPage = ref.watch(mainWrapperPageProvider);
     final isSearchMode = ref.watch(isSearchModeProvider);
 
@@ -189,10 +190,10 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                   },
                   destinations: [
                     NavigationDestination(
-                      icon: const SizedBox(
+                      icon: SizedBox(
                         width: 52,
                         height: 52,
-                        child: Center(child: Icon(Icons.home_outlined, color: AppTheme.highContrastGold)),
+                        child: Center(child: Icon(Icons.home_outlined, color: AppTheme.getIconColor(theme))),
                       ),
                       selectedIcon: Container(
                         width: 52,
@@ -201,15 +202,15 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(child: Icon(Icons.home_rounded, color: AppTheme.highContrastGold)),
+                        child: Center(child: Icon(Icons.home_rounded, color: AppTheme.getIconColor(theme))),
                       ),
                       label: AppLocalizations.of(context)!.navHome,
                     ),
                     NavigationDestination(
-                      icon: const SizedBox(
+                      icon: SizedBox(
                         width: 52,
                         height: 52,
-                        child: Center(child: Icon(Icons.favorite_outline_rounded, color: AppTheme.highContrastGold)),
+                        child: Center(child: Icon(Icons.favorite_outline_rounded, color: AppTheme.getIconColor(theme))),
                       ),
                       selectedIcon: Container(
                         width: 52,
@@ -218,15 +219,15 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(child: Icon(Icons.favorite_rounded, color: AppTheme.highContrastGold)),
+                        child: Center(child: Icon(Icons.favorite_rounded, color: AppTheme.getIconColor(theme))),
                       ),
                       label: AppLocalizations.of(context)!.navWishlist,
                     ),
                     NavigationDestination(
-                      icon: const SizedBox(
+                      icon: SizedBox(
                         width: 52,
                         height: 52,
-                        child: Center(child: Icon(Icons.shopping_cart_outlined, color: AppTheme.highContrastGold)),
+                        child: Center(child: Icon(Icons.shopping_cart_outlined, color: AppTheme.getIconColor(theme))),
                       ),
                       selectedIcon: Container(
                         width: 52,
@@ -235,7 +236,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(child: Icon(Icons.shopping_cart_rounded, color: AppTheme.highContrastGold)),
+                        child: Center(child: Icon(Icons.shopping_cart_rounded, color: AppTheme.getIconColor(theme))),
                       ),
                       label: AppLocalizations.of(context)!.navCart,
                     ),

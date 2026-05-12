@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Central font-size table.
@@ -73,11 +74,11 @@ class AppTheme {
     return theme.brightness == Brightness.light ? bgSvgLight : bgSvgDark;
   }
 
-  // Card specific backgrounds (Dark Chocolate with Gold Content)
-  static const Color cardBgLight = primaryTeal;
-  static const Color cardBgDark = primaryTeal;
-  static const Color onCardLight = highContrastGold;
-  static const Color onCardDark = highContrastGold;
+  // Card specific backgrounds
+  static const Color cardBgLight = primaryTeal; // Dark Cocoa Card
+  static const Color cardBgDark = highContrastGold; // Gold Card
+  static const Color onCardLight = highContrastGold; // Gold Content
+  static const Color onCardDark = primaryTeal; // Dark Cocoa Content
 
   static Color getCardColor(ThemeData theme) {
     return theme.brightness == Brightness.light ? cardBgLight : cardBgDark;
@@ -95,8 +96,11 @@ class AppTheme {
   }
 
   static Color getCardBorderColor(ThemeData theme) {
-    // For Dark Chocolate cards, use a Gold border
-    return highContrastGold.withValues(alpha: 0.3);
+    // Dark mode: Gold Card -> Cocoa border
+    // Light mode: Cocoa Card -> Gold border
+    return theme.brightness == Brightness.dark
+        ? primaryTeal.withValues(alpha: 0.25)
+        : highContrastGold.withValues(alpha: 0.25);
   }
 
   static Color getFeaturedBorderColor(ThemeData theme) {
@@ -279,13 +283,14 @@ class AppTheme {
           side: BorderSide(color: Colors.grey.shade200, width: 1),
         ),
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: appBarTeal,
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
         foregroundColor: primaryTeal,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: gradientStart,
@@ -372,13 +377,14 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: bgDarkTeal,
-        foregroundColor: primaryTeal,
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: highContrastGold,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: gradientStart,

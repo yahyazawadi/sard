@@ -944,7 +944,7 @@ class ProductCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               isWishlisted ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                              color: isWishlisted ? Colors.red : AppTheme.getIconColor(theme),
+                              color: isWishlisted ? Colors.red : AppTheme.highContrastGold,
                               size: 18,
                             ),
                           ),
