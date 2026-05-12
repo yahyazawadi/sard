@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../custom/app_theme.dart';
 import 'sard_primary_button.dart';
+import 'package:sard/l10n/app_localizations.dart';
 
 class PhoneNumberPopup extends StatefulWidget {
   final String? initialNumber;
@@ -74,6 +75,7 @@ class _PhoneNumberPopupState extends State<PhoneNumberPopup> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Material(
@@ -111,14 +113,14 @@ class _PhoneNumberPopupState extends State<PhoneNumberPopup> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Contact Number',
+                      l10n.contactNumber,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Enter your phone number for delivery updates',
+                      l10n.phoneHint,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -182,7 +184,7 @@ class _PhoneNumberPopupState extends State<PhoneNumberPopup> {
                     ),
                     const SizedBox(height: 24),
                     SardPrimaryButton(
-                      label: 'CONFIRM NUMBER',
+                      label: l10n.confirmNumber,
                       height: 56,
                       onTap: () {
                         widget.onConfirm(

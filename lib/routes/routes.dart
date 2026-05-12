@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/product_detail_screen.dart';
+import '../screens/product_detail_loader.dart';
 import '../models/product.dart';
 import '../screens/profile_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -11,17 +12,19 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/verify_screen.dart';
 import '../providers/auth_provider.dart';
-import '../screens/cart_screen.dart';
 import '../screens/checkout_screen.dart';
 import '../screens/collection_screen.dart';
 import '../models/cart_item.dart';
 import '../models/featured_template.dart';
 import 'app_routes.dart';
-
+import '../screens/notifications_screen.dart';
 import '../screens/main_wrapper_screen.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 GoRouter createRouter(AuthProvider auth) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.onboarding,
     refreshListenable: auth,
     debugLogDiagnostics: true, // Helpful for debugging route issues
@@ -107,19 +110,33 @@ GoRouter createRouter(AuthProvider auth) {
       ),
 
       // Standalone routes (these push over the main wrapper, hiding the bottom nav bar)
-      GoRoute(path: AppRoutes.cart, builder: (_, _) => const CartScreen()),
       GoRoute(
         path: AppRoutes.productDetail,
         builder: (context, state) {
-          if (state.extra is Product) {
-            return ProductDetailScreen(product: state.extra as Product);
-          } else if (state.extra is Map<String, dynamic>) {
-            final map = state.extra as Map<String, dynamic>;
-            return ProductDetailScreen(
-              product: map['product'] as Product,
-              editingItem: map['editingItem'] as CartItem?,
+          final extra = state.extra;
+          final productId = state.uri.queryParameters['id'];
+          
+          if (extra is Product) {
+            return ProductDetailScreen(product: extra);
+          }
+          
+          if (extra is Map) {
+            final product = extra['product'];
+            if (product is Product) {
+              return ProductDetailScreen(
+                product: product,
+                editingItem: extra['editingItem'] is CartItem ? extra['editingItem'] as CartItem : null,
+              );
+            }
+          }
+          
+          if (productId != null) {
+            return ProductDetailLoader(
+              productId: productId,
+              cartItemId: state.uri.queryParameters['editCartItemId'],
             );
           }
+          
           return const Scaffold(
             body: Center(child: Text("Product data missing")),
           );
@@ -135,6 +152,10 @@ GoRouter createRouter(AuthProvider auth) {
           final template = state.extra as FeaturedTemplate;
           return CollectionScreen(template: template);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (_, _) => const NotificationsScreen(),
       ),
       GoRoute(
         path: AppRoutes.checkout,

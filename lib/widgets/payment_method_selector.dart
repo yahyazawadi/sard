@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../custom/app_theme.dart';
+import 'package:sard/l10n/app_localizations.dart';
 
 class PaymentMethodSelector extends StatelessWidget {
   final String selectedMethod;
@@ -16,15 +17,16 @@ class PaymentMethodSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Payment Method'),
+        _buildSectionHeader(l10n.paymentMethod),
         const SizedBox(height: 12),
-        _buildPaymentOption(theme, 'Apple Pay', Icons.apple),
-        _buildPaymentOption(theme, 'Credit', Icons.credit_card_outlined),
-        _buildPaymentOption(theme, 'cash', Icons.payments_outlined),
+        _buildPaymentOption(theme, 'Apple Pay', l10n.applePay, Icons.apple),
+        _buildPaymentOption(theme, 'Credit', l10n.creditCard, Icons.credit_card_outlined),
+        _buildPaymentOption(theme, 'cash', l10n.cash, Icons.payments_outlined),
       ],
     );
   }
@@ -40,8 +42,8 @@ class PaymentMethodSelector extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentOption(ThemeData theme, String title, IconData icon) {
-    final isSelected = selectedMethod == title;
+  Widget _buildPaymentOption(ThemeData theme, String value, String title, IconData icon) {
+    final isSelected = selectedMethod == value;
     final onCardColor = AppTheme.getOnCardColor(theme);
 
     return GestureDetector(
@@ -50,7 +52,7 @@ class PaymentMethodSelector extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          gradient: AppTheme.getCardGradient(theme),
+          color: AppTheme.getCardColor(theme),
           borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           border: Border.all(
             color: isSelected ? AppTheme.accentGold : Colors.transparent,

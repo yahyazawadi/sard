@@ -37,6 +37,25 @@ class Product {
 
   DateTime lastUpdated = DateTime.now();
 
+  String getName(String languageCode) {
+    if (languageCode == 'ar' && nameAr.isNotEmpty) return nameAr;
+    return nameEn;
+  }
+
+  String getSection(String languageCode) {
+    // Basic section localization if needed
+    if (languageCode == 'ar') {
+      switch (section.toLowerCase()) {
+        case 'icons': return 'أيقونات';
+        case 'daily': return 'يومي';
+        case 'gifting': return 'هدايا';
+        case 'specialty': return 'تخصص';
+        default: return section;
+      }
+    }
+    return section;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'remoteId': remoteId,

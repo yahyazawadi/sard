@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/cart_provider.dart';
+import '../screens/main_wrapper_screen.dart';
 import '../models/product.dart';
 import '../models/featured_template.dart';
 import '../models/category.dart';
@@ -10,13 +12,15 @@ import '../providers/sync_provider.dart';
 import 'collection_screen.dart';
 import 'package:go_router/go_router.dart';
 import '../routes/app_routes.dart';
+import 'notifications_screen.dart';
+import '../providers/wishlist_provider.dart';
 import '../utils/snackbar_utils.dart';
 import '../widgets/search_widgets.dart';
 import '../custom/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/isar_provider.dart';
 import 'package:isar/isar.dart';
-
+import '../l10n/app_localizations.dart';
 final homeResetProvider = StateProvider<int>((ref) => 0);
 final isSearchModeProvider = StateProvider<bool>((ref) => false);
 
@@ -116,123 +120,199 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
 
+    final l10n = AppLocalizations.of(context)!;
+    final languageCode = l10n.localeName;
     final theme = Theme.of(context);
     final categoriesAsync = ref.watch(categoriesProvider);
     final featuredAsync = ref.watch(featuredTemplatesProvider);
 
-    return SafeArea(
-      child: CustomScrollView(
+    return CustomScrollView(
         controller: _scrollController,
         slivers: [
-          // 1. Logo App Bar
+          // 1, 2, 3. Combined Glassy Top Bar
           SliverAppBar(
+            pinned: false,
             floating: true,
-            backgroundColor: theme.appBarTheme.backgroundColor,
+            snap: true,
+            backgroundColor: Colors.transparent,
             elevation: 0,
-            title: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _isSearchMode
-                  ? Row(
-                      key: const ValueKey('search_title'),
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            size: 20,
-                            color: AppTheme.gradientStart,
-                          ),
-                          onPressed: _exitSearchMode,
-                        ),
-                        Text('Search', style: theme.textTheme.headlineSmall),
-                      ],
-                    )
-                  : Hero(
-                      tag: 'logo',
-                      child: Image.asset(
-                        'assets/images/TealLogo.png',
-                        height: 45,
-                        fit: BoxFit.contain,
+            scrolledUnderElevation: 0,
+            expandedHeight: _isSearchMode ? 140 : 180,
+            collapsedHeight: _isSearchMode ? 110 : 140,
+            toolbarHeight: 60,
+            flexibleSpace: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.light
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.brightness == Brightness.light
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : Colors.white.withValues(alpha: 0.1),
+                        width: 0.5,
                       ),
                     ),
-            ),
-          ),
-
-          // 2. Search Bar
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-              child: SardSearchBar(
-                controller: _searchController,
-                onTap: _enterSearchMode,
-                onChanged: (val) {
-                  setState(() {
-                    _searchQuery = val;
-                    if (val.isNotEmpty) _isSearchMode = true;
-                  });
-                  _saveSearchHistory();
-                },
-                onClear: () {
-                  setState(() {
-                    _searchQuery = '';
-                    _searchController.clear();
-                  });
-                  _saveSearchHistory();
-                },
-              ),
-            ),
-          ),
-
-          // 3. Dynamic Category Filter Pills
-          SliverToBoxAdapter(
-            child: categoriesAsync.when(
-              data: (categories) => SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: ClampingScrollPhysics(),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: categories.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      final isAllSelected = _selectedCategoryIds.isEmpty;
-                      return SardCategoryChip(
-                        label: 'ALL',
-                        isSelected: isAllSelected,
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedCategoryIds.clear();
-                            _isSearchMode = true;
-                          });
-                          _saveSearchHistory();
-                        },
-                      );
-                    }
-                    final category = categories[index - 1];
-                    final isSelected = _selectedCategoryIds.contains(
-                      category.remoteId,
-                    );
-                    return SardCategoryChip(
-                      label: category.nameEn,
-                      isSelected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            _selectedCategoryIds.add(category.remoteId);
-                            _isSearchMode = true;
-                          } else {
-                            _selectedCategoryIds.remove(category.remoteId);
-                          }
-                        });
-                        _saveSearchHistory();
-                      },
-                    );
-                  },
+                  child: FlexibleSpaceBar(
+                    background: Padding(
+                      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                      child: Column(
+                        children: [
+                          // Logo / Title Row
+                          SizedBox(
+                            height: 60,
+                            child: Row(
+                              children: [
+                                if (!_isSearchMode)
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.settings_outlined,
+                                      color: AppTheme.gradientStart,
+                                      size: 24,
+                                    ),
+                                    onPressed: () => context.push(AppRoutes.settings),
+                                  )
+                                else
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_back_ios_new_rounded,
+                                      size: 20,
+                                      color: AppTheme.gradientStart,
+                                    ),
+                                    onPressed: _exitSearchMode,
+                                  ),
+                                Expanded(
+                                  child: Center(
+                                    child: _isSearchMode
+                                        ? Text(l10n.search,
+                                            style: theme.textTheme.headlineSmall)
+                                        : const SizedBox(height: 45), // Logo placeholder
+                                  ),
+                                ),
+                                if (!_isSearchMode)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.notifications_none_rounded,
+                                            color: AppTheme.gradientStart,
+                                            size: 26,
+                                          ),
+                                          onPressed: () => Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const NotificationsScreen()),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          right: 12,
+                                          top: 12,
+                                          child: Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(width: 48),
+                              ],
+                            ),
+                          ),
+                          // Search Bar
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                            child: SardSearchBar(
+                              controller: _searchController,
+                              onTap: _enterSearchMode,
+                              onChanged: (val) {
+                                setState(() {
+                                  _searchQuery = val;
+                                  if (val.isNotEmpty) _isSearchMode = true;
+                                });
+                                _saveSearchHistory();
+                              },
+                              onClear: () {
+                                setState(() {
+                                  _searchQuery = '';
+                                  _searchController.clear();
+                                });
+                                _saveSearchHistory();
+                              },
+                            ),
+                          ),
+                          // Categories
+                          categoriesAsync.when(
+                            data: (categories) => SizedBox(
+                              height: 40,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: ClampingScrollPhysics(),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                itemCount: categories.length + 1,
+                                itemBuilder: (context, index) {
+                                  if (index == 0) {
+                                    final isAllSelected = _selectedCategoryIds.isEmpty;
+                                    return SardCategoryChip(
+                                      label: l10n.all,
+                                      isSelected: isAllSelected,
+                                      onSelected: (_) {
+                                        setState(() {
+                                          _selectedCategoryIds.clear();
+                                          _isSearchMode = true;
+                                        });
+                                        _saveSearchHistory();
+                                      },
+                                    );
+                                  }
+                                  final category = categories[index - 1];
+                                  final isSelected = _selectedCategoryIds.contains(
+                                    category.remoteId,
+                                  );
+                                  return SardCategoryChip(
+                                    label: languageCode == 'ar'
+                                        ? category.nameAr
+                                        : category.nameEn,
+                                    isSelected: isSelected,
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        if (selected) {
+                                          _selectedCategoryIds.add(category.remoteId);
+                                          _isSearchMode = true;
+                                        } else {
+                                          _selectedCategoryIds
+                                              .remove(category.remoteId);
+                                        }
+                                      });
+                                      _saveSearchHistory();
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                            loading: () => const SizedBox(height: 40),
+                            error: (error, stackTrace) => const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              loading: () => const SizedBox(height: 40),
-              error: (error, stackTrace) => const SizedBox.shrink(),
             ),
           ),
 
@@ -242,7 +322,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-                child: Text('Featured', style: theme.textTheme.headlineSmall),
+                child: Text(AppLocalizations.of(context)!.featured, style: theme.textTheme.headlineSmall),
               ),
             ),
             featuredAsync.when(
@@ -359,8 +439,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         decoration: BoxDecoration(
                                           border: Border(
                                             top: BorderSide(
-                                              color: AppTheme.gradientStart
-                                                  .withValues(alpha: 0.8),
+                                              color: AppTheme.accentGold
+                                                  .withValues(alpha: 0.3),
                                               width: 2,
                                             ),
                                           ),
@@ -380,10 +460,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       child: Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: AppTheme.textPrimaryDark,
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: Colors.grey.shade300,
+                                            color: AppTheme.accentGold.withValues(alpha: 0.3),
                                           ),
                                           boxShadow: [
                                             BoxShadow(
@@ -397,7 +477,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         ),
                                         child: Icon(
                                           Icons.keyboard_arrow_down_rounded,
-                                          color: AppTheme.gradientStart,
+                                          color: AppTheme.bgDarkTeal,
                                           size: 24,
                                         ),
                                       ),
@@ -436,7 +516,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (e, s) => SliverFillRemaining(
-                child: Center(child: Text('Error loading catalog: $e')),
+                child: Center(child: Text(l10n.errorLoading(e.toString()))),
               ),
             ),
           ] else ...[
@@ -449,8 +529,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           const SliverToBoxAdapter(child: SizedBox(height: 50)),
         ],
-      ),
-    );
+      );
   }
 }
 
@@ -477,7 +556,7 @@ class _FeaturedCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
           border: Border.all(
-            color: AppTheme.accentGold.withValues(alpha: 0.5),
+            color: AppTheme.getCardBorderColor(theme),
             width: 1.5,
           ),
           boxShadow: AppTheme.cardShadow,
@@ -490,14 +569,7 @@ class _FeaturedCard extends StatelessWidget {
               Image.asset(template.bannerUrl, fit: BoxFit.cover),
               Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomLeft,
-                    end: const Alignment(0, -0.3),
-                    colors: [
-                      Colors.black.withValues(alpha: 0.75),
-                      Colors.transparent,
-                    ],
-                  ),
+                  color: Colors.black.withValues(alpha: 0.4),
                 ),
               ),
               Padding(
@@ -511,7 +583,7 @@ class _FeaturedCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.displaySmall?.copyWith(
-                        color: Colors.white,
+                        color: AppTheme.textPrimaryDark,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -524,7 +596,7 @@ class _FeaturedCard extends StatelessWidget {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           decoration: BoxDecoration(
-                            gradient: AppTheme.getCardGradient(theme),
+                            color: AppTheme.getCardColor(theme),
                             borderRadius: BorderRadius.circular(
                               AppTheme.buttonRadius,
                             ),
@@ -535,7 +607,7 @@ class _FeaturedCard extends StatelessWidget {
                             boxShadow: AppTheme.cardShadow,
                           ),
                           child: Text(
-                            'TRY NOW',
+                            AppLocalizations.of(context)!.tryNow,
                             textAlign: TextAlign.center,
                             strutStyle: const StrutStyle(
                               fontSize: 14,
@@ -544,7 +616,7 @@ class _FeaturedCard extends StatelessWidget {
                               leading: 0,
                             ),
                             style: theme.textTheme.labelLarge?.copyWith(
-                              color: Colors.white,
+                              color: AppTheme.textPrimaryDark,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.0,
                               height: 1.0,
@@ -578,6 +650,7 @@ class _CategorySection extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final theme = Theme.of(context);
     final branch = settings.selectedBranch;
+    final l10n = AppLocalizations.of(context)!;
 
     return productsAsync.when(
       data: (products) {
@@ -605,9 +678,7 @@ class _CategorySection extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Text(
-                category.nameEn == 'Sard Icons'
-                    ? 'Popular Products'
-                    : category.nameEn,
+                    l10n.localeName == 'ar' ? category.nameAr : category.nameEn,
                 style: theme.textTheme.headlineSmall,
               ),
             ),
@@ -629,7 +700,7 @@ class _CategorySection extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
                 child: Divider(
-                  color: AppTheme.gradientStart.withValues(alpha: 0.2),
+                  color: AppTheme.textPrimaryDark.withValues(alpha: 0.1),
                   thickness: 1,
                 ),
               ),
@@ -683,7 +754,7 @@ class ProductCard extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    'Select Size',
+                    AppLocalizations.of(context)!.selectSize,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -705,10 +776,10 @@ class ProductCard extends ConsumerWidget {
                         Navigator.pop(context);
                         SardSnackBar.show(
                           context,
-                          "${product.nameEn} added to cart",
+                          "${product.getName(AppLocalizations.of(context)!.localeName)} ${AppLocalizations.of(context)!.addedToCart}",
                           action: SnackBarAction(
-                            label: "VIEW CART",
-                            onPressed: () => context.push(AppRoutes.cart),
+                            label: AppLocalizations.of(context)!.viewCart,
+                            onPressed: () => ref.read(mainWrapperPageProvider.notifier).state = 2,
                           ),
                         );
                       },
@@ -725,10 +796,10 @@ class ProductCard extends ConsumerWidget {
       ref.read(cartProvider.notifier).addToCart(product);
       SardSnackBar.show(
         context,
-        "${product.nameEn} added to cart",
+        "${product.getName(AppLocalizations.of(context)!.localeName)} ${AppLocalizations.of(context)!.addedToCart}",
         action: SnackBarAction(
-          label: "VIEW CART",
-          onPressed: () => context.push(AppRoutes.cart),
+          label: AppLocalizations.of(context)!.viewCart,
+          onPressed: () => ref.read(mainWrapperPageProvider.notifier).state = 2,
         ),
       );
     }
@@ -737,6 +808,8 @@ class ProductCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final languageCode = l10n.localeName;
     final variants = product.variants ?? [];
     double displayPrice = 0.0;
 
@@ -745,6 +818,7 @@ class ProductCard extends ConsumerWidget {
         .where((item) => item.product.remoteId == product.remoteId)
         .toList();
     final totalQty = productItems.fold(0, (sum, item) => sum + item.quantity);
+    final isWishlisted = ref.watch(wishlistProvider).contains(product.remoteId);
 
     if (variants.isNotEmpty) {
       // Find the "starting" price or the price for the smallest size
@@ -769,16 +843,19 @@ class ProductCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.productDetail, extra: product);
+        context.push('${AppRoutes.productDetail}?id=${product.remoteId}', extra: product);
       },
       child: RepaintBoundary(
         child: Container(
           width: 152,
           margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
-            gradient: AppTheme.getCardGradient(theme),
+            color: AppTheme.getCardColor(theme),
             borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-            border: Border.all(color: AppTheme.accentGold, width: 1.5),
+            border: Border.all(
+              color: AppTheme.accentGold.withValues(alpha: 0.5),
+              width: 1.5,
+            ),
             boxShadow: AppTheme.cardShadow,
           ),
           child: Column(
@@ -803,7 +880,7 @@ class ProductCard extends ConsumerWidget {
                           height: double.infinity,
                           width: double.infinity,
                           cacheWidth:
-                              600, // Optimize image memory and decoding time
+                              300, // Optimize image memory and decoding time
                         ),
                       ),
                     ),
@@ -828,6 +905,60 @@ class ProductCard extends ConsumerWidget {
                           ),
                         ),
                       ),
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.7),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isWishlisted ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                              color: isWishlisted ? Colors.red : onCardColor.withValues(alpha: 0.6),
+                              size: 18,
+                            ),
+                          ),
+                          // Larger invisible hitbox for the heart
+                          Positioned.fill(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  final wasWishlisted = ref.read(wishlistProvider).contains(product.remoteId);
+                                  ref.read(wishlistProvider.notifier).toggleWishlist(product.remoteId);
+                                  
+                                  if (wasWishlisted) {
+                                    SardSnackBar.show(
+                                      context,
+                                      "${product.getName(languageCode)} ${l10n.removed}",
+                                      action: SnackBarAction(
+                                        label: l10n.undo,
+                                        onPressed: () => ref.read(wishlistProvider.notifier).toggleWishlist(product.remoteId),
+                                      ),
+                                    );
+                                  } else {
+                                    SardSnackBar.show(
+                                      context,
+                                      "${product.getName(languageCode)} ${l10n.addedToCart}",
+                                      action: SnackBarAction(
+                                        label: l10n.myWishlist,
+                                        onPressed: () => ref.read(mainWrapperPageProvider.notifier).state = 1,
+                                      ),
+                                    );
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -843,7 +974,7 @@ class ProductCard extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            product.nameEn,
+                            product.getName(languageCode),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall?.copyWith(
@@ -854,7 +985,7 @@ class ProductCard extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            product.section,
+                            product.getSection(languageCode),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(
@@ -876,90 +1007,133 @@ class ProductCard extends ConsumerWidget {
                             ),
                           ),
                           if (totalQty == 0)
-                            InkWell(
-                              onTap: () => _handleAdd(context, ref),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: theme.scaffoldBackgroundColor,
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.buttonRadius / 2,
+                            Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.getCardColor(theme),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.buttonRadius / 2,
+                                    ),
+                                    border: Border.all(
+                                      color: AppTheme.getButtonBorderColor(theme),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.add_rounded,
+                                    color: onCardColor,
+                                    size: 18,
                                   ),
                                 ),
-                                child: const Icon(
-                                  Icons.add_rounded,
-                                  color: AppTheme.gradientStart,
-                                  size: 18,
+                                Positioned.fill(
+                                  child: InkWell(
+                                    onTap: () => _handleAdd(context, ref),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.buttonRadius / 2,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                // Invisible large hitbox
+                                Positioned(
+                                  top: -10,
+                                  bottom: -10,
+                                  left: -10,
+                                  right: -10,
+                                  child: GestureDetector(
+                                    onTap: () => _handleAdd(context, ref),
+                                    behavior: HitTestBehavior.opaque,
+                                  ),
+                                ),
+                              ],
                             )
                           else
-                            Container(
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: theme.scaffoldBackgroundColor,
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.buttonRadius / 2,
+                            Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.center,
+                              children: [
+                                // 1. The Visual Pill
+                                Container(
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.getCardColor(theme),
+                                    borderRadius: BorderRadius.circular(
+                                      AppTheme.buttonRadius / 2,
+                                    ),
+                                    border: Border.all(
+                                      color: AppTheme.getButtonBorderColor(theme),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8),
+                                        child: Icon(
+                                          Icons.remove_rounded,
+                                          color: onCardColor,
+                                          size: 16,
+                                        ),
+                                      ),
+                                      // The number with a visual nudge UP
+                                      Transform.translate(
+                                        offset: const Offset(0, 1),
+                                        child: Text(
+                                          '$totalQty',
+                                          style: TextStyle(
+                                          color: onCardColor,
+                                          fontWeight: FontWeight.w900,
+                                            fontSize: 13,
+                                            height: 1.0,
+                                            leadingDistribution: TextLeadingDistribution.even,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8),
+                                        child: Icon(
+                                          Icons.add_rounded,
+                                          color: onCardColor,
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  InkWell(
+                                // 2. Large Invisible Hitboxes
+                                // Minus Button (Left half)
+                                Positioned(
+                                  left: -10,
+                                  top: -10,
+                                  bottom: -10,
+                                  width: 50,
+                                  child: GestureDetector(
                                     onTap: () {
                                       final target = productItems.last;
-                                      ref
-                                          .read(cartProvider.notifier)
-                                          .updateQuantity(
+                                      ref.read(cartProvider.notifier).updateQuantity(
                                             target.id,
                                             target.quantity - 1,
                                           );
                                     },
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      child: Icon(
-                                        Icons.remove_rounded,
-                                        color: AppTheme.gradientStart,
-                                        size: 16,
-                                      ),
-                                    ),
+                                    behavior: HitTestBehavior.opaque,
                                   ),
-                                  Text(
-                                    '$totalQty',
-                                    strutStyle: const StrutStyle(
-                                      fontSize: 13,
-                                      height: 1.0,
-                                      forceStrutHeight: true,
-                                    ),
-                                    style: const TextStyle(
-                                      color: AppTheme.gradientStart,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 13,
-                                      height: 1.0,
-                                      leadingDistribution:
-                                          TextLeadingDistribution.even,
-                                    ),
-                                  ),
-                                  InkWell(
+                                ),
+                                // Plus Button (Right half)
+                                Positioned(
+                                  right: -10,
+                                  top: -10,
+                                  bottom: -10,
+                                  width: 50,
+                                  child: GestureDetector(
                                     onTap: () => _handleAdd(context, ref),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      child: Icon(
-                                        Icons.add_rounded,
-                                        color: AppTheme.gradientStart,
-                                        size: 16,
-                                      ),
-                                    ),
+                                    behavior: HitTestBehavior.opaque,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                         ],
                       ),
@@ -1041,7 +1215,7 @@ class _SearchResultsGrid extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No products found',
+                    AppLocalizations.of(context)!.noProductsFound,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(
                         context,

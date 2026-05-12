@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../custom/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 
 class SardSearchBar extends StatelessWidget {
@@ -9,7 +10,7 @@ class SardSearchBar extends StatelessWidget {
   final TextEditingController? controller;
   final bool autofocus;
   final VoidCallback? onClear;
-  final String hintText;
+  final String? hintText;
 
   const SardSearchBar({
     super.key,
@@ -19,7 +20,7 @@ class SardSearchBar extends StatelessWidget {
     this.controller,
     this.autofocus = false,
     this.onClear,
-    this.hintText = 'search for chocolate, truffle...',
+    this.hintText,
   });
 
   @override
@@ -43,7 +44,7 @@ class SardSearchBar extends StatelessWidget {
         textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
           isDense: true,
-          hintText: hintText,
+          hintText: hintText ?? AppLocalizations.of(context)!.searchHint,
           hintStyle: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             fontSize: 13,
@@ -91,8 +92,7 @@ class SardCategoryChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppTheme.getCardGradient(theme) : null,
-            color: isSelected ? null : theme.scaffoldBackgroundColor,
+            color: isSelected ? AppTheme.getCardColor(theme) : theme.scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
             border: Border.all(
               color: isSelected

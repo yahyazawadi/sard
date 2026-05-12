@@ -42,16 +42,14 @@ class AppFonts {
 
 class AppTheme {
   // ── Palette ──────────────────────────────────────────────────────────────
-  static const Color primaryTeal = Color(0xFF49D4D0); // Sard Teal
-  static const Color secondaryTeal = Color(0xFF1A8F85);
+  static const Color primaryTeal = Color(0xFF804326); // Rich Reddish Cocoa (Middle Color)
+  static const Color secondaryTeal = Color(0xFF6F4E37); // Slightly darker cocoa
   //static const Color accentGold = Color(0xFFC66900); // Updated Stroke Color
   static const Color accentGold = Color(0xFFC07F00); // Updated Stroke Color
 
-  static const Color gradientStart = Color(0xFF0075A0); // New Gradient Start
-  static const Color bgWhite = Color(
-    0xFFE5F2F2,
-  ); // Soft Ice Teal (Reduced glare)
-  static const Color appBarTeal = bgWhite; // Matches background exactly
+  static const Color gradientStart = Color(0xFF6F4E37); // Warm Cocoa Start
+  static const Color bgWhite = Color(0xFFF9F3E7); // Clean Vanilla Cream Background
+  static const Color appBarTeal = bgWhite; 
   static const Color darkCocoa = Color(0xFF3C2415); // Dark Cocoa
   static const Color sectionBgLight = bgWhite; // Soft Teal for sections
   static const Color textPrimaryLight = Color(
@@ -60,33 +58,50 @@ class AppTheme {
   static const Color textSecondaryLight = Color(0xFF757575);
   static const Color successGreen = Color(0xFF4CAF88);
 
-  static const Color navbarTeal = Color(0xFFD9E8E8);
-  static const Color bgDarkTeal = Color(0xFF0F2A2A);
-  static const Color sectionBgDark = Color(0xFF1E3F3D);
-  static const Color textPrimaryDark = Color(0xFFFFFFFF);
+  static const Color navbarTeal = Color(0xFFEADBC8); // Light Creamy Navbar
+  static const Color bgDarkTeal = Color(0xFF2D160B); // Deep Dark Cocoa Background
+  static const Color sectionBgDark = Color(0xFF7B462B); // Specific Card Color
+  static const Color textPrimaryDark = Color(0xFFF9F3E7); // Vanilla Cream Text
   static const Color textSecondaryDark = Color(0xFFB0B8B8);
+
+  // Background Assets
+  static const String bgSvgLight = 'assets/images/white.svg';
+  static const String bgSvgDark = 'assets/images/dark.svg';
+
+  static String getBackgroundPath(ThemeData theme) {
+    return theme.brightness == Brightness.light ? bgSvgLight : bgSvgDark;
+  }
 
   // Card specific backgrounds
   static const Color cardBgLight = primaryTeal; // Sard Teal
-  static const Color cardBgDark = Color(0xFF163333); // Deep Teal
+  static const Color cardBgDark = sectionBgDark; // Match Card Color
   static const Color onCardLight =
       Colors.white; // High contrast white for content
-  static const Color onCardDark = Colors.white;
+  static const Color onCardDark = textPrimaryDark;
 
   static Color getCardColor(ThemeData theme) {
     return theme.brightness == Brightness.light ? cardBgLight : cardBgDark;
   }
 
   static LinearGradient getCardGradient(ThemeData theme) {
-    return const LinearGradient(
-      colors: [gradientStart, primaryTeal],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
+    final color = getCardColor(theme);
+    return LinearGradient(
+      colors: [color, color],
     );
   }
 
   static Color getOnCardColor(ThemeData theme) {
     return theme.brightness == Brightness.light ? onCardLight : onCardDark;
+  }
+
+  static Color getCardBorderColor(ThemeData theme) {
+    // Switching from Gold to Vanilla Cream for a softer, integrated look
+    return getOnCardColor(theme).withValues(alpha: 0.15);
+  }
+
+  static Color getButtonBorderColor(ThemeData theme) {
+    // Using the vanilla cream for button outlines as requested
+    return getOnCardColor(theme).withValues(alpha: 0.2);
   }
 
   // ── Style Tokens (Centralized UI Consistency) ────────────────────────────
@@ -213,7 +228,7 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: primaryTeal,
         secondary: secondaryTeal,
-        primaryContainer: Color(0xFFB2EBF2),
+        primaryContainer: Color(0xFFFFECB3),
         tertiary: accentGold,
         onTertiary: Colors.white,
         surface: bgWhite,
@@ -314,14 +329,14 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: primaryTeal,
         secondary: secondaryTeal,
-        primaryContainer: Color(0xFF0F3E3E),
+        primaryContainer: sectionBgDark,
         tertiary: accentGold,
-        onTertiary: Colors.white,
+        onTertiary: textPrimaryDark,
         surface: bgDarkTeal,
         surfaceContainerHighest: sectionBgDark,
         error: Colors.redAccent,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
+        onPrimary: textPrimaryDark,
+        onSecondary: textPrimaryDark,
         onSurface: textPrimaryDark,
         onSurfaceVariant: textSecondaryDark,
       ),
@@ -333,7 +348,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryTeal,
-          foregroundColor: Colors.white,
+          foregroundColor: textPrimaryDark,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(buttonRadius),
@@ -353,7 +368,7 @@ class AppTheme {
         backgroundColor: gradientStart,
         behavior: SnackBarBehavior.floating,
         contentTextStyle: TextStyle(
-          color: Colors.white,
+          color: textPrimaryDark,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -367,7 +382,7 @@ class AppTheme {
         showUnselectedLabels: false,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xFF071414), // Darker than bgDarkTeal for contrast
+        backgroundColor: const Color(0xFF1A0D06), // Even darker for navbar separation
         indicatorColor: Colors.transparent,
         indicatorShape: const CircleBorder(),
         overlayColor: WidgetStateProperty.all(
@@ -389,7 +404,7 @@ class AppTheme {
         brightness: Brightness.dark,
         primaryColor: primaryTeal,
         scaffoldBackgroundColor: bgDarkTeal,
-        barBackgroundColor: const Color(0xFF071414),
+        barBackgroundColor: const Color(0xFF1A0D06),
         textTheme: CupertinoTextThemeData(
           primaryColor: primaryTeal,
           textStyle: GoogleFonts.tajawal(color: textPrimaryDark),

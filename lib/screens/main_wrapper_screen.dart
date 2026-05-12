@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'cart_screen.dart';
-import 'profile_screen.dart';
+import 'wishlist_screen.dart';
+import '../widgets/sard_background.dart';
 
 
 final mainWrapperPageProvider = StateProvider<int>((ref) => 0);
@@ -47,7 +49,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
   @override
   void initState() {
     super.initState();
-    final initialPage = ref.read(mainWrapperPageProvider);
+    final initialPage = ref.read(mainWrapperPageProvider).clamp(0, 2);
     _navIndex = initialPage;
     _pageController = PageController(initialPage: initialPage);
   }
@@ -114,105 +116,133 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
         }
       },
       child: Scaffold(
-        body: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(
-            dragDevices: {
-              PointerDeviceKind.touch,
-              PointerDeviceKind.mouse,
-              PointerDeviceKind.trackpad,
-            },
-          ),
-          child: PageView(
-            controller: _pageController,
-            physics: isSearchMode
-                ? const NeverScrollableScrollPhysics()
-                : const SardPageScrollPhysics(parent: BouncingScrollPhysics()),
-            onPageChanged: (index) {
-              // During programmatic animation, don't update navbar (already set)
-              // Only update for manual finger swipes
-              if (!_isProgrammaticScroll) {
-                setState(() => _navIndex = index);
-                ref.read(mainWrapperPageProvider.notifier).state = index;
+        backgroundColor: Colors.transparent,
+        extendBody: true,
+        body: SardBackground(
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+                PointerDeviceKind.trackpad,
+              },
+            ),
+            child: PageView(
+              controller: _pageController,
+              physics: isSearchMode
+                  ? const NeverScrollableScrollPhysics()
+                  : const SardPageScrollPhysics(parent: BouncingScrollPhysics()),
+              onPageChanged: (index) {
+                // During programmatic animation, don't update navbar (already set)
+                // Only update for manual finger swipes
+                if (!_isProgrammaticScroll) {
+                  setState(() => _navIndex = index);
+                  ref.read(mainWrapperPageProvider.notifier).state = index;
 
-                // Update history
-                final history = ref.read(tabHistoryProvider);
-                if (history.isEmpty || history.last != index) {
-                  ref.read(tabHistoryProvider.notifier).state = [
-                    ...history,
-                    index,
-                  ];
+                  // Update history
+                  final history = ref.read(tabHistoryProvider);
+                  if (history.isEmpty || history.last != index) {
+                    ref.read(tabHistoryProvider.notifier).state = [
+                      ...history,
+                      index,
+                    ];
+                  }
                 }
-              }
-            },
-            children: const [
-              KeepAlivePage(child: HomeScreen()),
-              KeepAlivePage(child: CartScreen()),
-              KeepAlivePage(child: ProfileScreen()),
-            ],
+              },
+              children: [
+                KeepAlivePage(child: HomeScreen()),
+                KeepAlivePage(child: WishlistScreen()),
+                KeepAlivePage(child: CartScreen()),
+              ],
+            ),
           ),
         ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _navIndex,
-          onDestinationSelected: (index) {
-            if (index == 0 && _navIndex == 0) {
-              ref.read(homeResetProvider.notifier).state++;
-            }
-            _goToPage(index);
-          },
-
-          destinations: [
-            NavigationDestination(
-              icon: const SizedBox(
-                width: 52,
-                height: 52,
-                child: Center(child: Icon(Icons.home_outlined)),
-              ),
-              selectedIcon: Container(
-                width: 52,
-                height: 52,
+        bottomNavigationBar: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: RepaintBoundary(
+              child: Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
-                  shape: BoxShape.circle,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.1),
+                  border: Border(
+                    top: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : Colors.white.withValues(alpha: 0.05),
+                      width: 0.5,
+                    ),
+                  ),
                 ),
-                child: const Center(child: Icon(Icons.home_rounded)),
-              ),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: const SizedBox(
-                width: 52,
-                height: 52,
-                child: Center(child: Icon(Icons.shopping_cart_outlined)),
-              ),
-              selectedIcon: Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
-                  shape: BoxShape.circle,
+                child: NavigationBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  surfaceTintColor: Colors.transparent,
+                  selectedIndex: _navIndex,
+                  onDestinationSelected: (index) {
+                    if (index == 0 && _navIndex == 0) {
+                      ref.read(homeResetProvider.notifier).state++;
+                    }
+                    _goToPage(index);
+                  },
+                  destinations: [
+                    NavigationDestination(
+                      icon: const SizedBox(
+                        width: 52,
+                        height: 52,
+                        child: Center(child: Icon(Icons.home_outlined)),
+                      ),
+                      selectedIcon: Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(child: Icon(Icons.home_rounded)),
+                      ),
+                      label: AppLocalizations.of(context)!.navHome,
+                    ),
+                    NavigationDestination(
+                      icon: const SizedBox(
+                        width: 52,
+                        height: 52,
+                        child: Center(child: Icon(Icons.favorite_outline_rounded)),
+                      ),
+                      selectedIcon: Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(child: Icon(Icons.favorite_rounded)),
+                      ),
+                      label: AppLocalizations.of(context)!.navWishlist,
+                    ),
+                    NavigationDestination(
+                      icon: const SizedBox(
+                        width: 52,
+                        height: 52,
+                        child: Center(child: Icon(Icons.shopping_cart_outlined)),
+                      ),
+                      selectedIcon: Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(child: Icon(Icons.shopping_cart_rounded)),
+                      ),
+                      label: AppLocalizations.of(context)!.navCart,
+                    ),
+                  ],
                 ),
-                child: const Center(child: Icon(Icons.shopping_cart_rounded)),
               ),
-              label: 'Cart',
             ),
-            NavigationDestination(
-              icon: const SizedBox(
-                width: 52,
-                height: 52,
-                child: Center(child: Icon(Icons.person_outline_rounded)),
-              ),
-              selectedIcon: Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(child: Icon(Icons.person_rounded)),
-              ),
-              label: 'Profile',
-            ),
-          ],
+          ),
         ),
       ),
     );

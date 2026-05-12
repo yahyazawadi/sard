@@ -16,6 +16,8 @@ import '../widgets/sard_info_card.dart';
 import '../widgets/phone_number_popup.dart';
 import '../widgets/location_popup.dart';
 import '../widgets/payment_method_popup.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/sard_background.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -37,6 +39,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final settings = ref.watch(settingsProvider);
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final isDarkMode = settings.themeMode == ThemeMode.dark;
+    final isArabic = settings.locale.languageCode == 'ar';
+    final l10n = AppLocalizations.of(context)!;
     final orderHistory = userProfile.orderHistory;
 
     return PopScope(
@@ -57,9 +61,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: theme.appBarTheme.backgroundColor,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(
@@ -83,21 +87,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               }
             },
           ),
-          title: Text('My Profile', style: theme.textTheme.titleLarge),
+          title: Text(l10n.settings, style: theme.textTheme.titleLarge),
           centerTitle: true,
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        body: SardBackground(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
               const SizedBox(height: 32),
 
               // PERSONAL INFORMATION
-              _buildSectionLabel('PERSONAL INFORMATION', theme),
+              _buildSectionLabel(l10n.personalInformation, theme),
               SardInfoCard(
                 icon: Icons.location_on_outlined,
-                title: 'Default Address',
-                subtitle: userProfile.address ?? 'Not set',
+                title: l10n.defaultAddress,
+                subtitle: userProfile.address ?? l10n.notSet,
                 onTap: () => LocationPopup.show(
                   context,
                   currentAddress: userProfile.address,
@@ -110,8 +115,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               SardInfoCard(
                 icon: Icons.phone_android_outlined,
-                title: 'Phone Number',
-                subtitle: userProfile.phoneNumber ?? 'Not set',
+                title: l10n.phoneNumber,
+                subtitle: userProfile.phoneNumber ?? l10n.notSet,
                 onTap: () => PhoneNumberPopup.show(
                   context,
                   initialNumber: userProfile.phoneNumber,
@@ -124,7 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               SardInfoCard(
                 icon: Icons.credit_card_outlined,
-                title: 'Payment Method',
+                title: l10n.paymentMethod,
                 subtitle: userProfile.preferredPayment ?? 'cash',
                 onTap: () => PaymentMethodPopup.show(
                   context,
@@ -138,13 +143,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
 
               const SizedBox(height: 24),
-              _buildSectionLabel('APP', theme),
+              _buildSectionLabel(l10n.app, theme),
               SardInfoCard(
                 icon: isDarkMode
                     ? Icons.dark_mode_outlined
                     : Icons.light_mode_outlined,
-                title: 'Appearance',
-                subtitle: isDarkMode ? 'Dark Mode' : 'Light Mode',
+                title: l10n.appearance,
+                subtitle: isDarkMode ? l10n.dark : l10n.light,
                 trailing: Transform.scale(
                   scale: 0.8,
                   child: Switch(
@@ -155,7 +160,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           .setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
                     },
                     thumbColor: WidgetStateProperty.all(AppTheme.gradientStart),
-                    trackColor: WidgetStateProperty.all(theme.colorScheme.surface),
+                    trackColor: WidgetStateProperty.all(
+                      theme.colorScheme.surface,
+                    ),
+                    trackOutlineColor: WidgetStateProperty.all(
+                      Colors.transparent,
+                    ),
+                  ),
+                ),
+              ),
+              SardInfoCard(
+                icon: Icons.language_outlined,
+                title: l10n.language,
+                subtitle: isArabic ? l10n.arabic : l10n.english,
+                trailing: Transform.scale(
+                  scale: 0.8,
+                  child: Switch(
+                    value: isArabic,
+                    onChanged: (val) {
+                      ref
+                          .read(settingsProvider.notifier)
+                          .setLocale(Locale(val ? 'ar' : 'en'));
+                    },
+                    thumbColor: WidgetStateProperty.all(AppTheme.gradientStart),
+                    trackColor: WidgetStateProperty.all(
+                      theme.colorScheme.surface,
+                    ),
                     trackOutlineColor: WidgetStateProperty.all(
                       Colors.transparent,
                     ),
@@ -165,23 +195,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               if (orderHistory.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                _buildSectionLabel('ORDER HISTORY', theme),
+                _buildSectionLabel(l10n.orderHistory, theme),
                 ...orderHistory.map(
-                  (order) => _buildOrderCard(order, theme, ref),
+                  (order) => _buildOrderCard(order, theme, ref, context),
                 ),
               ],
 
               const SizedBox(height: 100),
               // Actions
               _buildActionButton(
-                label: 'Switch Account',
+                label: l10n.switchAccount,
                 icon: Icons.switch_account_outlined,
                 onPressed: () {},
                 theme: theme,
               ),
               const SizedBox(height: 12),
               _buildActionButton(
-                label: 'Sign Out',
+                label: l10n.signOut,
                 icon: Icons.logout_outlined,
                 onPressed: () async {
                   await auth.fullReset();
@@ -194,6 +224,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 40),
             ],
+            ),
           ),
         ),
       ),
@@ -266,7 +297,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildOrderCard(OrderModel order, ThemeData theme, WidgetRef ref) {
+  Widget _buildOrderCard(OrderModel order, ThemeData theme, WidgetRef ref, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -284,7 +316,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Order #${order.id}',
+                l10n.orderId(order.id),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
@@ -306,7 +338,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     '${item.quantity}x ',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Expanded(child: Text(item.product.nameEn)),
+                  Expanded(child: Text(item.product.getName(Localizations.localeOf(context).languageCode))),
                   Text(
                     '₪${(item.variant.price * item.quantity).toStringAsFixed(2)}',
                   ),
@@ -318,9 +350,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Total',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                AppLocalizations.of(context)!.total,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
                 '₪${order.total.toStringAsFixed(2)}',

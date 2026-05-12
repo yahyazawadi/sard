@@ -30,7 +30,7 @@ class SardInfoCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            gradient: AppTheme.getCardGradient(theme),
+            color: AppTheme.getCardColor(theme),
             borderRadius: BorderRadius.circular(AppTheme.cardRadius),
             border: Border.all(
               color: AppTheme.accentGold,

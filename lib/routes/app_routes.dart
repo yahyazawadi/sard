@@ -9,5 +9,7 @@ class AppRoutes {
   static const String checkout = '/checkout';
   static const String productDetail = '/product-detail';
   static const String settings = '/settings';
+  static const String notifications = '/notifications';
   static const String collection = '/collection';
+  static const String wishlist = '/wishlist';
 }

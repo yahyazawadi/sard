@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../custom/app_theme.dart';
 import 'sard_primary_button.dart';
+import 'package:sard/l10n/app_localizations.dart';
 
 class LocationPopup {
   static void show(
@@ -37,6 +38,7 @@ class _LocationSelectionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 28),
@@ -61,10 +63,10 @@ class _LocationSelectionDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Delivery Location', style: theme.textTheme.titleLarge),
+              Text(l10n.deliveryLocation, style: theme.textTheme.titleLarge),
               const SizedBox(height: 8),
               Text(
-                'Select how you\'d like to set your address',
+                l10n.selectLocationMethod,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
@@ -73,7 +75,7 @@ class _LocationSelectionDialog extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               SardPrimaryButton(
-                label: 'Use Current Location',
+                label: l10n.useCurrentLocation,
                 icon: Icons.my_location_rounded,
                 onTap: () {
                   Navigator.pop(context);
@@ -83,7 +85,7 @@ class _LocationSelectionDialog extends StatelessWidget {
               const SizedBox(height: 12),
               _buildSheetButton(
                 theme,
-                'Type Address Manually',
+                l10n.typeAddressManually,
                 theme.colorScheme.surfaceContainerHighest,
                 theme.colorScheme.onSurface,
                 Icons.edit_location_outlined,
@@ -96,7 +98,7 @@ class _LocationSelectionDialog extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'NOT NOW',
+                  l10n.notNow,
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant.withValues(
                       alpha: 0.5,
@@ -165,7 +167,7 @@ class _LocationSelectionDialog extends StatelessWidget {
       if (!serviceEnabled) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Location services are disabled. Please enable GPS.")),
+            SnackBar(content: Text(AppLocalizations.of(context)!.locationDisabled)),
           );
         }
         return;
@@ -177,7 +179,7 @@ class _LocationSelectionDialog extends StatelessWidget {
         if (permission == LocationPermission.denied) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Location permissions are denied")),
+              SnackBar(content: Text(AppLocalizations.of(context)!.locationDenied)),
             );
           }
           return;
@@ -187,7 +189,7 @@ class _LocationSelectionDialog extends StatelessWidget {
       if (permission == LocationPermission.deniedForever) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Location permissions are permanently denied.")),
+            SnackBar(content: Text(AppLocalizations.of(context)!.locationPermanentlyDenied)),
           );
         }
         return;
@@ -219,7 +221,7 @@ class _LocationSelectionDialog extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error fetching location: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${AppLocalizations.of(context)!.errorFetchingLocation}: $e")));
       }
     }
   }
@@ -252,14 +254,14 @@ class _LocationSelectionDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Enter Address', style: theme.textTheme.titleLarge),
+            Text(AppLocalizations.of(context)!.enterAddress, style: theme.textTheme.titleLarge),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
               maxLines: 3,
               autofocus: true,
               decoration: InputDecoration(
-                hintText: "Enter your full delivery address...",
+                hintText: AppLocalizations.of(context)!.addressHint,
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 border: OutlineInputBorder(
@@ -279,15 +281,15 @@ class _LocationSelectionDialog extends StatelessWidget {
               child: Container(
                 width: double.infinity, height: 56,
                 decoration: BoxDecoration(
-                  gradient: AppTheme.getCardGradient(theme),
+                  color: AppTheme.getCardColor(theme),
                   borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                   border: Border.all(color: AppTheme.accentGold, width: 1.5),
                   boxShadow: AppTheme.goldShadow,
                 ),
                 alignment: Alignment.center,
-                child: const Text(
-                  'SAVE ADDRESS',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.2),
+                child: Text(
+                  AppLocalizations.of(context)!.saveAddress,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.2),
                 ),
               ),
             ),

@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/custom_inputs.dart';
+import '../../l10n/app_localizations.dart';
+import '../../widgets/sard_background.dart';
 
 class SignUpScreen extends StatefulWidget {
   final String? prefilledEmail;
@@ -36,7 +38,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final name = _nameCtrl.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      _showError('Please enter email and password.');
+      _showError(AppLocalizations.of(context)!.enterEmailPasswordError);
       return;
     }
 
@@ -58,7 +60,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showError("Registration failed. Please check if 'Email Link' is enabled in your Firebase Console and that you haven't exceeded email limits. Error: ${e.toString()}");
+        _showError(AppLocalizations.of(context)!.registrationFailedDetail(e.toString()));
       }
     }
   }
@@ -67,11 +69,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     showCupertinoDialog(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Registration Failed'),
+        title: Text(AppLocalizations.of(context)!.registrationFailed),
         content: Text(message),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(AppLocalizations.of(context)!.ok),
             onPressed: () => Navigator.pop(ctx),
           ),
         ],
@@ -85,86 +87,92 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final auth = context.watch<AuthProvider>();
     
     return CupertinoPageScaffold(
+      backgroundColor: Colors.transparent,
       navigationBar: const CupertinoNavigationBar(
         previousPageTitle: '',
         backgroundColor: Colors.transparent,
         border: null,
       ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.prefilledEmail != null ? 'Complete Recovery' : 'Sign Up',
-                style: theme.textTheme.displayMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Create account and choose favorite menu',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+      child: SardBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.prefilledEmail != null
+                      ? AppLocalizations.of(context)!.completeRecovery
+                      : AppLocalizations.of(context)!.signUp,
+                  style: theme.textTheme.displayMedium,
                 ),
-              ),
-              const SizedBox(height: 48),
-              
-              if (widget.prefilledEmail == null) ...[
-                CustomTextField(
-                  label: 'Name',
-                  placeholder: 'your name',
-                  controller: _nameCtrl,
-                ),
-                const SizedBox(height: 24),
-              ],
-              TargetPlatform.android == Theme.of(context).platform ? const SizedBox() : const SizedBox(),
-
-              CustomTextField(
-                label: 'Email',
-                placeholder: 'your email',
-                controller: _emailCtrl,
-              ),
-              const SizedBox(height: 24),
-
-              CustomTextField(
-                label: 'Password',
-                placeholder: 'your password',
-                controller: _passwordCtrl,
-                obscureText: _obscureText,
-                suffix: CupertinoButton(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Icon(
-                    _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(context)!.createAccountChooseMenu,
+                  style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
-                  onPressed: () {
-                    setState(() => _obscureText = !_obscureText);
-                  },
                 ),
-              ),
-              const SizedBox(height: 48),
-              
-              CustomButton(
-                text: widget.prefilledEmail != null ? 'Complete Recovery' : 'Register',
-                onPressed: _register,
-                isLoading: auth.isLoading,
-              ),
-              
-              const SizedBox(height: 24),
-              Center(
-                child: CupertinoButton(
-                  child: Text(
-                    'Have an account? sign in',
-                    style: theme.textTheme.titleSmall?.copyWith(
+                const SizedBox(height: 48),
+                
+                if (widget.prefilledEmail == null) ...[
+                  CustomTextField(
+                    label: AppLocalizations.of(context)!.name,
+                    placeholder: AppLocalizations.of(context)!.name.toLowerCase(),
+                    controller: _nameCtrl,
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                CustomTextField(
+                  label: AppLocalizations.of(context)!.email,
+                  placeholder: AppLocalizations.of(context)!.email.toLowerCase(),
+                  controller: _emailCtrl,
+                ),
+                const SizedBox(height: 24),
+
+                CustomTextField(
+                  label: AppLocalizations.of(context)!.password,
+                  placeholder: AppLocalizations.of(context)!.password.toLowerCase(),
+                  controller: _passwordCtrl,
+                  obscureText: _obscureText,
+                  suffix: CupertinoButton(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Icon(
+                      _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
+                    onPressed: () {
+                      setState(() => _obscureText = !_obscureText);
+                    },
                   ),
-                  onPressed: () {
-                    context.pop(); // Go back to login or welcome
-                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 48),
+                
+                CustomButton(
+                  text: widget.prefilledEmail != null
+                      ? AppLocalizations.of(context)!.completeRecovery
+                      : AppLocalizations.of(context)!.register,
+                  onPressed: _register,
+                  isLoading: auth.isLoading,
+                ),
+                
+                const SizedBox(height: 24),
+                Center(
+                  child: CupertinoButton(
+                    child: Text(
+                      AppLocalizations.of(context)!.haveAccountSignIn,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    onPressed: () {
+                      context.pop(); // Go back to login or welcome
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

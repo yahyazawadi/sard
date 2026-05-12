@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_inputs.dart';
+import '../../l10n/app_localizations.dart';
+import '../../widgets/sard_background.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -24,11 +26,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         showCupertinoDialog(
           context: context,
           builder: (ctx) => CupertinoAlertDialog(
-            title: const Text('Email Sent'),
-            content: const Text('Check your inbox to reset your password.'),
+            title: Text(AppLocalizations.of(context)!.emailSent),
+            content: Text(AppLocalizations.of(context)!.checkInboxResetPassword),
             actions: [
               CupertinoDialogAction(
-                child: const Text('OK'),
+                child: Text(AppLocalizations.of(context)!.ok),
                 onPressed: () {
                   Navigator.pop(ctx);
                   context.pop(); // Go back to login
@@ -43,11 +45,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         showCupertinoDialog(
           context: context,
           builder: (ctx) => CupertinoAlertDialog(
-            title: const Text('Error'),
+            title: Text(AppLocalizations.of(context)!.errorText),
             content: Text(e.toString()),
             actions: [
               CupertinoDialogAction(
-                child: const Text('OK'),
+                child: Text(AppLocalizations.of(context)!.ok),
                 onPressed: () => Navigator.pop(ctx),
               ),
             ],
@@ -63,6 +65,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final auth = context.watch<AuthProvider>();
     
     return CupertinoPageScaffold(
+      backgroundColor: Colors.transparent,
       navigationBar: CupertinoNavigationBar(
         leading: IconButton(
           padding: EdgeInsets.zero,
@@ -76,75 +79,77 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         border: null,
       ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Forgot Password?',
-                style: theme.textTheme.displayMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'select which contact details should we use to reset your password',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+      child: SardBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.forgotPassword,
+                  style: theme.textTheme.displayMedium,
                 ),
-              ),
-              const SizedBox(height: 48),
-              
-              _buildOptionCard(
-                index: 0,
-                icon: CupertinoIcons.mail,
-                title: 'Email',
-                subtitle: 'Send to your email',
-                theme: theme,
-              ),
-              const SizedBox(height: 16),
-              _buildOptionCard(
-                index: 1,
-                icon: CupertinoIcons.phone,
-                title: 'Phone Number',
-                subtitle: 'Send to your Phone number',
-                theme: theme,
-              ),
-              
-              if (_selectedOption == 0) ...[
-                const SizedBox(height: 32),
-                CustomTextField(
-                  label: '',
-                  placeholder: 'Enter your email',
-                  controller: _emailCtrl,
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(context)!.selectContactDetailsReset,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 48),
+                
+                _buildOptionCard(
+                  index: 0,
+                  icon: CupertinoIcons.mail,
+                  title: AppLocalizations.of(context)!.email,
+                  subtitle: AppLocalizations.of(context)!.sendToYourEmail,
+                  theme: theme,
+                ),
+                const SizedBox(height: 16),
+                _buildOptionCard(
+                  index: 1,
+                  icon: CupertinoIcons.phone,
+                  title: AppLocalizations.of(context)!.phoneNumber,
+                  subtitle: AppLocalizations.of(context)!.sendToYourPhone,
+                  theme: theme,
+                ),
+                
+                if (_selectedOption == 0) ...[
+                  const SizedBox(height: 32),
+                  CustomTextField(
+                    label: '',
+                    placeholder: AppLocalizations.of(context)!.enterYourEmail,
+                    controller: _emailCtrl,
+                  ),
+                ],
+                
+                const SizedBox(height: 48),
+                CustomButton(
+                  text: AppLocalizations.of(context)!.continueText,
+                  isLoading: auth.isLoading,
+                  onPressed: () {
+                    if (_selectedOption == 0) {
+                      _sendEmailReset();
+                    } else {
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (ctx) => CupertinoAlertDialog(
+                          title: Text(AppLocalizations.of(context)!.notConfigured),
+                          content: Text(AppLocalizations.of(context)!.smsResetGatewayError),
+                          actions: [
+                            CupertinoDialogAction(
+                              child: Text(AppLocalizations.of(context)!.ok),
+                              onPressed: () => Navigator.pop(ctx),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
                 ),
               ],
-              
-              const SizedBox(height: 48),
-              CustomButton(
-                text: 'Continue',
-                isLoading: auth.isLoading,
-                onPressed: () {
-                  if (_selectedOption == 0) {
-                    _sendEmailReset();
-                  } else {
-                    showCupertinoDialog(
-                      context: context,
-                      builder: (ctx) => CupertinoAlertDialog(
-                        title: const Text('Not Configured'),
-                        content: const Text('SMS reset gateway not configured. Please use Email.'),
-                        actions: [
-                          CupertinoDialogAction(
-                            child: const Text('OK'),
-                            onPressed: () => Navigator.pop(ctx),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -159,7 +164,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     required ThemeData theme,
   }) {
     final isSelected = _selectedOption == index;
-    // Primary is #26C6B8. We make a very faded version for the background.
     final bgColor = isSelected 
         ? theme.colorScheme.primary.withValues(alpha: 0.15) 
         : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);

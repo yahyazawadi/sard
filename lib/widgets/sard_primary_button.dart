@@ -25,14 +25,10 @@ class SardPrimaryButton extends StatelessWidget {
         width: width ?? double.infinity,
         height: height,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.gradientStart, AppTheme.primaryTeal],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppTheme.getCardColor(Theme.of(context)),
           borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
           border: Border.all(
-            color: AppTheme.accentGold,
+            color: AppTheme.getButtonBorderColor(Theme.of(context)),
             width: 1.5,
           ),
           boxShadow: AppTheme.goldShadow,

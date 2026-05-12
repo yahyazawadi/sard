@@ -14,52 +14,51 @@ class SardSnackBar {
     state.clearSnackBars();
     
     final snackBar = SnackBar(
-      content: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.gradientStart, AppTheme.primaryTeal],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFC66900),
-            width: 1.0,
-          ),
-        ),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+      content: Material(
+        color: Colors.transparent,
+        child: InkWell(
           onTap: action != null ? () {
             action.onPressed();
             messengerKey.currentState?.hideCurrentSnackBar();
           } : null,
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(
-                    color: Colors.white, 
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.getCardColor(Theme.of(context)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFC66900),
+                width: 1.0,
               ),
-              if (action != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  action.label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
-                    letterSpacing: 0.5,
-                    decoration: TextDecoration.underline,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
+                if (action != null) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    action.label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -72,12 +71,5 @@ class SardSnackBar {
     );
 
     state.showSnackBar(snackBar);
-
-    // Fallback: Manually hide after 3.2 seconds if the system duration fails for any reason
-    Future.delayed(const Duration(milliseconds: 3200), () {
-      try {
-        messengerKey.currentState?.hideCurrentSnackBar();
-      } catch (_) {}
-    });
   }
 }

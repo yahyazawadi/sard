@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../models/cart_item.dart';
+import 'cart_provider.dart';
 
 class ProductBuilderState {
   final Product? product;
@@ -94,7 +95,44 @@ class ProductBuilderState {
 }
 
 class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
-  ProductBuilderNotifier() : super(ProductBuilderState());
+  final Ref _ref;
+  ProductBuilderNotifier(this._ref) : super(ProductBuilderState());
+
+  void _syncWithCart() {
+    if (state.product == null) return;
+    final cart = _ref.read(cartProvider);
+    final variantIndex = state.product?.variants?.indexWhere((v) => v.size == state.selectedVariant?.size) ?? -1;
+    if (variantIndex < 0) return;
+
+    final existing = cart.where((item) {
+      bool productMatch = item.product.remoteId == state.product!.remoteId && item.selectedVariantIndex == variantIndex;
+      if (!productMatch) return false;
+      bool genderMatch = item.selectedGender == state.selectedGender;
+      bool weightMatch = item.selectedWeight == state.selectedWeight;
+      bool fillingsMatch = true;
+      if (item.selectedFillings == null && state.selectedFillings.isEmpty) {
+        fillingsMatch = true;
+      } else if (item.selectedFillings != null && state.selectedFillings.isNotEmpty) {
+        if (item.selectedFillings!.length != state.selectedFillings.length) {
+          fillingsMatch = false;
+        } else {
+          for (var key in item.selectedFillings!.keys) {
+            if (item.selectedFillings![key] != state.selectedFillings[key]) {
+              fillingsMatch = false;
+              break;
+            }
+          }
+        }
+      } else {
+        fillingsMatch = false;
+      }
+      return genderMatch && weightMatch && fillingsMatch;
+    }).toList();
+
+    if (existing.isNotEmpty && state.quantity != existing.first.quantity) {
+      state = state.copyWith(quantity: existing.first.quantity);
+    }
+  }
 
   void initFromCartItem(CartItem item) {
     state = ProductBuilderState(
@@ -162,6 +200,7 @@ class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
       isLoading: false,
       quantity: 1,
     );
+    _syncWithCart();
   }
 
   void selectVariant(ProductVariant variant, {bool forceReset = false}) {
@@ -201,14 +240,17 @@ class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
       selectedFillings: newFillings,
       isEdited: false, // Reset editing state on size change
     );
+    _syncWithCart();
   }
 
   void selectGender(String gender) {
     state = state.copyWith(selectedGender: gender);
+    _syncWithCart();
   }
 
   void selectWeight(double weight) {
     state = state.copyWith(selectedWeight: weight);
+    _syncWithCart();
   }
 
   void addFilling(String fillingId) {
@@ -217,6 +259,7 @@ class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
     currentFillings[fillingId] = (currentFillings[fillingId] ?? 0) + 1;
     
     state = state.copyWith(selectedFillings: currentFillings, isEdited: true);
+    _syncWithCart();
   }
 
   void removeFilling(String fillingId) {
@@ -227,20 +270,60 @@ class ProductBuilderNotifier extends StateNotifier<ProductBuilderState> {
         currentFillings.remove(fillingId);
       }
       state = state.copyWith(selectedFillings: currentFillings, isEdited: true);
+      _syncWithCart();
     }
   }
 
   void clearFillings() {
     state = state.copyWith(selectedFillings: {}, isEdited: true);
+    _syncWithCart();
   }
 
   void setQuantity(int q) {
     if (q >= 1) {
       state = state.copyWith(quantity: q);
+      
+      // Update cart if item exists
+      final cart = _ref.read(cartProvider);
+      final variantIndex = state.product?.variants?.indexWhere((v) => v.size == state.selectedVariant?.size) ?? -1;
+      if (variantIndex >= 0) {
+        final existing = cart.where((item) {
+          bool productMatch = item.product.remoteId == state.product!.remoteId && item.selectedVariantIndex == variantIndex;
+          if (!productMatch) return false;
+          bool genderMatch = item.selectedGender == state.selectedGender;
+          bool weightMatch = item.selectedWeight == state.selectedWeight;
+          bool fillingsMatch = true;
+          if (item.selectedFillings == null && state.selectedFillings.isEmpty) {
+            fillingsMatch = true;
+          } else if (item.selectedFillings != null && state.selectedFillings.isNotEmpty) {
+            if (item.selectedFillings!.length != state.selectedFillings.length) {
+              fillingsMatch = false;
+            } else {
+              for (var key in item.selectedFillings!.keys) {
+                if (item.selectedFillings![key] != state.selectedFillings[key]) {
+                  fillingsMatch = false;
+                  break;
+                }
+              }
+            }
+          } else {
+            fillingsMatch = false;
+          }
+          return genderMatch && weightMatch && fillingsMatch;
+        }).toList();
+
+        if (existing.isNotEmpty) {
+          _ref.read(cartProvider.notifier).updateQuantity(existing.first.id, q);
+        }
+      }
     }
   }
 }
 
-final productBuilderProvider = StateNotifierProvider.autoDispose<ProductBuilderNotifier, ProductBuilderState>((ref) {
-  return ProductBuilderNotifier();
+final productBuilderProvider = StateNotifierProvider<ProductBuilderNotifier, ProductBuilderState>((ref) {
+  final notifier = ProductBuilderNotifier(ref);
+  ref.listen(cartProvider, (prev, next) {
+    notifier._syncWithCart();
+  });
+  return notifier;
 });

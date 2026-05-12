@@ -14,6 +14,8 @@ import '../widgets/sard_primary_button.dart';
 import '../widgets/phone_number_popup.dart';
 import '../widgets/location_popup.dart';
 import '../widgets/payment_method_selector.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/sard_background.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -69,6 +71,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cartItems = ref.watch(cartProvider);
     final subtotal = cartItems.fold(
@@ -88,9 +91,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: theme.colorScheme.surface,
+          backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
             icon: Icon(
@@ -106,7 +109,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               }
             },
           ),
-          title: Text('Checkout', style: theme.textTheme.titleLarge),
+          title: Text(l10n.checkout, style: theme.textTheme.titleLarge),
           centerTitle: true,
           actions: [
             IconButton(
@@ -122,7 +125,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
           ],
         ),
-        body: SingleChildScrollView(
+        body: SardBackground(
+          child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,10 +134,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               const SizedBox(height: 16),
               const SizedBox(height: 40),
 
-              _buildSectionLabel('Shipping Address'),
+              _buildSectionLabel(l10n.shippingAddress),
               SardInfoCard(
                 icon: Icons.location_on_outlined,
-                title: 'Shipping Address',
+                title: l10n.shippingAddress,
                 subtitle: _currentAddress.contains('\n')
                     ? _currentAddress.split('\n').last
                     : _currentAddress,
@@ -150,12 +154,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
 
               const SizedBox(height: 20),
-              _buildSectionLabel('Phone Number'),
+              _buildSectionLabel(l10n.phoneNumber),
               SardInfoCard(
                 icon: Icons.phone_android_outlined,
-                title: 'Phone Number',
+                title: l10n.phoneNumber,
                 subtitle: _phoneController.text.isEmpty
-                    ? 'Not set'
+                    ? l10n.notSet
                     : _phoneController.text,
                 onTap: () => PhoneNumberPopup.show(
                   context,
@@ -186,6 +190,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ],
           ),
         ),
+        ),
         bottomNavigationBar: _buildBottomSummary(
           theme,
           cartItems,
@@ -202,10 +207,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double subtotal,
     double total,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
+        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
         border: Border.all(
           color: theme.colorScheme.primary.withValues(alpha: 0.4),
           width: 1.5,
@@ -225,11 +231,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           children: [
             _buildSummaryRow(
               theme,
-              'Subtotal',
+              l10n.subtotal,
               '₪ ${subtotal.toStringAsFixed(2)}',
             ),
             const SizedBox(height: 8),
-            _buildSummaryRow(theme, 'Shipping', '₪ 5.00'),
+            _buildSummaryRow(theme, l10n.shipping, '₪ 5.00'),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: Divider(color: theme.colorScheme.outlineVariant, height: 1),
@@ -238,7 +244,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Total",
+                  l10n.total,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -254,7 +260,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
             const SizedBox(height: 18),
             SardPrimaryButton(
-              label: 'PLACE ORDER',
+              label: l10n.placeOrder,
               onTap: () => _handlePlaceOrder(total),
             ),
           ],
@@ -300,6 +306,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   void _showCreditCardSheet(BuildContext context, double total) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -311,7 +318,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             children: [
               // Cards ABOVE the sliding menu
               SizedBox(
-                height: 180,
+                height: 181,
                 child: PageView.builder(
                   controller: _cardPageController,
                   itemCount: _fakeCards.length,
@@ -360,11 +367,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Payment Method',
+                            l10n.paymentMethod,
                             style: theme.textTheme.titleLarge,
                           ),
                           Text(
-                            'Enter your card details',
+                            l10n.enterCardDetails,
                             style: TextStyle(
                               color: theme.colorScheme.onSurfaceVariant,
                               fontSize: 14,
@@ -402,7 +409,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ),
                           const SizedBox(height: 24),
                           SardPrimaryButton(
-                            label: 'Pay Now  |  ₪ ${total.toStringAsFixed(2)}',
+                            label: '${l10n.payNow}  |  ₪ ${total.toStringAsFixed(2)}',
                             onTap: () {
                               TextInput.finishAutofillContext();
                               Navigator.pop(context);
@@ -423,6 +430,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildCreditCardItem(ThemeData theme, int index) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = [
       theme.colorScheme.onSurface,
       theme.colorScheme.primary,
@@ -471,8 +479,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'YOUR NAME',
+              Text(
+                l10n.yourName,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -548,7 +556,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Order Placed!',
+              AppLocalizations.of(context)!.orderPlaced,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 32),

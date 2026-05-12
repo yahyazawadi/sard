@@ -3,6 +3,7 @@ import 'isar_provider.dart';
 import '../models/product.dart';
 import '../models/category.dart';
 import '../models/featured_template.dart';
+import 'wishlist_provider.dart';
 import 'package:isar/isar.dart';
 
 /// Provides all categories sorted by display order
@@ -39,3 +40,16 @@ final productsByIdsProvider = FutureProvider.family<List<Product>, List<String>>
   final all = await isar.products.where().findAll();
   return all.where((p) => ids.contains(p.remoteId)).toList();
 });
+
+/// Provides products currently in the user's wishlist
+final wishlistProductsProvider = StreamProvider<List<Product>>((ref) {
+  final wishlistIds = ref.watch(wishlistProvider);
+  if (wishlistIds.isEmpty) return Stream.value([]);
+  
+  final isar = ref.watch(isarProvider);
+  // Watch all products and filter locally for maximum reactivity without flashing
+  return isar.products.where().watch(fireImmediately: true).map((all) {
+    return all.where((p) => wishlistIds.contains(p.remoteId)).toList();
+  });
+});
+

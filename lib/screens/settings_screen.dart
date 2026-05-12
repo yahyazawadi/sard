@@ -17,26 +17,28 @@ class SettingsScreen extends ConsumerWidget {
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(AppLocalizations.of(context)!.settings),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           SwitchListTile(
-            title: const Text('Dark Mode'),
+            title: Text(AppLocalizations.of(context)!.dark),
             value: settings.themeMode == ThemeMode.dark,
             onChanged: (val) {
               settingsNotifier.setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
             },
           ),
           ListTile(
-            title: const Text('Language (EN/AR)'),
+            title: Text(AppLocalizations.of(context)!.language),
             trailing: DropdownButton<String>(
               value: settings.locale.languageCode,
-              items: const [
-                DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'ar', child: Text('العربية')),
+              items: [
+                DropdownMenuItem(value: 'en', child: Text(AppLocalizations.of(context)!.english)),
+                DropdownMenuItem(value: 'ar', child: Text(AppLocalizations.of(context)!.arabic)),
               ],
               onChanged: (val) {
                 if (val != null) settingsNotifier.setLocale(Locale(val));
@@ -48,7 +50,7 @@ class SettingsScreen extends ConsumerWidget {
             iconColor: Theme.of(context).colorScheme.error,
             textColor: Theme.of(context).colorScheme.error,
             leading: const Icon(Icons.delete_forever),
-            title: const Text('Delete Cache (Debug)'),
+            title: Text(AppLocalizations.of(context)!.deleteCacheDebug),
             onTap: () async {
               // 1. Clear Isar Database (Riverpod)
               await ref.read(syncProvider).clearAllData();

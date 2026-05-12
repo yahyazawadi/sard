@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../routes/app_routes.dart';
 import '../../providers/auth_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -72,7 +73,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                   ),
                   Text(
-                    'All your\nBest Chocolates',
+                    AppLocalizations.of(context)!.onboardingTitle,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineLarge?.copyWith(
                       color: theme.colorScheme.onSurface,
@@ -91,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         context.go('${AppRoutes.login}?signup=true');
                       },
                       child: Text(
-                        'Sign Up',
+                        AppLocalizations.of(context)!.signUp,
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: theme.colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
@@ -111,7 +112,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         context.go(AppRoutes.login);
                       },
                       child: Text(
-                        'Log In',
+                        AppLocalizations.of(context)!.logIn,
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: theme.colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
@@ -130,7 +131,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       }
                     },
                     child: Text(
-                      'Continue as Guest',
+                      AppLocalizations.of(context)!.continueAsGuest,
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                         decoration: TextDecoration.underline,
@@ -179,7 +180,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 }
               },
               child: Text(
-                'Get Started',
+                AppLocalizations.of(context)!.getStarted,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: CupertinoColors.white,
                   fontWeight: FontWeight.bold,
