@@ -6,6 +6,7 @@ import 'home_screen.dart';
 import 'cart_screen.dart';
 import 'wishlist_screen.dart';
 import '../widgets/sard_background.dart';
+import '../custom/app_theme.dart';
 
 
 final mainWrapperPageProvider = StateProvider<int>((ref) => 0);
@@ -191,7 +192,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                       icon: const SizedBox(
                         width: 52,
                         height: 52,
-                        child: Center(child: Icon(Icons.home_outlined)),
+                        child: Center(child: Icon(Icons.home_outlined, color: AppTheme.highContrastGold)),
                       ),
                       selectedIcon: Container(
                         width: 52,
@@ -200,7 +201,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(child: Icon(Icons.home_rounded)),
+                        child: const Center(child: Icon(Icons.home_rounded, color: AppTheme.highContrastGold)),
                       ),
                       label: AppLocalizations.of(context)!.navHome,
                     ),
@@ -208,7 +209,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                       icon: const SizedBox(
                         width: 52,
                         height: 52,
-                        child: Center(child: Icon(Icons.favorite_outline_rounded)),
+                        child: Center(child: Icon(Icons.favorite_outline_rounded, color: AppTheme.highContrastGold)),
                       ),
                       selectedIcon: Container(
                         width: 52,
@@ -217,7 +218,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(child: Icon(Icons.favorite_rounded)),
+                        child: const Center(child: Icon(Icons.favorite_rounded, color: AppTheme.highContrastGold)),
                       ),
                       label: AppLocalizations.of(context)!.navWishlist,
                     ),
@@ -225,7 +226,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                       icon: const SizedBox(
                         width: 52,
                         height: 52,
-                        child: Center(child: Icon(Icons.shopping_cart_outlined)),
+                        child: Center(child: Icon(Icons.shopping_cart_outlined, color: AppTheme.highContrastGold)),
                       ),
                       selectedIcon: Container(
                         width: 52,
@@ -234,7 +235,7 @@ class _MainWrapperScreenState extends ConsumerState<MainWrapperScreen> {
                           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(child: Icon(Icons.shopping_cart_rounded)),
+                        child: const Center(child: Icon(Icons.shopping_cart_rounded, color: AppTheme.highContrastGold)),
                       ),
                       label: AppLocalizations.of(context)!.navCart,
                     ),

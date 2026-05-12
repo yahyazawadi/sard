@@ -46,6 +46,7 @@ class AppTheme {
   static const Color secondaryTeal = Color(0xFF6F4E37); // Slightly darker cocoa
   //static const Color accentGold = Color(0xFFC66900); // Updated Stroke Color
   static const Color accentGold = Color(0xFFC07F00); // Updated Stroke Color
+  static const Color highContrastGold = Color(0xFFF1DBBC); // High Contrast Color for Icons/Cards
 
   static const Color gradientStart = Color(0xFF6F4E37); // Warm Cocoa Start
   static const Color bgWhite = Color(0xFFF9F3E7); // Clean Vanilla Cream Background
@@ -75,9 +76,8 @@ class AppTheme {
   // Card specific backgrounds
   static const Color cardBgLight = primaryTeal; // Sard Teal
   static const Color cardBgDark = sectionBgDark; // Match Card Color
-  static const Color onCardLight =
-      Colors.white; // High contrast white for content
-  static const Color onCardDark = textPrimaryDark;
+  static const Color onCardLight = highContrastGold; // High contrast for content
+  static const Color onCardDark = highContrastGold;
 
   static Color getCardColor(ThemeData theme) {
     return theme.brightness == Brightness.light ? cardBgLight : cardBgDark;

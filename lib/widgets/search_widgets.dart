@@ -96,8 +96,8 @@ class SardCategoryChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
             border: Border.all(
               color: isSelected
-                  ? theme.colorScheme.tertiary
-                  : theme.colorScheme.primary.withValues(alpha: 0.5),
+                  ? AppTheme.highContrastGold
+                  : theme.colorScheme.primary.withValues(alpha: 0.3),
               width: 1.5,
             ),
             boxShadow: isSelected ? AppTheme.cardShadow : null,
@@ -110,7 +110,7 @@ class SardCategoryChip extends StatelessWidget {
               Icon(
                 isSelected ? Icons.check_rounded : Icons.close_rounded,
                 size: 13,
-                color: isSelected ? Colors.white : theme.colorScheme.primary,
+                color: isSelected ? AppTheme.highContrastGold : theme.colorScheme.primary,
               ),
               const SizedBox(width: 4),
               Text(
@@ -121,7 +121,7 @@ class SardCategoryChip extends StatelessWidget {
                   forceStrutHeight: true,
                 ),
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: isSelected ? Colors.white : theme.colorScheme.primary,
+                  color: isSelected ? AppTheme.highContrastGold : theme.colorScheme.primary,
                   fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
                   fontSize: 12,
                   height: 1.2,

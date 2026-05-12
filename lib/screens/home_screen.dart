@@ -853,7 +853,7 @@ class ProductCard extends ConsumerWidget {
             color: AppTheme.getCardColor(theme),
             borderRadius: BorderRadius.circular(AppTheme.cardRadius),
             border: Border.all(
-              color: AppTheme.accentGold.withValues(alpha: 0.5),
+              color: AppTheme.highContrastGold.withValues(alpha: 0.25),
               width: 1.5,
             ),
             boxShadow: AppTheme.cardShadow,
