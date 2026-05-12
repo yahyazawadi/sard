@@ -60,45 +60,56 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           }
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
+      child: SardBackground(
+        child: Scaffold(
           backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-              color: AppTheme.gradientStart,
-            ),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                final history = ref.read(tabHistoryProvider);
-                if (history.length > 1) {
-                  final newHistory = List<int>.from(history)..removeLast();
-                  ref.read(tabHistoryProvider.notifier).state = newHistory;
-                  ref.read(mainWrapperPageProvider.notifier).state =
-                      newHistory.last;
-                } else {
-                  context.go(AppRoutes.home);
-                }
-              }
-            },
-          ),
-          title: Text(l10n.settings, style: theme.textTheme.titleLarge),
-          centerTitle: true,
-        ),
-        body: SardBackground(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 32),
-
-              // PERSONAL INFORMATION
-              _buildSectionLabel(l10n.personalInformation, theme),
+          body: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                pinned: false,
+                floating: true,
+                snap: true,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                centerTitle: true,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                    color: AppTheme.getIconColor(theme),
+                  ),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      final history = ref.read(tabHistoryProvider);
+                      if (history.length > 1) {
+                        final newHistory = List<int>.from(history)..removeLast();
+                        ref.read(tabHistoryProvider.notifier).state = newHistory;
+                        ref.read(mainWrapperPageProvider.notifier).state =
+                            newHistory.last;
+                      } else {
+                        context.go(AppRoutes.home);
+                      }
+                    }
+                  },
+                ),
+                title: Text(
+                  l10n.settings,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getIconColor(theme),
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 16),
+                    // PERSONAL INFORMATION
+                    _buildSectionLabel(l10n.personalInformation, theme),
               SardInfoCard(
                 icon: Icons.location_on_outlined,
                 title: l10n.defaultAddress,
@@ -223,8 +234,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 isDestructive: true,
               ),
               const SizedBox(height: 40),
+                  ]),
+                ),
+              ),
             ],
-            ),
           ),
         ),
       ),
@@ -239,7 +252,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+            color: AppTheme.getIconColor(theme).withValues(alpha: 0.6),
             fontSize: 12,
             fontWeight: FontWeight.w900,
             letterSpacing: 1.2,
@@ -265,14 +278,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         decoration: BoxDecoration(
           color: isDestructive
               ? Colors.red.withValues(alpha: 0.1)
-              : theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.3,
-                ),
+              : AppTheme.getCardColor(theme).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
           border: Border.all(
             color: isDestructive
                 ? Colors.red.withValues(alpha: 0.2)
-                : theme.colorScheme.outline.withValues(alpha: 0.1),
+                : AppTheme.getCardBorderColor(theme),
           ),
         ),
         child: Row(
@@ -280,14 +291,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           children: [
             Icon(
               icon,
-              color: isDestructive ? Colors.red : AppTheme.gradientStart,
+              color: isDestructive ? Colors.red : AppTheme.getIconColor(theme),
               size: 20,
             ),
             const SizedBox(width: 12),
             Text(
               label,
               style: TextStyle(
-                color: isDestructive ? Colors.red : theme.colorScheme.onSurface,
+                color: isDestructive ? Colors.red : AppTheme.getIconColor(theme),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -299,14 +310,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildOrderCard(OrderModel order, ThemeData theme, WidgetRef ref, BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final onCardColor = AppTheme.getOnCardColor(theme);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: AppTheme.getCardColor(theme),
         borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          color: AppTheme.getCardBorderColor(theme),
         ),
       ),
       child: Column(
@@ -317,12 +329,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               Text(
                 l10n.orderId(order.id),
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold, color: onCardColor),
               ),
               Text(
                 DateFormat('MMM dd, yyyy').format(order.date),
                 style: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: onCardColor.withValues(alpha: 0.7),
                   fontSize: 12,
                 ),
               ),
@@ -336,11 +348,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 children: [
                   Text(
                     '${item.quantity}x ',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: onCardColor),
                   ),
-                  Expanded(child: Text(item.product.getName(Localizations.localeOf(context).languageCode))),
+                  Expanded(child: Text(
+                    item.product.getName(Localizations.localeOf(context).languageCode),
+                    style: TextStyle(color: onCardColor),
+                  )),
                   Text(
                     '₪${(item.variant.price * item.quantity).toStringAsFixed(2)}',
+                    style: TextStyle(color: onCardColor),
                   ),
                 ],
               ),
@@ -352,13 +368,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               Text(
                 AppLocalizations.of(context)!.total,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold, color: onCardColor),
               ),
               Text(
                 '₪${order.total.toStringAsFixed(2)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: onCardColor,
                 ),
               ),
             ],

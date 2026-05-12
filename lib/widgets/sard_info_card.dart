@@ -33,7 +33,7 @@ class SardInfoCard extends StatelessWidget {
             color: AppTheme.getCardColor(theme),
             borderRadius: BorderRadius.circular(AppTheme.cardRadius),
             border: Border.all(
-              color: AppTheme.accentGold,
+              color: AppTheme.getCardBorderColor(theme),
               width: 1.5,
             ),
             boxShadow: AppTheme.cardShadow,
@@ -44,10 +44,10 @@ class SardInfoCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor,
+                  color: onCardColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, size: 20, color: AppTheme.gradientStart),
+                child: Icon(icon, size: 20, color: onCardColor),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -83,13 +83,13 @@ class SardInfoCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: theme.scaffoldBackgroundColor,
+                    color: onCardColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.chevron_right_rounded,
                     size: 16,
-                    color: AppTheme.gradientStart,
+                    color: onCardColor,
                   ),
                 ),
             ],
