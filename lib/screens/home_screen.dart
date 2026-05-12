@@ -32,9 +32,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _isFeaturedExpanded = false;
+  // bool _isFeaturedExpanded = false;
   final ScrollController _scrollController = ScrollController();
-  final GlobalKey _featuredKey = GlobalKey();
+  // final GlobalKey _featuredKey = GlobalKey();
 
   // Search Integration
   final TextEditingController _searchController = TextEditingController();
@@ -169,19 +169,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 if (!_isSearchMode)
                                   IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.settings_outlined,
-                                      color: AppTheme.gradientStart,
+                                      color: AppTheme.getIconColor(theme),
                                       size: 24,
                                     ),
                                     onPressed: () => context.push(AppRoutes.settings),
                                   )
                                 else
                                   IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.arrow_back_ios_new_rounded,
                                       size: 20,
-                                      color: AppTheme.gradientStart,
+                                      color: AppTheme.getIconColor(theme),
                                     ),
                                     onPressed: _exitSearchMode,
                                   ),
@@ -200,9 +200,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       alignment: Alignment.center,
                                       children: [
                                         IconButton(
-                                          icon: const Icon(
+                                          icon: Icon(
                                             Icons.notifications_none_rounded,
-                                            color: AppTheme.gradientStart,
+                                            color: AppTheme.getIconColor(theme),
                                             size: 26,
                                           ),
                                           onPressed: () => Navigator.of(context).push(
@@ -327,6 +327,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             featuredAsync.when(
               data: (templates) {
+                /*
                 final showAll = templates.length > 2;
                 final itemHeight = 220.0;
                 final itemMargin = 16.0;
@@ -337,158 +338,181 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? expandedHeight
                     : collapsedHeight;
                 const buttonHeight = 64.0;
+                */
+                const itemHeight = 220.0;
 
                 return SliverToBoxAdapter(
-                  child: SizedBox(
-                    key: _featuredKey,
-                    height:
-                        (templates.length <= 2
-                            ? (totalItemBlock * templates.length)
-                            : currentHeight) +
-                        8.0,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.topCenter,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 600),
-                          curve: Curves.fastLinearToSlowEaseIn,
-                          height: templates.length <= 2
-                              ? (totalItemBlock * templates.length)
-                              : currentHeight,
-                          clipBehavior: Clip.hardEdge,
-                          decoration: const BoxDecoration(),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: OverflowBox(
-                            alignment: Alignment.topCenter,
-                            minHeight: 0,
-                            maxHeight: double.infinity,
-                            child: Column(
-                              children: [
-                                ...templates.map(
-                                  (t) => Container(
-                                    height: itemHeight,
-                                    width: double.infinity,
-                                    margin: EdgeInsets.only(bottom: itemMargin),
-                                    child: _FeaturedCard(template: t),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (showAll)
-                          Positioned(
-                            top:
-                                (templates.length <= 2
-                                    ? (totalItemBlock * templates.length)
-                                    : currentHeight) -
-                                (buttonHeight / 2),
-                            left: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                if (!_scrollController.hasClients) return;
-                                final wasExpanded = _isFeaturedExpanded;
-                                double? targetOffset;
-                                if (wasExpanded) {
-                                  final RenderBox? renderBox =
-                                      _featuredKey.currentContext
-                                              ?.findRenderObject()
-                                          as RenderBox?;
-                                  if (renderBox != null) {
-                                    final position = renderBox.localToGlobal(
-                                      Offset.zero,
-                                    );
-                                    targetOffset =
-                                        _scrollController.offset +
-                                        position.dy -
-                                        20;
-                                  }
-                                }
-                                setState(
-                                  () => _isFeaturedExpanded =
-                                      !_isFeaturedExpanded,
-                                );
-                                if (wasExpanded && targetOffset != null) {
-                                  _scrollController.animateTo(
-                                    targetOffset.clamp(
-                                      0,
-                                      _scrollController
-                                          .position
-                                          .maxScrollExtent,
-                                    ),
-                                    duration: const Duration(milliseconds: 600),
-                                    curve: Curves.fastLinearToSlowEaseIn,
-                                  );
-                                }
-                              },
-                              behavior: HitTestBehavior.opaque,
-                              child: Container(
-                                height: buttonHeight,
-                                color: Colors.transparent,
-                                child: Stack(
-                                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      /*
+                      SizedBox(
+                        key: _featuredKey,
+                        height:
+                            (templates.length <= 2
+                                ? (totalItemBlock * templates.length)
+                                : currentHeight) +
+                            8.0,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.topCenter,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.fastLinearToSlowEaseIn,
+                              height: templates.length <= 2
+                                  ? (totalItemBlock * templates.length)
+                                  : currentHeight,
+                              clipBehavior: Clip.hardEdge,
+                              decoration: const BoxDecoration(),
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: OverflowBox(
+                                alignment: Alignment.topCenter,
+                                minHeight: 0,
+                                maxHeight: double.infinity,
+                                child: Column(
                                   children: [
-                                    Positioned(
-                                      top: buttonHeight / 2,
-                                      left: 0,
-                                      right: 0,
-                                      height: buttonHeight / 2,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            top: BorderSide(
-                                              color: AppTheme.accentGold
-                                                  .withValues(alpha: 0.3),
-                                              width: 2,
-                                            ),
-                                          ),
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                top: Radius.circular(20),
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                    AnimatedRotation(
-                                      turns: _isFeaturedExpanded ? 0.5 : 0,
-                                      duration: const Duration(
-                                        milliseconds: 600,
-                                      ),
-                                      curve: Curves.easeOutBack,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.textPrimaryDark,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppTheme.accentGold.withValues(alpha: 0.3),
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(
-                                                alpha: 0.08,
-                                              ),
-                                              blurRadius: 6,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          Icons.keyboard_arrow_down_rounded,
-                                          color: AppTheme.bgDarkTeal,
-                                          size: 24,
-                                        ),
+                                    ...templates.map(
+                                      (t) => Container(
+                                        height: itemHeight,
+                                        width: double.infinity,
+                                        margin: EdgeInsets.only(bottom: itemMargin),
+                                        child: _FeaturedCard(template: t),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
+                            if (showAll)
+                              Positioned(
+                                top:
+                                    (templates.length <= 2
+                                        ? (totalItemBlock * templates.length)
+                                        : currentHeight) -
+                                    (buttonHeight / 2),
+                                left: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if (!_scrollController.hasClients) return;
+                                    final wasExpanded = _isFeaturedExpanded;
+                                    double? targetOffset;
+                                    if (wasExpanded) {
+                                      final RenderBox? renderBox =
+                                          _featuredKey.currentContext
+                                                  ?.findRenderObject()
+                                              as RenderBox?;
+                                      if (renderBox != null) {
+                                        final position = renderBox.localToGlobal(
+                                          Offset.zero,
+                                        );
+                                        targetOffset =
+                                            _scrollController.offset +
+                                            position.dy -
+                                            20;
+                                      }
+                                    }
+                                    setState(
+                                      () => _isFeaturedExpanded =
+                                          !_isFeaturedExpanded,
+                                    );
+                                    if (wasExpanded && targetOffset != null) {
+                                      _scrollController.animateTo(
+                                        targetOffset.clamp(
+                                          0,
+                                          _scrollController
+                                              .position
+                                              .maxScrollExtent,
+                                        ),
+                                        duration: const Duration(milliseconds: 600),
+                                        curve: Curves.fastLinearToSlowEaseIn,
+                                      );
+                                    }
+                                  },
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Container(
+                                    height: buttonHeight,
+                                    color: Colors.transparent,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Positioned(
+                                          top: buttonHeight / 2,
+                                          left: 0,
+                                          right: 0,
+                                          height: buttonHeight / 2,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                top: BorderSide(
+                                                  color: AppTheme.accentGold
+                                                      .withValues(alpha: 0.3),
+                                                  width: 2,
+                                                ),
+                                              ),
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                    top: Radius.circular(20),
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        AnimatedRotation(
+                                          turns: _isFeaturedExpanded ? 0.5 : 0,
+                                          duration: const Duration(
+                                            milliseconds: 600,
+                                          ),
+                                          curve: Curves.easeOutBack,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.textPrimaryDark,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: AppTheme.accentGold.withValues(alpha: 0.3),
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withValues(
+                                                    alpha: 0.08,
+                                                  ),
+                                                  blurRadius: 6,
+                                                  offset: const Offset(0, 3),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              color: AppTheme.bgDarkTeal,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      */
+                      SizedBox(
+                        height: itemHeight,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          scrollDirection: Axis.horizontal,
+                          clipBehavior: Clip.none,
+                          itemCount: templates.length,
+                          separatorBuilder: (context, index) => const SizedBox(width: 16),
+                          itemBuilder: (context, index) => SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.85,
+                            child: _FeaturedCard(template: templates[index]),
                           ),
-                      ],
-                    ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 );
               },
@@ -556,8 +580,8 @@ class _FeaturedCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppTheme.cardRadius + 8),
           border: Border.all(
-            color: AppTheme.getCardBorderColor(theme),
-            width: 1.5,
+            color: AppTheme.getFeaturedBorderColor(theme),
+            width: 2.0, // Increased width as requested
           ),
           boxShadow: AppTheme.cardShadow,
         ),
@@ -583,7 +607,8 @@ class _FeaturedCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.displaySmall?.copyWith(
-                        color: AppTheme.textPrimaryDark,
+                        color: AppTheme.highContrastGold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -601,7 +626,7 @@ class _FeaturedCard extends StatelessWidget {
                               AppTheme.buttonRadius,
                             ),
                             border: Border.all(
-                              color: AppTheme.accentGold,
+                              color: AppTheme.getOnCardColor(theme).withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                             boxShadow: AppTheme.cardShadow,
@@ -616,7 +641,7 @@ class _FeaturedCard extends StatelessWidget {
                               leading: 0,
                             ),
                             style: theme.textTheme.labelLarge?.copyWith(
-                              color: AppTheme.textPrimaryDark,
+                              color: AppTheme.getOnCardColor(theme),
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.0,
                               height: 1.0,
@@ -853,7 +878,7 @@ class ProductCard extends ConsumerWidget {
             color: AppTheme.getCardColor(theme),
             borderRadius: BorderRadius.circular(AppTheme.cardRadius),
             border: Border.all(
-              color: AppTheme.highContrastGold.withValues(alpha: 0.25),
+              color: AppTheme.getCardBorderColor(theme),
               width: 1.5,
             ),
             boxShadow: AppTheme.cardShadow,
@@ -919,7 +944,7 @@ class ProductCard extends ConsumerWidget {
                             ),
                             child: Icon(
                               isWishlisted ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                              color: isWishlisted ? Colors.red : onCardColor.withValues(alpha: 0.6),
+                              color: isWishlisted ? Colors.red : AppTheme.getIconColor(theme),
                               size: 18,
                             ),
                           ),

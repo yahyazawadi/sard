@@ -31,7 +31,7 @@ class SardSearchBar extends StatelessWidget {
         color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: theme.colorScheme.tertiary.withValues(alpha: 0.5),
+          color: AppTheme.getIconColor(theme).withValues(alpha: 0.5),
           width: 1.5,
         ),
       ),
@@ -52,13 +52,13 @@ class SardSearchBar extends StatelessWidget {
           contentPadding: const EdgeInsets.only(top: 10, bottom: 6),
           prefixIcon: Icon(
             Icons.search_rounded,
-            color: theme.colorScheme.primary,
+            color: AppTheme.getIconColor(theme),
           ),
           suffixIcon: (!readOnly && (controller?.text.isNotEmpty ?? false))
               ? IconButton(
                   icon: Icon(
                     Icons.close_rounded,
-                    color: theme.colorScheme.primary,
+                    color: AppTheme.getIconColor(theme),
                   ),
                   onPressed: onClear,
                 )
@@ -96,7 +96,7 @@ class SardCategoryChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
             border: Border.all(
               color: isSelected
-                  ? AppTheme.highContrastGold
+                  ? AppTheme.getOnCardColor(theme).withValues(alpha: 0.15)
                   : theme.colorScheme.primary.withValues(alpha: 0.3),
               width: 1.5,
             ),
@@ -110,7 +110,7 @@ class SardCategoryChip extends StatelessWidget {
               Icon(
                 isSelected ? Icons.check_rounded : Icons.close_rounded,
                 size: 13,
-                color: isSelected ? AppTheme.highContrastGold : theme.colorScheme.primary,
+                color: isSelected ? AppTheme.getOnCardColor(theme) : AppTheme.getIconColor(theme),
               ),
               const SizedBox(width: 4),
               Text(
@@ -121,7 +121,7 @@ class SardCategoryChip extends StatelessWidget {
                   forceStrutHeight: true,
                 ),
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: isSelected ? AppTheme.highContrastGold : theme.colorScheme.primary,
+                  color: isSelected ? AppTheme.getOnCardColor(theme) : AppTheme.getIconColor(theme),
                   fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
                   fontSize: 12,
                   height: 1.2,

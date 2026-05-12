@@ -73,10 +73,10 @@ class AppTheme {
     return theme.brightness == Brightness.light ? bgSvgLight : bgSvgDark;
   }
 
-  // Card specific backgrounds
-  static const Color cardBgLight = primaryTeal; // Sard Teal
-  static const Color cardBgDark = sectionBgDark; // Match Card Color
-  static const Color onCardLight = highContrastGold; // High contrast for content
+  // Card specific backgrounds (Dark Chocolate with Gold Content)
+  static const Color cardBgLight = primaryTeal;
+  static const Color cardBgDark = primaryTeal;
+  static const Color onCardLight = highContrastGold;
   static const Color onCardDark = highContrastGold;
 
   static Color getCardColor(ThemeData theme) {
@@ -95,8 +95,24 @@ class AppTheme {
   }
 
   static Color getCardBorderColor(ThemeData theme) {
-    // Switching from Gold to Vanilla Cream for a softer, integrated look
-    return getOnCardColor(theme).withValues(alpha: 0.15);
+    // For Dark Chocolate cards, use a Gold border
+    return highContrastGold.withValues(alpha: 0.3);
+  }
+
+  static Color getFeaturedBorderColor(ThemeData theme) {
+    // For Featured Dark banners, use a solid Gold border (100% opacity)
+    return highContrastGold;
+  }
+
+  static Color getIconColor(ThemeData theme) {
+    // Icons on the main background (Dark in dark mode, Cream in light mode)
+    return theme.brightness == Brightness.dark ? highContrastGold : primaryTeal;
+  }
+
+  static Color getInvertedIconColor(ThemeData theme) {
+    // Icons on top of high-contrast gold elements (like search bar/chips)
+    // Always returns Cocoa since the background is Gold in both modes
+    return primaryTeal;
   }
 
   static Color getButtonBorderColor(ThemeData theme) {
