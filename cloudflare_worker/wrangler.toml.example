@@ -10,3 +10,7 @@ ALLOWED_ORIGIN = "http://localhost:5000"
 [[kv_namespaces]]
 binding = "PRODUCTS_KV"
 id = "your_kv_namespace_id"
+
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "sard-product-images"

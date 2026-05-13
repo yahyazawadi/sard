@@ -1,5 +1,6 @@
 export interface Env {
   PRODUCTS_KV: KVNamespace;
+  PRODUCT_IMAGES: R2Bucket;
   CF_ACCOUNT_ID: string;
   CF_IMAGES_API_TOKEN: string;
   CF_IMAGES_ACCOUNT_HASH?: string;
@@ -27,6 +28,8 @@ type PurchaseBody = {
 
 const PRODUCT_INDEX_KEY = 'product_index';
 const LOCAL_ALLOWED_ORIGIN = 'http://localhost:5000';
+const DEFAULT_IMAGE_FOLDER = 'products';
+const IMAGE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -69,9 +72,22 @@ export default {
         request.method === 'POST' &&
         segments.length === 2 &&
         segments[0] === 'images' &&
+        segments[1] === 'upload'
+      ) {
+        return handleImageUpload(request, env);
+      }
+
+      if (
+        request.method === 'POST' &&
+        segments.length === 2 &&
+        segments[0] === 'images' &&
         segments[1] === 'direct-upload'
       ) {
         return handleDirectUpload(request, env);
+      }
+
+      if (request.method === 'GET' && segments.length >= 2 && segments[0] === 'images') {
+        return handleGetImage(request, env, segments.slice(1));
       }
 
       return jsonResponse(request, env, { error: 'Not found' }, 404);
@@ -204,11 +220,68 @@ async function handlePurchase(request: Request, env: Env): Promise<Response> {
   return jsonResponse(request, env, productRecord);
 }
 
+async function handleImageUpload(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const folder = sanitizeFolder(url.searchParams.get('folder')) || DEFAULT_IMAGE_FOLDER;
+  const formData = await request.formData();
+  const file = formData.get('file');
+
+  if (!(file instanceof File)) {
+    throw new HttpError(400, 'Multipart form-data field "file" is required');
+  }
+
+  const sanitizedFilename = sanitizeFilename(file.name || 'upload.bin');
+  const randomPart = crypto.randomUUID().split('-')[0];
+  const objectKey = `${folder}/${Date.now()}-${randomPart}-${sanitizedFilename}`;
+
+  await env.PRODUCT_IMAGES.put(objectKey, await file.arrayBuffer(), {
+    httpMetadata: {
+      contentType: file.type || 'application/octet-stream',
+    },
+  });
+
+  return jsonResponse(request, env, {
+    key: objectKey,
+    url: buildImageUrl(request, objectKey),
+  });
+}
+
+async function handleGetImage(
+  request: Request,
+  env: Env,
+  keySegments: string[],
+): Promise<Response> {
+  const objectKey = keySegments.map((segment) => decodeURIComponent(segment)).join('/');
+
+  if (!objectKey.trim()) {
+    return jsonResponse(request, env, { error: 'Image key is required' }, 400);
+  }
+
+  const object = await env.PRODUCT_IMAGES.get(objectKey);
+  if (!object) {
+    return jsonResponse(request, env, { error: 'Image not found' }, 404);
+  }
+
+  const headers = new Headers(corsHeaders(request, env));
+  headers.set(
+    'Content-Type',
+    object.httpMetadata?.contentType || 'application/octet-stream',
+  );
+  headers.set('Cache-Control', IMAGE_CACHE_CONTROL);
+
+  return new Response(object.body, {
+    status: 200,
+    headers,
+  });
+}
+
 async function handleDirectUpload(request: Request, env: Env): Promise<Response> {
   const payload = await readJsonBody<Record<string, unknown>>(request, {
     allowEmptyObject: true,
   });
 
+  // Prefer the R2-based /images/upload endpoint for the current dashboard flow.
+  // This direct-upload endpoint remains available for Cloudflare Images integrations.
   const response = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/images/v2/direct_upload`,
     {
@@ -230,6 +303,16 @@ async function handleDirectUpload(request: Request, env: Env): Promise<Response>
       'Content-Type': 'application/json',
     },
   });
+}
+
+function buildImageUrl(request: Request, objectKey: string): string {
+  const url = new URL(request.url);
+  const encodedKey = objectKey
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+
+  return `${url.origin}/images/${encodedKey}`;
 }
 
 function productKey(id: string): string {
@@ -271,11 +354,47 @@ async function writeProductIndex(env: Env, ids: string[]): Promise<void> {
   await env.PRODUCTS_KV.put(PRODUCT_INDEX_KEY, JSON.stringify(uniqueIds));
 }
 
+function sanitizeFolder(folder: string | null): string {
+  if (!folder || !folder.trim()) {
+    return DEFAULT_IMAGE_FOLDER;
+  }
+
+  return folder
+    .split('/')
+    .map((segment) => sanitizePathSegment(segment))
+    .filter((segment) => segment.length > 0)
+    .join('/');
+}
+
+function sanitizeFilename(filename: string): string {
+  const trimmed = filename.trim();
+  if (!trimmed) {
+    return 'upload.bin';
+  }
+
+  const sanitized = trimmed
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  return sanitized || 'upload.bin';
+}
+
+function sanitizePathSegment(segment: string): string {
+  const sanitized = segment
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  return sanitized;
+}
+
 function allowedOrigins(env: Env): string[] {
   const configured = env.ALLOWED_ORIGIN?.trim();
   return configured && configured !== LOCAL_ALLOWED_ORIGIN
-      ? [configured, LOCAL_ALLOWED_ORIGIN]
-      : [LOCAL_ALLOWED_ORIGIN];
+    ? [configured, LOCAL_ALLOWED_ORIGIN]
+    : [LOCAL_ALLOWED_ORIGIN];
 }
 
 function resolveAllowedOrigin(request: Request, env: Env): string {

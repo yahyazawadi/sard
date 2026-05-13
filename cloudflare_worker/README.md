@@ -3,12 +3,15 @@
 This Worker sits between the Flutter admin dashboard and Cloudflare services:
 
 - Product JSON is stored in Workers KV through the `PRODUCTS_KV` binding.
-- Image uploads use Cloudflare Images Direct Creator Upload.
+- Product image uploads use Cloudflare R2 through the `PRODUCT_IMAGES` binding.
+- Uploaded image URLs can be stored directly in `main_image`, `image`, and `images`.
+- Cloudflare Images Direct Creator Upload is still available, but the R2 upload endpoint is preferred for the current dashboard flow.
 - The Cloudflare Images API token stays in a Worker secret and is never exposed to Flutter.
 
 ## Files and secrets
 
 - KV binding: `PRODUCTS_KV`
+- R2 binding: `PRODUCT_IMAGES`
 - Worker secret: `CF_IMAGES_API_TOKEN`
 - Worker vars:
   - `CF_ACCOUNT_ID`
@@ -20,11 +23,19 @@ This Worker sits between the Flutter admin dashboard and Cloudflare services:
 1. `npm install`
 2. `npx wrangler login`
 3. `npx wrangler kv namespace create PRODUCTS_KV`
-4. Copy `wrangler.toml.example` to `wrangler.toml` and fill in the KV namespace id from the previous step.
-5. `npx wrangler secret put CF_IMAGES_API_TOKEN`
-6. `npx wrangler dev`
-7. `npx wrangler deploy`
-8. Test endpoints with the `curl` examples below.
+4. `npx wrangler r2 bucket create sard-product-images`
+5. Copy `wrangler.toml.example` to `wrangler.toml` and fill in the KV namespace id. Make sure the R2 binding is present:
+
+```toml
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "sard-product-images"
+```
+
+6. `npx wrangler secret put CF_IMAGES_API_TOKEN`
+7. `npx wrangler dev`
+8. `npx wrangler deploy`
+9. Test endpoints with the `curl` examples below.
 
 ## API behavior
 
@@ -42,8 +53,12 @@ This Worker sits between the Flutter admin dashboard and Cloudflare services:
   Deletes `product:<id>`, removes the id from `product_index`, and returns `{ "ok": true }`.
 - `POST /purchase`
   Accepts `{ "productId": "...", "variantId": "...", "quantity": 1 }`, decrements stock if available, saves the updated product, and returns the updated product JSON.
+- `POST /images/upload`
+  Accepts `multipart/form-data` with a required file field named `file`, stores the upload in R2, and returns a key plus a Worker-served image URL.
+- `GET /images/*`
+  Reads the image object from R2 and serves it back with its saved content type and cache headers.
 - `POST /images/direct-upload`
-  Calls Cloudflare Images Direct Creator Upload with the Worker secret token and returns the Cloudflare API response JSON.
+  Calls Cloudflare Images Direct Creator Upload with the Worker secret token and returns the Cloudflare API response JSON. Keep this only if you still want Cloudflare Images integration; for this dashboard, `/images/upload` is preferred.
 
 ## Local curl examples
 
@@ -178,9 +193,24 @@ curl -X POST http://127.0.0.1:8787/images/direct-upload \
   }'
 ```
 
+Upload a product image to R2:
+
+```bash
+curl.exe -X POST "https://sard-products-api.s12219814.workers.dev/images/upload" -F "file=@C:\path\to\image.jpg"
+```
+
+Upload to a custom folder:
+
+```bash
+curl -X POST "http://127.0.0.1:8787/images/upload?folder=variants" \
+  -H "Origin: http://localhost:5000" \
+  -F "file=@C:\path\to\image.jpg"
+```
+
 ## Notes
 
 - Do not put Cloudflare API tokens into Flutter or commit them into source files.
 - The Worker reads the Images token from the `CF_IMAGES_API_TOKEN` secret.
-- The current image flow is URL-based from Flutter. The Worker only creates Cloudflare direct-upload sessions and does not upload the image bytes itself.
+- The returned `url` from `/images/upload` should be saved into product `main_image`, variant `image`, or variant `images` fields.
+- The current Flutter image flow remains URL-based. The Worker uploads the file to R2 and returns a URL that Flutter can store and reuse.
 - Inventory writes use Workers KV for now. KV is eventually consistent, so high-concurrency stock protection should move to Durable Objects later.
