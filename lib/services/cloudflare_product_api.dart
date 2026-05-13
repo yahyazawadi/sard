@@ -7,7 +7,9 @@ import '../models/admin_product_model.dart';
 class CloudflareProductApi {
   final String baseUrl;
 
-  CloudflareProductApi({this.baseUrl = 'http://127.0.0.1:8787'});
+  CloudflareProductApi({
+    this.baseUrl = 'https://sard-products-api.s12219814.workers.dev',
+  });
 
   Future<List<AdminProductModel>> getProducts() async {
     final response = await http.get(
@@ -81,6 +83,41 @@ class CloudflareProductApi {
     final decoded = _decodeResponse(response);
 
     return AdminProductModel.fromJson(Map<String, dynamic>.from(decoded as Map));
+  }
+
+  Future<String> uploadImageBytes({
+    required List<int> bytes,
+    required String filename,
+    String folder = 'products',
+    String? contentType,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      _uri('/images/upload').replace(queryParameters: {'folder': folder}),
+    );
+
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: filename,
+      ),
+    );
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    final decoded = _decodeResponse(response);
+
+    if (decoded is! Map<String, dynamic>) {
+      throw Exception('Invalid image upload response format');
+    }
+
+    final uploadedUrl = decoded['url'];
+    if (uploadedUrl is! String || uploadedUrl.trim().isEmpty) {
+      throw Exception('Image upload response did not include a valid url');
+    }
+
+    return uploadedUrl;
   }
 
   Uri _uri(String path) {

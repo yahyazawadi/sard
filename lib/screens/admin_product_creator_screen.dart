@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/admin_product_model.dart';
+import '../services/cloudflare_product_api.dart';
 import '../utils/admin_id_generator.dart';
 import '../widgets/admin_shared_widgets.dart';
 
@@ -16,6 +18,8 @@ class AdminProductCreatorScreen extends StatefulWidget {
 
 class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   final formKey = GlobalKey<FormState>();
+  final ImagePicker imagePicker = ImagePicker();
+  final CloudflareProductApi imageApi = CloudflareProductApi();
 
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
@@ -32,6 +36,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   bool isDietFriendly = false;
   bool isCustomizable = false;
   bool isNewArrival = false;
+  bool isUploadingImage = false;
 
   final List<AdminOptionInput> optionInputs = [];
   final List<AdminVariantInput> variantInputs = [];
@@ -174,6 +179,43 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<String?> pickAndUploadImage({String folder = 'products'}) async {
+    try {
+      final pickedFile = await imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
+
+      if (pickedFile == null) {
+        return null;
+      }
+
+      if (mounted) {
+        setState(() {
+          isUploadingImage = true;
+        });
+      }
+
+      final bytes = await pickedFile.readAsBytes();
+
+      return await imageApi.uploadImageBytes(
+        bytes: bytes,
+        filename: pickedFile.name,
+        folder: folder,
+      );
+    } catch (error) {
+      if (mounted) {
+        showMessage('Image upload failed: $error');
+      }
+      return null;
+    } finally {
+      if (mounted) {
+        setState(() {
+          isUploadingImage = false;
+        });
+      }
+    }
   }
 
   List<AdminProductOption> getOptions() {
@@ -528,6 +570,30 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FilledButton.icon(
+                      onPressed: isUploadingImage
+                          ? null
+                          : () async {
+                              final imageUrl = await pickAndUploadImage(
+                                folder: 'products/main',
+                              );
+
+                              if (imageUrl != null && mounted) {
+                                mainImageController.text = imageUrl;
+                                setState(() {});
+                              }
+                            },
+                      icon: const Icon(Icons.upload_file_outlined),
+                      label: Text(
+                        isUploadingImage
+                            ? 'Uploading...'
+                            : 'Upload Main Image',
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: caloriesController,
@@ -708,6 +774,30 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: FilledButton.icon(
+                              onPressed: isUploadingImage
+                                  ? null
+                                  : () async {
+                                      final imageUrl = await pickAndUploadImage(
+                                        folder: 'products/variants',
+                                      );
+
+                                      if (imageUrl != null && mounted) {
+                                        variant.imageController.text = imageUrl;
+                                        setState(() {});
+                                      }
+                                    },
+                              icon: const Icon(Icons.upload_file_outlined),
+                              label: Text(
+                                isUploadingImage
+                                    ? 'Uploading...'
+                                    : 'Upload Variant Main Image',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
                           TextFormField(
                             controller: variant.imagesController,
                             maxLines: 3,
@@ -715,6 +805,38 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                               labelText: 'Additional Variant Image URLs',
                               hintText:
                                   'Separate multiple image URLs with commas',
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: FilledButton.icon(
+                              onPressed: isUploadingImage
+                                  ? null
+                                  : () async {
+                                      final imageUrl = await pickAndUploadImage(
+                                        folder: 'products/variants/gallery',
+                                      );
+
+                                      if (imageUrl != null && mounted) {
+                                        final currentValue = variant
+                                            .imagesController
+                                            .text
+                                            .trim();
+
+                                        variant.imagesController.text =
+                                            currentValue.isEmpty
+                                            ? imageUrl
+                                            : '$currentValue, $imageUrl';
+                                        setState(() {});
+                                      }
+                                    },
+                              icon: const Icon(Icons.add_photo_alternate_outlined),
+                              label: Text(
+                                isUploadingImage
+                                    ? 'Uploading...'
+                                    : 'Upload Additional Variant Image',
+                              ),
                             ),
                           ),
                         ],
