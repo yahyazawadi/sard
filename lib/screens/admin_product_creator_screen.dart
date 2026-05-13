@@ -33,6 +33,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   final bulkWhiteRatioController = TextEditingController(text: '0.34');
 
   String? selectedCategory;
+  final categoryController = TextEditingController();
   bool isDietFriendly = false;
   bool isCustomizable = false;
   bool isNewArrival = false;
@@ -71,6 +72,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     caloriesController.text = product.metadata.caloriesPer100g.toString();
 
     selectedCategory = product.category;
+    categoryController.text = selectedCategory ?? '';
     isDietFriendly = product.isDietFriendly;
     isCustomizable = product.isCustomizable;
     isNewArrival = product.metadata.isNewArrival;
@@ -130,6 +132,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   void dispose() {
     titleController.dispose();
     descriptionController.dispose();
+    categoryController.dispose();
     mainImageController.dispose();
     caloriesController.dispose();
     bulkPriceController.dispose();
@@ -524,25 +527,82 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                     },
                   ),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    value: selectedCategory,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    items: categories.map((category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Category is required';
+                  Autocomplete<String>(
+                    initialValue: TextEditingValue(text: selectedCategory ?? ''),
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return categories;
                       }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCategory = value;
+                      return categories.where((String option) {
+                        return option.toLowerCase().contains(
+                              textEditingValue.text.toLowerCase(),
+                            );
                       });
+                    },
+                    onSelected: (String selection) {
+                      setState(() {
+                        selectedCategory = selection;
+                        categoryController.text = selection;
+                      });
+                    },
+                    fieldViewBuilder: (
+                      context,
+                      fieldTextEditingController,
+                      focusNode,
+                      onFieldSubmitted,
+                    ) {
+                      return TextFormField(
+                        controller: fieldTextEditingController,
+                        focusNode: focusNode,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                          hintText: 'Select or type a category',
+                          suffixIcon: Icon(Icons.arrow_drop_down),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCategory = value;
+                            categoryController.text = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Category is required';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                    optionsViewBuilder: (context, onSelected, options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4.0,
+                          borderRadius: BorderRadius.circular(12),
+                          clipBehavior: Clip.antiAlias,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width - 76,
+                            constraints: const BoxConstraints(maxHeight: 250),
+                            color: Colors.white,
+                            child: ListView.separated(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(height: 1, indent: 16),
+                              itemBuilder: (BuildContext context, int index) {
+                                final String option = options.elementAt(index);
+                                return ListTile(
+                                  title: Text(option),
+                                  onTap: () => onSelected(option),
+                                  hoverColor:
+                                      Colors.brown.withOpacity(0.05),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 14),
