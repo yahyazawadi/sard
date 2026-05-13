@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Cloudflare Worker local/generated files
+cloudflare_worker/node_modules/
+cloudflare_worker/.wrangler/
+cloudflare_worker/wrangler.toml
+
+# Local API test payloads
+test-product.json
+purchase.json

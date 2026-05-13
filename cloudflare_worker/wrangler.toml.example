@@ -1,0 +1,12 @@
+name = "sard-products-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-13"
+
+[vars]
+CF_ACCOUNT_ID = "your_account_id"
+CF_IMAGES_ACCOUNT_HASH = "your_images_account_hash"
+ALLOWED_ORIGIN = "http://localhost:5000"
+
+[[kv_namespaces]]
+binding = "PRODUCTS_KV"
+id = "your_kv_namespace_id"
