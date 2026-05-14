@@ -22,7 +22,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   final CloudflareProductApi imageApi = CloudflareProductApi();
 
   final titleController = TextEditingController();
-  final descriptionController = TextEditingController();
+  final descriptionArController = TextEditingController();
+  final descriptionEnController = TextEditingController();
   final mainImageController = TextEditingController();
   final caloriesController = TextEditingController(text: '0');
   final bulkPriceController = TextEditingController(text: '0');
@@ -67,7 +68,10 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     }
 
     titleController.text = product.title;
-    descriptionController.text = product.description;
+    descriptionArController.text = product.descriptionAr;
+    descriptionEnController.text = product.descriptionEn.isNotEmpty
+        ? product.descriptionEn
+        : product.description;
     mainImageController.text = product.mainImage;
     caloriesController.text = product.metadata.caloriesPer100g.toString();
 
@@ -131,7 +135,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   @override
   void dispose() {
     titleController.dispose();
-    descriptionController.dispose();
+    descriptionArController.dispose();
+    descriptionEnController.dispose();
     categoryController.dispose();
     mainImageController.dispose();
     caloriesController.dispose();
@@ -470,7 +475,9 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       id: widget.existingProduct?.id ?? generateAdminId(),
       title: titleController.text.trim(),
       category: category,
-      description: descriptionController.text.trim(),
+      description: descriptionEnController.text.trim(),
+      descriptionAr: descriptionArController.text.trim(),
+      descriptionEn: descriptionEnController.text.trim(),
       mainImage: mainImageController.text.trim(),
       isDietFriendly: isDietFriendly,
       isCustomizable: isCustomizable,
@@ -607,12 +614,28 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
-                    controller: descriptionController,
+                    controller: descriptionArController,
                     maxLines: 4,
-                    decoration: const InputDecoration(labelText: 'Description'),
+                    decoration: const InputDecoration(
+                      labelText: 'Arabic Description',
+                    ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Description is required';
+                        return 'Arabic description is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: descriptionEnController,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      labelText: 'English Description',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'English description is required';
                       }
                       return null;
                     },

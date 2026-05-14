@@ -138,6 +138,8 @@ class AdminProductModel {
   final String title;
   final String category;
   final String description;
+  final String descriptionAr;
+  final String descriptionEn;
   final String mainImage;
   final bool isDietFriendly;
   final bool isCustomizable;
@@ -151,6 +153,8 @@ class AdminProductModel {
     required this.title,
     required this.category,
     required this.description,
+    required this.descriptionAr,
+    required this.descriptionEn,
     required this.mainImage,
     required this.isDietFriendly,
     required this.isCustomizable,
@@ -166,7 +170,9 @@ class AdminProductModel {
         'id': id,
         'title': title,
         'category': category,
-        'description': description,
+        'description': descriptionEn,
+        'description_ar': descriptionAr,
+        'description_en': descriptionEn,
         'main_image': mainImage,
         'is_diet_friendly': isDietFriendly,
         'is_customizable': isCustomizable,
@@ -182,12 +188,15 @@ class AdminProductModel {
     final productJson = json.containsKey('product')
         ? Map<String, dynamic>.from(json['product'])
         : json;
+    final oldDescription = productJson['description'] ?? '';
 
     return AdminProductModel(
       id: productJson['id'] ?? '',
       title: productJson['title'] ?? '',
       category: productJson['category'] ?? '',
-      description: productJson['description'] ?? '',
+      description: productJson['description'] ?? productJson['description_en'] ?? '',
+      descriptionAr: productJson['description_ar'] ?? '',
+      descriptionEn: productJson['description_en'] ?? oldDescription,
       mainImage: productJson['main_image'] ?? '',
       isDietFriendly: productJson['is_diet_friendly'] ?? false,
       isCustomizable: productJson['is_customizable'] ?? false,
