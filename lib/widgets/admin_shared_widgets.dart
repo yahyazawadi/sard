@@ -25,7 +25,7 @@ class AdminMetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.08),
+            color: Colors.brown.withValues(alpha: 0.08),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -88,7 +88,7 @@ class AdminSectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withOpacity(0.06),
+            color: Colors.brown.withValues(alpha: 0.06),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -108,7 +108,7 @@ class AdminSectionCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (trailing != null) trailing!,
+              trailing ?? const SizedBox.shrink(),
             ],
           ),
           const SizedBox(height: 16),
@@ -148,14 +148,14 @@ class AdminJsonDialog extends StatelessWidget {
 class AdminProductCard extends StatelessWidget {
   final AdminProductModel product;
   final void Function(AdminProductModel product, AdminProductVariant variant)
-  onPurchase;
+  onEditVariant;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
   const AdminProductCard({
     super.key,
     required this.product,
-    required this.onPurchase,
+    required this.onEditVariant,
     required this.onDelete,
     required this.onEdit,
   });
@@ -170,7 +170,23 @@ class AdminProductCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
       ),
       child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
+        leading: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFF1DBBC),
+            image: product.mainImage.isNotEmpty
+                ? DecorationImage(
+                    image: NetworkImage(product.mainImage),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          child: product.mainImage.isEmpty
+              ? const Icon(Icons.image_not_supported_outlined, color: Color(0xFF5B301F))
+              : null,
+        ),
         title: Text(
           product.title,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -190,14 +206,37 @@ class AdminProductCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                      image: variant.image != null && variant.image!.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(variant.image!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: variant.image == null || variant.image!.isEmpty
+                        ? const Icon(Icons.image_outlined, size: 20, color: Color(0xFF5B301F))
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Text(
                       '${variant.title}\nPrice: ${variant.price} | Weight: ${variant.weightG}g | Stock: ${variant.stockQuantity}',
                     ),
                   ),
-                  FilledButton(
-                    onPressed: () => onPurchase(product, variant),
-                    child: const Text('Purchase'),
+                  OutlinedButton.icon(
+                    onPressed: () => onEditVariant(product, variant),
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: const Text('Edit'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF5B301F),
+                      side: const BorderSide(color: Color(0xFF5B301F)),
+                    ),
                   ),
                 ],
               ),

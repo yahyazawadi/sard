@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:url_launcher/url_launcher.dart';
 import '../models/admin_product_model.dart';
 import '../services/cloudflare_product_api.dart';
 import '../utils/admin_id_generator.dart';
@@ -26,12 +28,9 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   final descriptionEnController = TextEditingController();
   final mainImageController = TextEditingController();
   final caloriesController = TextEditingController(text: '0');
-  final bulkPriceController = TextEditingController(text: '0');
-  final bulkMinWeightController = TextEditingController(text: '500');
+  final List<AdminBulkBoxInput> bulkBoxInputs = [];
   final bulkTemplateNameController = TextEditingController();
-  final bulkDarkRatioController = TextEditingController(text: '0.33');
-  final bulkMilkRatioController = TextEditingController(text: '0.33');
-  final bulkWhiteRatioController = TextEditingController(text: '0.34');
+  final List<AdminMixItemInput> mixItemInputs = [];
 
   String? selectedCategory;
   final categoryController = TextEditingController();
@@ -42,6 +41,11 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
   final List<AdminOptionInput> optionInputs = [];
   final List<AdminVariantInput> variantInputs = [];
+
+  // Bulk defaults for generated variants
+  final defaultPriceController = TextEditingController(text: '0');
+  final defaultWeightController = TextEditingController(text: '0');
+  final defaultStockController = TextEditingController(text: '0');
 
   final categories = const [
     'dates',
@@ -63,6 +67,9 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
     if (product == null) {
       bulkTemplateNameController.text = '1/3 Mix Template';
+      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Small Box'..weightController.text = '500'..priceController.text = '50');
+      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Medium Box'..weightController.text = '1000'..priceController.text = '90');
+      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Large Box'..weightController.text = '2000'..priceController.text = '160');
       optionInputs.add(AdminOptionInput());
       return;
     }
@@ -83,8 +90,14 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
     final bulkConfig = product.bulkConfig;
     if (bulkConfig != null) {
-      bulkPriceController.text = bulkConfig.pricePerKg.toString();
-      bulkMinWeightController.text = bulkConfig.minOrderWeightG.toString();
+      for (final box in bulkConfig.boxes) {
+        bulkBoxInputs.add(
+          AdminBulkBoxInput()
+            ..nameController.text = box.title
+            ..weightController.text = box.weightG.toString()
+            ..priceController.text = box.price.toString()
+        );
+      }
 
       if (bulkConfig.preMadeTemplates.isNotEmpty) {
         final template = bulkConfig.preMadeTemplates.first;
@@ -93,11 +106,52 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
         );
 
         bulkTemplateNameController.text = template['name']?.toString() ?? '';
-        bulkDarkRatioController.text = (partitions['dark'] ?? 0.33).toString();
-        bulkMilkRatioController.text = (partitions['milk'] ?? 0.33).toString();
-        bulkWhiteRatioController.text = (partitions['white'] ?? 0.34)
-            .toString();
+        
+        partitions.forEach((key, value) {
+          double ratio = 0;
+          List<AdminMixSubItemInput> parsedItems = [];
+          
+          if (value is num) {
+            ratio = value.toDouble();
+          } else if (value is Map) {
+            ratio = (value['ratio'] as num?)?.toDouble() ?? 0;
+            if (value['items'] != null) {
+              final itemsList = value['items'] as List<dynamic>;
+              for (final item in itemsList) {
+                if (item is Map) {
+                  parsedItems.add(
+                    AdminMixSubItemInput()
+                      ..nameController.text = item['name']?.toString() ?? ''
+                      ..imageController.text = item['image']?.toString() ?? ''
+                  );
+                }
+              }
+            } else if (value['images'] != null) {
+              final imagesList = List<String>.from(value['images'] ?? []);
+              for (final img in imagesList) {
+                parsedItems.add(AdminMixSubItemInput()..imageController.text = img);
+              }
+            }
+          }
+
+          mixItemInputs.add(
+            AdminMixItemInput()
+              ..nameController.text = key
+              ..ratioController.text = ratio.toString()
+              ..items.addAll(parsedItems),
+          );
+        });
       }
+    }
+
+    if (mixItemInputs.isEmpty) {
+      mixItemInputs.add(AdminMixItemInput()..nameController.text = 'dark'..ratioController.text = '0.33');
+      mixItemInputs.add(AdminMixItemInput()..nameController.text = 'milk'..ratioController.text = '0.33');
+      mixItemInputs.add(AdminMixItemInput()..nameController.text = 'white'..ratioController.text = '0.34');
+    }
+
+    if (bulkBoxInputs.isEmpty) {
+      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Small Box'..weightController.text = '500'..priceController.text = '50');
     }
 
     if (bulkTemplateNameController.text.trim().isEmpty) {
@@ -140,12 +194,13 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     categoryController.dispose();
     mainImageController.dispose();
     caloriesController.dispose();
-    bulkPriceController.dispose();
-    bulkMinWeightController.dispose();
     bulkTemplateNameController.dispose();
-    bulkDarkRatioController.dispose();
-    bulkMilkRatioController.dispose();
-    bulkWhiteRatioController.dispose();
+    for (final box in bulkBoxInputs) {
+      box.dispose();
+    }
+    for (final mix in mixItemInputs) {
+      mix.dispose();
+    }
 
     for (final option in optionInputs) {
       option.dispose();
@@ -154,6 +209,10 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     for (final variant in variantInputs) {
       variant.dispose();
     }
+
+    defaultPriceController.dispose();
+    defaultWeightController.dispose();
+    defaultStockController.dispose();
 
     super.dispose();
   }
@@ -226,6 +285,55 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     }
   }
 
+  Future<void> pickAndUploadMultipleImages({
+    required AdminMixItemInput targetMix,
+    String folder = 'products',
+  }) async {
+    try {
+      final pickedFiles = await imagePicker.pickMultiImage();
+
+      if (pickedFiles.isEmpty) {
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          isUploadingImage = true;
+        });
+      }
+
+      for (final pickedFile in pickedFiles) {
+        final bytes = await pickedFile.readAsBytes();
+        final url = await imageApi.uploadImageBytes(
+          bytes: bytes,
+          filename: pickedFile.name,
+          folder: folder,
+        );
+        if (mounted) {
+          targetMix.items.add(AdminMixSubItemInput()..imageController.text = url);
+          setState(() {});
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        showMessage('Image upload failed: $error');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isUploadingImage = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _downloadImage(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (mounted) showMessage('Could not open image: $urlString');
+    }
+  }
+
   List<AdminProductOption> getOptions() {
     return optionInputs
         .map((input) {
@@ -278,9 +386,38 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     return keys.map((key) => '$key=${attributes[key]}').join('|');
   }
 
+  void addMixItem() {
+    setState(() {
+      mixItemInputs.add(AdminMixItemInput());
+    });
+  }
+
+  void removeMixItem(int index) {
+    setState(() {
+      mixItemInputs[index].dispose();
+      mixItemInputs.removeAt(index);
+    });
+  }
+
   void addOption() {
     setState(() {
       optionInputs.add(AdminOptionInput());
+    });
+  }
+
+  void addStandardChocolateTemplate() {
+    setState(() {
+      optionInputs.clear();
+      optionInputs.add(
+        AdminOptionInput()
+          ..nameController.text = 'Size'
+          ..valuesController.text = 'Small, Medium, Large',
+      );
+      optionInputs.add(
+        AdminOptionInput()
+          ..nameController.text = 'Flavor'
+          ..valuesController.text = 'Milk, Dark, White',
+      );
     });
   }
 
@@ -322,14 +459,18 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       final key = getVariantKey(title: generatedTitle, attributes: combination);
       final draft = existingDrafts[key];
 
+      final dPrice = defaultPriceController.text.trim();
+      final dWeight = defaultWeightController.text.trim();
+      final dStock = defaultStockController.text.trim();
+
       variantInputs.add(
         _buildVariantInput(
           existingId: draft?.existingId,
           title: generatedTitle,
           attributes: combination,
-          price: draft?.price ?? '',
-          weight: draft?.weight ?? '',
-          stock: draft?.stock ?? '0',
+          price: (draft?.price.isNotEmpty ?? false) ? draft!.price : dPrice,
+          weight: (draft?.weight.isNotEmpty ?? false) ? draft!.weight : dWeight,
+          stock: (draft?.stock.isNotEmpty ?? false) ? draft!.stock : dStock,
           image: draft?.image ?? '',
           images: draft?.images ?? '',
         ),
@@ -340,6 +481,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   }
 
   bool validateVariants() {
+    if (selectedCategory == 'bulk') return true;
+
     if (variantInputs.isEmpty) {
       showMessage('Generate variants before saving');
       return false;
@@ -374,21 +517,38 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       return true;
     }
 
-    final pricePerKg = double.tryParse(bulkPriceController.text.trim());
-    final minWeight = double.tryParse(bulkMinWeightController.text.trim());
-    final templateName = bulkTemplateNameController.text.trim();
-    final dark = double.tryParse(bulkDarkRatioController.text.trim());
-    final milk = double.tryParse(bulkMilkRatioController.text.trim());
-    final white = double.tryParse(bulkWhiteRatioController.text.trim());
-
-    if (pricePerKg == null || pricePerKg <= 0) {
-      showMessage('Bulk products need a valid price per KG');
+    if (bulkBoxInputs.isEmpty) {
+      showMessage('Bulk products need at least one box size');
       return false;
     }
 
-    if (minWeight == null || minWeight <= 0) {
-      showMessage('Bulk products need a valid minimum order weight');
-      return false;
+    for (final box in bulkBoxInputs) {
+      if (box.nameController.text.trim().isEmpty) {
+        showMessage('All boxes must have a name');
+        return false;
+      }
+      final price = double.tryParse(box.priceController.text.trim());
+      if (price == null || price <= 0) {
+        showMessage('All boxes must have a valid price');
+        return false;
+      }
+      final weight = double.tryParse(box.weightController.text.trim());
+      if (weight == null || weight <= 0) {
+        showMessage('All boxes must have a valid weight');
+        return false;
+      }
+    }
+
+    final templateName = bulkTemplateNameController.text.trim();
+    
+    double total = 0;
+    for (final mix in mixItemInputs) {
+      final ratio = double.tryParse(mix.ratioController.text.trim());
+      if (ratio == null || ratio < 0) {
+        showMessage('All mix ratios must be valid positive numbers');
+        return false;
+      }
+      total += ratio;
     }
 
     if (templateName.isEmpty) {
@@ -396,17 +556,6 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       return false;
     }
 
-    if (dark == null || milk == null || white == null) {
-      showMessage('Bulk template ratios must be valid numbers');
-      return false;
-    }
-
-    if (dark < 0 || milk < 0 || white < 0) {
-      showMessage('Bulk template ratios cannot be negative');
-      return false;
-    }
-
-    final total = dark + milk + white;
     if ((total - 1.0).abs() > 0.01) {
       showMessage(
         'Bulk template ratios must add up to 1.0. Current total: ${total.toStringAsFixed(2)}',
@@ -456,15 +605,23 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
     final bulkConfig = needsBulkConfig
         ? AdminBulkConfig(
-            pricePerKg: double.parse(bulkPriceController.text.trim()),
-            minOrderWeightG: double.parse(bulkMinWeightController.text.trim()),
+            boxes: bulkBoxInputs.map((box) => AdminBulkBox(
+              title: box.nameController.text.trim(),
+              weightG: double.parse(box.weightController.text.trim()),
+              price: double.parse(box.priceController.text.trim()),
+            )).toList(),
             preMadeTemplates: [
               {
                 'name': bulkTemplateNameController.text.trim(),
                 'partitions': {
-                  'dark': double.parse(bulkDarkRatioController.text.trim()),
-                  'milk': double.parse(bulkMilkRatioController.text.trim()),
-                  'white': double.parse(bulkWhiteRatioController.text.trim()),
+                   for (final mix in mixItemInputs)
+                     mix.nameController.text.trim().toLowerCase(): {
+                        'ratio': double.parse(mix.ratioController.text.trim()),
+                        'items': mix.items.map((subItem) => {
+                          'name': subItem.nameController.text.trim(),
+                          'image': subItem.imageController.text.trim(),
+                        }).where((item) => (item['image'] as String).isNotEmpty).toList(),
+                     }
                 },
               },
             ],
@@ -481,8 +638,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       mainImage: mainImageController.text.trim(),
       isDietFriendly: isDietFriendly,
       isCustomizable: isCustomizable,
-      options: options,
-      variants: variants,
+      options: selectedCategory == 'bulk' ? [] : options,
+      variants: selectedCategory == 'bulk' ? [] : variants,
       bulkConfig: bulkConfig,
       metadata: AdminProductMetadata(
         isNewArrival: isNewArrival,
@@ -603,7 +760,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                   title: Text(option),
                                   onTap: () => onSelected(option),
                                   hoverColor:
-                                      Colors.brown.withOpacity(0.05),
+                                      Colors.brown.withValues(alpha: 0.05),
                                 );
                               },
                             ),
@@ -654,27 +811,74 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                  if (mainImageController.text.trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              mainImageController.text.trim(),
+                              height: 250,
+                              width: double.infinity,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Center(child: Text('Invalid Image URL')),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: IconButton.filled(
+                              onPressed: () => _downloadImage(mainImageController.text.trim()),
+                              icon: const Icon(Icons.download_for_offline_outlined),
+                              tooltip: 'Download/View Full Image',
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.black54,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: FilledButton.icon(
-                      onPressed: isUploadingImage
-                          ? null
-                          : () async {
-                              final imageUrl = await pickAndUploadImage(
-                                folder: 'products/main',
-                              );
+                    child: Row(
+                      children: [
+                        FilledButton.icon(
+                          onPressed: isUploadingImage
+                              ? null
+                              : () async {
+                                  final imageUrl = await pickAndUploadImage(
+                                    folder: 'products/main',
+                                  );
 
-                              if (imageUrl != null && mounted) {
-                                mainImageController.text = imageUrl;
-                                setState(() {});
-                              }
+                                  if (imageUrl != null && mounted) {
+                                    mainImageController.text = imageUrl;
+                                    setState(() {});
+                                  }
+                                },
+                          icon: const Icon(Icons.upload_file_outlined),
+                          label: Text(
+                            isUploadingImage
+                                ? 'Uploading...'
+                                : 'Upload Main Image',
+                          ),
+                        ),
+                        if (mainImageController.text.trim().isNotEmpty) ...[
+                          const SizedBox(width: 10),
+                          OutlinedButton(
+                            onPressed: () {
+                              mainImageController.clear();
+                              setState(() {});
                             },
-                      icon: const Icon(Icons.upload_file_outlined),
-                      label: Text(
-                        isUploadingImage
-                            ? 'Uploading...'
-                            : 'Upload Main Image',
-                      ),
+                            child: const Text('Clear'),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -716,9 +920,10 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 18),
-            AdminSectionCard(
-              title: 'Options',
+            if (selectedCategory != 'bulk') ...[
+              const SizedBox(height: 18),
+              AdminSectionCard(
+                title: 'Options',
               trailing: OutlinedButton.icon(
                 onPressed: addOption,
                 icon: const Icon(Icons.add),
@@ -775,13 +980,58 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                       ),
                     );
                   }),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: generateVariants,
-                      icon: const Icon(Icons.auto_awesome_motion_outlined),
-                      label: const Text('Generate Variants'),
-                    ),
+                  const Divider(height: 32),
+                  const Text(
+                    'Bulk Defaults for Generated Variants',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: defaultPriceController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Base Price'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: defaultWeightController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Base Weight (g)'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: defaultStockController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'Base Stock'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: addStandardChocolateTemplate,
+                          icon: const Icon(Icons.style_outlined),
+                          label: const Text('Standard Template (3x3)'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: generateVariants,
+                          icon: const Icon(Icons.auto_awesome_motion_outlined),
+                          label: const Text('Generate 9 Variants'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -857,27 +1107,74 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
+                           const SizedBox(height: 10),
+                          if (variant.imageController.text.trim().isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      variant.imageController.text.trim(),
+                                      height: 200,
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          const Center(child: Text('Invalid Image URL')),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: IconButton.filled(
+                                      onPressed: () => _downloadImage(variant.imageController.text.trim()),
+                                      icon: const Icon(Icons.download_for_offline_outlined),
+                                      tooltip: 'Download/View Full Image',
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: Colors.black54,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: FilledButton.icon(
-                              onPressed: isUploadingImage
-                                  ? null
-                                  : () async {
-                                      final imageUrl = await pickAndUploadImage(
-                                        folder: 'products/variants',
-                                      );
+                            child: Row(
+                              children: [
+                                FilledButton.icon(
+                                  onPressed: isUploadingImage
+                                      ? null
+                                      : () async {
+                                          final imageUrl = await pickAndUploadImage(
+                                            folder: 'products/variants',
+                                          );
 
-                                      if (imageUrl != null && mounted) {
-                                        variant.imageController.text = imageUrl;
-                                        setState(() {});
-                                      }
+                                          if (imageUrl != null && mounted) {
+                                            variant.imageController.text = imageUrl;
+                                            setState(() {});
+                                          }
+                                        },
+                                  icon: const Icon(Icons.upload_file_outlined),
+                                  label: Text(
+                                    isUploadingImage
+                                        ? 'Uploading...'
+                                        : 'Upload Variant Main Image',
+                                  ),
+                                ),
+                                if (variant.imageController.text.trim().isNotEmpty) ...[
+                                  const SizedBox(width: 10),
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      variant.imageController.clear();
+                                      setState(() {});
                                     },
-                              icon: const Icon(Icons.upload_file_outlined),
-                              label: Text(
-                                isUploadingImage
-                                    ? 'Uploading...'
-                                    : 'Upload Variant Main Image',
-                              ),
+                                    child: const Text('Clear'),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -891,6 +1188,76 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
+                           const SizedBox(height: 10),
+                          if (variant.imagesController.text.trim().isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: variant.imagesController.text
+                                    .split(',')
+                                    .map((url) => url.trim())
+                                    .where((url) => url.isNotEmpty)
+                                    .map((url) => Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Image.network(
+                                                url,
+                                                height: 100,
+                                                width: 100,
+                                                fit: BoxFit.contain,
+                                                errorBuilder: (c, e, s) => Container(
+                                                  height: 100,
+                                                  width: 100,
+                                                  color: Colors.grey.shade200,
+                                                  child: const Icon(Icons.error_outline),
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: -4,
+                                              right: -4,
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  InkWell(
+                                                    onTap: () => _downloadImage(url),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(2),
+                                                      decoration: const BoxDecoration(
+                                                        color: Colors.blueAccent,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: const Icon(Icons.download, size: 12, color: Colors.white),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  InkWell(
+                                                    onTap: () {
+                                                       final urls = variant.imagesController.text.split(',').map((u) => u.trim()).toList();
+                                                       urls.remove(url);
+                                                       variant.imagesController.text = urls.join(', ');
+                                                       setState(() {});
+                                                    },
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(2),
+                                                      decoration: const BoxDecoration(
+                                                        color: Colors.black54,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ))
+                                    .toList(),
+                              ),
+                            ),
                           Align(
                             alignment: Alignment.centerLeft,
                             child: FilledButton.icon(
@@ -928,66 +1295,310 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                   }).toList(),
                 ),
               ),
+            ],
             if (needsBulkConfig) ...[
               const SizedBox(height: 18),
               AdminSectionCard(
-                title: 'Bulk Configuration',
+                title: 'Bulk Box Configuration',
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextFormField(
-                      controller: bulkPriceController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: 'Price Per KG',
-                      ),
+                    ...bulkBoxInputs.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final box = entry.value;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: TextFormField(
+                                controller: box.nameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Box Name',
+                                  hintText: 'e.g., Small Box',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: box.weightController,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                decoration: const InputDecoration(
+                                  labelText: 'Weight (G)',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: box.priceController,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                decoration: const InputDecoration(
+                                  labelText: 'Price',
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  bulkBoxInputs.removeAt(index);
+                                });
+                              },
+                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                              tooltip: 'Remove Box',
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          bulkBoxInputs.add(AdminBulkBoxInput());
+                        });
+                      },
+                      icon: const Icon(Icons.add_box_outlined),
+                      label: const Text('Add Box Size'),
                     ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: bulkMinWeightController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: 'Minimum Order Weight G',
-                      ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Divider(),
                     ),
-                    const SizedBox(height: 14),
+                    const Text(
+                      'Default Mix Template',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: bulkTemplateNameController,
                       decoration: const InputDecoration(
                         labelText: 'Template Name',
+                        hintText: 'e.g., Signature Mix, Dark Lovers...',
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: bulkDarkRatioController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.brown.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.brown.withValues(alpha: 0.1)),
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Dark Chocolate Ratio',
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: bulkMilkRatioController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: 'Milk Chocolate Ratio',
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: bulkWhiteRatioController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: 'White Chocolate Ratio',
+                      child: Column(
+                        children: [
+                          ...mixItemInputs.asMap().entries.map((entry) {
+                             final index = entry.key;
+                             final mix = entry.value;
+                             return Padding(
+                               padding: const EdgeInsets.only(bottom: 24),
+                               child: Column(
+                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                 children: [
+                                   Row(
+                                     children: [
+                                       Expanded(
+                                         flex: 2,
+                                         child: TextFormField(
+                                           controller: mix.nameController,
+                                           decoration: const InputDecoration(
+                                             labelText: 'Type Name',
+                                             hintText: 'e.g. Dark',
+                                           ),
+                                         ),
+                                       ),
+                                       const SizedBox(width: 12),
+                                       Expanded(
+                                         flex: 1,
+                                         child: TextFormField(
+                                           controller: mix.ratioController,
+                                           onChanged: (_) => setState(() {}),
+                                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                           decoration: const InputDecoration(
+                                             labelText: 'Ratio (0.0-1.0)',
+                                             hintText: '0.33',
+                                           ),
+                                         ),
+                                       ),
+                                       if (mixItemInputs.length > 1)
+                                          IconButton(
+                                            onPressed: () => removeMixItem(index),
+                                            icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
+                                          ),
+                                     ],
+                                   ),
+                                   const SizedBox(height: 12),
+                                   Container(
+                                     padding: const EdgeInsets.all(12),
+                                     decoration: BoxDecoration(
+                                       color: Colors.white.withValues(alpha: 0.5),
+                                       borderRadius: BorderRadius.circular(8),
+                                       border: Border.all(color: Colors.grey.shade300),
+                                     ),
+                                     child: Column(
+                                       crossAxisAlignment: CrossAxisAlignment.start,
+                                       children: [
+                                         Text(
+                                           '${mix.nameController.text.trim().isEmpty ? "Type" : mix.nameController.text} Items',
+                                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                         ),
+                                         const SizedBox(height: 12),
+                                         ...mix.items.asMap().entries.map((subEntry) {
+                                           final subIndex = subEntry.key;
+                                           final subItem = subEntry.value;
+                                           final imgUrl = subItem.imageController.text.trim();
+                                           return Padding(
+                                             padding: const EdgeInsets.only(bottom: 12),
+                                             child: Row(
+                                               crossAxisAlignment: CrossAxisAlignment.start,
+                                               children: [
+                                                 if (imgUrl.isNotEmpty)
+                                                   Padding(
+                                                     padding: const EdgeInsets.only(right: 12),
+                                                     child: ClipRRect(
+                                                       borderRadius: BorderRadius.circular(6),
+                                                       child: Image.network(
+                                                         imgUrl,
+                                                         height: 48,
+                                                         width: 48,
+                                                         fit: BoxFit.cover,
+                                                         errorBuilder: (c, e, s) => Container(
+                                                           height: 48,
+                                                           width: 48,
+                                                           color: Colors.grey.shade200,
+                                                           child: const Icon(Icons.error_outline, size: 20),
+                                                         ),
+                                                       ),
+                                                     ),
+                                                   ),
+                                                 Expanded(
+                                                   flex: 2,
+                                                   child: TextFormField(
+                                                     controller: subItem.nameController,
+                                                     decoration: const InputDecoration(
+                                                       labelText: 'Item Name',
+                                                       hintText: 'e.g. Dark Almond',
+                                                     ),
+                                                   ),
+                                                 ),
+                                                 const SizedBox(width: 8),
+                                                 Expanded(
+                                                   flex: 3,
+                                                   child: TextFormField(
+                                                     controller: subItem.imageController,
+                                                     onChanged: (_) => setState(() {}),
+                                                     decoration: const InputDecoration(
+                                                       labelText: 'Image URL',
+                                                     ),
+                                                   ),
+                                                 ),
+                                                 IconButton(
+                                                   onPressed: () {
+                                                     setState(() {
+                                                       mix.items.removeAt(subIndex);
+                                                     });
+                                                   },
+                                                   icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
+                                                 ),
+                                               ],
+                                             ),
+                                           );
+                                         }),
+                                         Row(
+                                           children: [
+                                             TextButton.icon(
+                                               onPressed: () {
+                                                 setState(() {
+                                                   mix.items.add(AdminMixSubItemInput());
+                                                 });
+                                               },
+                                               icon: const Icon(Icons.add),
+                                               label: const Text('Add Item'),
+                                             ),
+                                             const SizedBox(width: 12),
+                                             TextButton.icon(
+                                               onPressed: () async {
+                                                 final data = await Clipboard.getData(Clipboard.kTextPlain);
+                                                 if (data != null && data.text != null && data.text!.isNotEmpty) {
+                                                   // ignore: deprecated_member_use
+                                                   final urls = data.text!.split(RegExp(r'[,\n]+')).map((e) => e.trim()).where((e) => e.isNotEmpty);
+                                                   if (urls.isNotEmpty) {
+                                                     setState(() {
+                                                       for (final url in urls) {
+                                                         mix.items.add(AdminMixSubItemInput()..imageController.text = url);
+                                                       }
+                                                     });
+                                                   }
+                                                 }
+                                               },
+                                               icon: const Icon(Icons.paste),
+                                               label: const Text('Paste Links'),
+                                             ),
+                                             const SizedBox(width: 12),
+                                             TextButton.icon(
+                                               onPressed: isUploadingImage
+                                                   ? null
+                                                   : () => pickAndUploadMultipleImages(
+                                                        targetMix: mix,
+                                                        folder: 'products/bulk/${mix.nameController.text.trim().isEmpty ? "mix" : mix.nameController.text.trim().toLowerCase()}',
+                                                      ),
+                                               icon: const Icon(Icons.upload_file),
+                                               label: Text(
+                                                 isUploadingImage ? 'Uploading...' : 'Upload Images',
+                                               ),
+                                             ),
+                                           ],
+                                         ),
+                                       ],
+                                     ),
+                                   ),
+                                   const Divider(),
+                                 ],
+                               ),
+                             );
+                           }),
+                          const Divider(),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: addMixItem,
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add Mix Type'),
+                              ),
+                              Builder(
+                                builder: (context) {
+                                  double total = 0;
+                                  for (final mix in mixItemInputs) {
+                                    total += double.tryParse(mix.ratioController.text) ?? 0;
+                                  }
+                                  final isBalanced = (total - 1.0).abs() < 0.001;
+
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Total Ratio: ${(total * 100).toStringAsFixed(0)}%',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isBalanced ? Colors.green : Colors.red,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      if (isBalanced)
+                                        const Icon(Icons.check_circle, color: Colors.green, size: 16)
+                                      else
+                                        const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 16),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -998,6 +1609,42 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
         ),
       ),
     );
+  }
+}
+
+class AdminBulkBoxInput {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+
+  void dispose() {
+    nameController.dispose();
+    weightController.dispose();
+    priceController.dispose();
+  }
+}
+
+class AdminMixSubItemInput {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController imageController = TextEditingController();
+
+  void dispose() {
+    nameController.dispose();
+    imageController.dispose();
+  }
+}
+
+class AdminMixItemInput {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController ratioController = TextEditingController();
+  final List<AdminMixSubItemInput> items = [];
+
+  void dispose() {
+    nameController.dispose();
+    ratioController.dispose();
+    for (final item in items) {
+      item.dispose();
+    }
   }
 }
 

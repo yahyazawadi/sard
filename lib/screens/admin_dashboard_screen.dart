@@ -21,8 +21,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
 
     if (result != null) {
+      if (!mounted) return;
       await context.read<AdminProductProvider>().addProduct(result);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Product added')));
@@ -38,36 +40,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
 
     if (result != null) {
+      if (!mounted) return;
       await context.read<AdminProductProvider>().updateProduct(
         oldProduct: oldProduct,
         newProduct: result,
       );
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Product updated')));
     }
   }
 
-  Future<void> purchaseVariant(
-    AdminProductModel product,
-    AdminProductVariant variant,
-  ) async {
-    final success = await context.read<AdminProductProvider>().purchaseVariant(
-      product: product,
-      variant: variant,
-    );
 
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This variant is out of stock')),
-      );
-    }
-  }
 
   Future<void> deleteProduct(AdminProductModel product) async {
     await context.read<AdminProductProvider>().deleteProduct(product);
 
+    if (!mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Product deleted')));
@@ -175,7 +166,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ...productProvider.products.map(
               (product) => AdminProductCard(
                 product: product,
-                onPurchase: purchaseVariant,
+                onEditVariant: (p, v) => editProduct(p),
                 onDelete: () => deleteProduct(product),
                 onEdit: () => editProduct(product),
               ),

@@ -77,31 +77,54 @@ class AdminProductVariant {
   }
 }
 
+class AdminBulkBox {
+  final String title;
+  final double weightG;
+  final double price;
+
+  AdminBulkBox({
+    required this.title,
+    required this.weightG,
+    required this.price,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'weight_g': weightG,
+    'price': price,
+  };
+
+  factory AdminBulkBox.fromJson(Map<String, dynamic> json) {
+    return AdminBulkBox(
+      title: json['title']?.toString() ?? '',
+      weightG: (json['weight_g'] as num?)?.toDouble() ?? 0,
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+    );
+  }
+}
+
 class AdminBulkConfig {
-  final double pricePerKg;
-  final double minOrderWeightG;
+  final List<AdminBulkBox> boxes;
   final List<Map<String, dynamic>> preMadeTemplates;
 
   AdminBulkConfig({
-    required this.pricePerKg,
-    required this.minOrderWeightG,
+    required this.boxes,
     required this.preMadeTemplates,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'price_per_kg': pricePerKg,
-      'min_order_weight_g': minOrderWeightG,
+      'boxes': boxes.map((e) => e.toJson()).toList(),
       'pre_made_templates': preMadeTemplates,
     };
   }
 
   factory AdminBulkConfig.fromJson(Map<String, dynamic> json) {
     final templates = json['pre_made_templates'] as List<dynamic>? ?? [];
+    final boxesJson = json['boxes'] as List<dynamic>? ?? [];
 
     return AdminBulkConfig(
-      pricePerKg: (json['price_per_kg'] as num? ?? 0).toDouble(),
-      minOrderWeightG: (json['min_order_weight_g'] as num? ?? 0).toDouble(),
+      boxes: boxesJson.map((e) => AdminBulkBox.fromJson(Map<String, dynamic>.from(e))).toList(),
       preMadeTemplates: templates
           .map((item) => Map<String, dynamic>.from(item))
           .toList(),
