@@ -90,7 +90,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
     final bulkConfig = product.bulkConfig;
     if (bulkConfig != null) {
-      for (final box in bulkConfig.boxes) {
+      final boxes = bulkConfig.boxes;
+      for (final box in boxes) {
         bulkBoxInputs.add(
           AdminBulkBoxInput()
             ..nameController.text = box.title
@@ -323,6 +324,81 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
         setState(() {
           isUploadingImage = false;
         });
+      }
+    }
+  }
+
+  void _syncMixItemsToCsv(AdminMixItemInput mix) {
+    final buffer = StringBuffer();
+    for (final item in mix.items) {
+      final n = item.nameController.text.trim();
+      final u = item.imageController.text.trim();
+      if (n.isNotEmpty && u.isNotEmpty) {
+        if (mix.csvTitleFirst) {
+          buffer.writeln('$n, $u');
+        } else {
+          buffer.writeln('$u, $n');
+        }
+      } else if (n.isNotEmpty) {
+        buffer.writeln(n);
+      } else if (u.isNotEmpty) {
+        buffer.writeln(u);
+      }
+    }
+    mix.csvController.text = buffer.toString();
+  }
+
+  void _syncMixItemsFromCsv(AdminMixItemInput mix) {
+    final text = mix.csvController.text.trim();
+    mix.items.clear();
+    if (text.isEmpty) return;
+
+    final parts = text.split(RegExp(r'[,\n]+')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    
+    if (mix.csvTitleFirst) {
+      String? currentName;
+      for (final part in parts) {
+        if (part.startsWith('http://') || part.startsWith('https://')) {
+          if (currentName != null) {
+            mix.items.add(AdminMixSubItemInput()
+              ..nameController.text = currentName
+              ..imageController.text = part);
+            currentName = null;
+          } else {
+            mix.items.add(AdminMixSubItemInput()..imageController.text = part);
+          }
+        } else {
+          if (currentName != null) {
+            mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+          }
+          currentName = part;
+        }
+      }
+      if (currentName != null) {
+        mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+      }
+    } else {
+      // Link then Title
+      String? currentUrl;
+      for (final part in parts) {
+        if (part.startsWith('http://') || part.startsWith('https://')) {
+          if (currentUrl != null) {
+            mix.items.add(AdminMixSubItemInput()..imageController.text = currentUrl);
+          }
+          currentUrl = part;
+        } else {
+          if (currentUrl != null) {
+            mix.items.add(AdminMixSubItemInput()
+              ..nameController.text = part
+              ..imageController.text = currentUrl);
+            currentUrl = null;
+          } else {
+            mix.items.add(AdminMixSubItemInput()..nameController.text = part);
+          }
+        }
+      }
+      if (currentUrl != null) {
+        mix.items.add(AdminMixSubItemInput()..imageController.text = currentUrl);
       }
     }
   }
@@ -602,6 +678,14 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
         stockQuantity: int.parse(input.stockController.text.trim()),
       );
     }).toList();
+
+    if (needsBulkConfig) {
+      for (final mix in mixItemInputs) {
+        if (mix.isCsvMode) {
+          _syncMixItemsFromCsv(mix);
+        }
+      }
+    }
 
     final bulkConfig = needsBulkConfig
         ? AdminBulkConfig(
@@ -1440,117 +1524,217 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                      child: Column(
                                        crossAxisAlignment: CrossAxisAlignment.start,
                                        children: [
-                                         Text(
-                                           '${mix.nameController.text.trim().isEmpty ? "Type" : mix.nameController.text} Items',
-                                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                         ),
-                                         const SizedBox(height: 12),
-                                         ...mix.items.asMap().entries.map((subEntry) {
-                                           final subIndex = subEntry.key;
-                                           final subItem = subEntry.value;
-                                           final imgUrl = subItem.imageController.text.trim();
-                                           return Padding(
-                                             padding: const EdgeInsets.only(bottom: 12),
-                                             child: Row(
-                                               crossAxisAlignment: CrossAxisAlignment.start,
+                                         Row(
+                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                           children: [
+                                             Text(
+                                               '${mix.nameController.text.trim().isEmpty ? "Type" : mix.nameController.text} Items',
+                                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                             ),
+                                             Row(
+                                               mainAxisSize: MainAxisSize.min,
                                                children: [
-                                                 if (imgUrl.isNotEmpty)
-                                                   Padding(
-                                                     padding: const EdgeInsets.only(right: 12),
-                                                     child: ClipRRect(
-                                                       borderRadius: BorderRadius.circular(6),
-                                                       child: Image.network(
-                                                         imgUrl,
-                                                         height: 48,
-                                                         width: 48,
-                                                         fit: BoxFit.cover,
-                                                         errorBuilder: (c, e, s) => Container(
-                                                           height: 48,
-                                                           width: 48,
-                                                           color: Colors.grey.shade200,
-                                                           child: const Icon(Icons.error_outline, size: 20),
-                                                         ),
+                                                 if (mix.isCsvMode) ...[
+                                                   InkWell(
+                                                     onTap: () {
+                                                       setState(() {
+                                                         _syncMixItemsFromCsv(mix);
+                                                         mix.csvTitleFirst = !mix.csvTitleFirst;
+                                                         _syncMixItemsToCsv(mix);
+                                                       });
+                                                     },
+                                                     child: Container(
+                                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                       decoration: BoxDecoration(
+                                                         color: Colors.brown.withValues(alpha: 0.1),
+                                                         borderRadius: BorderRadius.circular(12),
+                                                         border: Border.all(color: Colors.brown.withValues(alpha: 0.2)),
+                                                       ),
+                                                       child: Row(
+                                                         mainAxisSize: MainAxisSize.min,
+                                                         children: [
+                                                           Icon(Icons.swap_horiz, size: 14, color: Colors.brown.shade700),
+                                                           const SizedBox(width: 4),
+                                                           Text(
+                                                             mix.csvTitleFirst ? 'Name, Link' : 'Link, Name',
+                                                             style: TextStyle(
+                                                               fontSize: 10,
+                                                               fontWeight: FontWeight.bold,
+                                                               color: Colors.brown.shade700,
+                                                             ),
+                                                           ),
+                                                         ],
                                                        ),
                                                      ),
                                                    ),
-                                                 Expanded(
-                                                   flex: 2,
-                                                   child: TextFormField(
-                                                     controller: subItem.nameController,
-                                                     decoration: const InputDecoration(
-                                                       labelText: 'Item Name',
-                                                       hintText: 'e.g. Dark Almond',
-                                                     ),
+                                                   const SizedBox(width: 12),
+                                                 ],
+                                                 const Text('CSV View', style: TextStyle(fontSize: 12)),
+                                                 const SizedBox(width: 4),
+                                                 SizedBox(
+                                                   height: 24,
+                                                   width: 40,
+                                                   child: Switch(
+                                                     value: mix.isCsvMode,
+                                                     onChanged: (val) {
+                                                       setState(() {
+                                                         if (val) {
+                                                           _syncMixItemsToCsv(mix);
+                                                         } else {
+                                                           _syncMixItemsFromCsv(mix);
+                                                         }
+                                                         mix.isCsvMode = val;
+                                                       });
+                                                     },
                                                    ),
-                                                 ),
-                                                 const SizedBox(width: 8),
-                                                 Expanded(
-                                                   flex: 3,
-                                                   child: TextFormField(
-                                                     controller: subItem.imageController,
-                                                     onChanged: (_) => setState(() {}),
-                                                     decoration: const InputDecoration(
-                                                       labelText: 'Image URL',
-                                                     ),
-                                                   ),
-                                                 ),
-                                                 IconButton(
-                                                   onPressed: () {
-                                                     setState(() {
-                                                       mix.items.removeAt(subIndex);
-                                                     });
-                                                   },
-                                                   icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
                                                  ),
                                                ],
                                              ),
-                                           );
-                                         }),
-                                         Row(
-                                           children: [
-                                             TextButton.icon(
-                                               onPressed: () {
-                                                 setState(() {
-                                                   mix.items.add(AdminMixSubItemInput());
-                                                 });
-                                               },
-                                               icon: const Icon(Icons.add),
-                                               label: const Text('Add Item'),
-                                             ),
-                                             const SizedBox(width: 12),
-                                             TextButton.icon(
-                                               onPressed: () async {
-                                                 final data = await Clipboard.getData(Clipboard.kTextPlain);
-                                                 if (data != null && data.text != null && data.text!.isNotEmpty) {
-                                                   // ignore: deprecated_member_use
-                                                   final urls = data.text!.split(RegExp(r'[,\n]+')).map((e) => e.trim()).where((e) => e.isNotEmpty);
-                                                   if (urls.isNotEmpty) {
-                                                     setState(() {
-                                                       for (final url in urls) {
-                                                         mix.items.add(AdminMixSubItemInput()..imageController.text = url);
-                                                       }
-                                                     });
-                                                   }
-                                                 }
-                                               },
-                                               icon: const Icon(Icons.paste),
-                                               label: const Text('Paste Links'),
-                                             ),
-                                             const SizedBox(width: 12),
-                                             TextButton.icon(
-                                               onPressed: isUploadingImage
-                                                   ? null
-                                                   : () => pickAndUploadMultipleImages(
-                                                        targetMix: mix,
-                                                        folder: 'products/bulk/${mix.nameController.text.trim().isEmpty ? "mix" : mix.nameController.text.trim().toLowerCase()}',
-                                                      ),
-                                               icon: const Icon(Icons.upload_file),
-                                               label: Text(
-                                                 isUploadingImage ? 'Uploading...' : 'Upload Images',
-                                               ),
-                                             ),
                                            ],
                                          ),
+                                         const SizedBox(height: 12),
+                                         if (mix.isCsvMode)
+                                           TextFormField(
+                                             controller: mix.csvController,
+                                             maxLines: null,
+                                             minLines: 3,
+                                             style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+                                             decoration: InputDecoration(
+                                               hintText: mix.csvTitleFirst 
+                                                 ? 'Item Name, https://link\nAnother Item, https://link'
+                                                 : 'https://link, Item Name\nhttps://link, Another Item',
+                                               labelText: 'CSV Entry (${mix.csvTitleFirst ? "Name, Link" : "Link, Name"})',
+                                               alignLabelWithHint: true,
+                                               border: const OutlineInputBorder(),
+                                               contentPadding: const EdgeInsets.all(12),
+                                             ),
+                                           )
+                                         else ...[
+                                           ...mix.items.asMap().entries.map((subEntry) {
+                                             final subIndex = subEntry.key;
+                                             final subItem = subEntry.value;
+                                             final imgUrl = subItem.imageController.text.trim();
+                                             return Padding(
+                                               padding: const EdgeInsets.only(bottom: 12),
+                                               child: Row(
+                                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                                 children: [
+                                                   if (imgUrl.isNotEmpty)
+                                                     Padding(
+                                                       padding: const EdgeInsets.only(right: 12),
+                                                       child: ClipRRect(
+                                                         borderRadius: BorderRadius.circular(6),
+                                                         child: Image.network(
+                                                           imgUrl,
+                                                           height: 48,
+                                                           width: 48,
+                                                           fit: BoxFit.cover,
+                                                           errorBuilder: (c, e, s) => Container(
+                                                             height: 48,
+                                                             width: 48,
+                                                             color: Colors.grey.shade200,
+                                                             child: const Icon(Icons.error_outline, size: 20),
+                                                           ),
+                                                         ),
+                                                       ),
+                                                     ),
+                                                   Expanded(
+                                                     flex: 2,
+                                                     child: TextFormField(
+                                                       controller: subItem.nameController,
+                                                       decoration: const InputDecoration(
+                                                         labelText: 'Item Name',
+                                                         hintText: 'e.g. Dark Almond',
+                                                       ),
+                                                     ),
+                                                   ),
+                                                   const SizedBox(width: 8),
+                                                   Expanded(
+                                                     flex: 3,
+                                                     child: TextFormField(
+                                                       controller: subItem.imageController,
+                                                       onChanged: (_) => setState(() {}),
+                                                       decoration: const InputDecoration(
+                                                         labelText: 'Image URL',
+                                                       ),
+                                                     ),
+                                                   ),
+                                                   IconButton(
+                                                     onPressed: () {
+                                                       setState(() {
+                                                         mix.items.removeAt(subIndex);
+                                                       });
+                                                     },
+                                                     icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
+                                                   ),
+                                                 ],
+                                               ),
+                                             );
+                                           }),
+                                           Row(
+                                             children: [
+                                               TextButton.icon(
+                                                 onPressed: () {
+                                                   setState(() {
+                                                     mix.items.add(AdminMixSubItemInput());
+                                                   });
+                                                 },
+                                                 icon: const Icon(Icons.add),
+                                                 label: const Text('Add Item'),
+                                               ),
+                                               const SizedBox(width: 12),
+                                               TextButton.icon(
+                                                 onPressed: () async {
+                                                   final data = await Clipboard.getData(Clipboard.kTextPlain);
+                                                   if (data != null && data.text != null && data.text!.isNotEmpty) {
+                                                     // ignore: deprecated_member_use
+                                                     final parts = data.text!.split(RegExp(r'[,\n]+')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+                                                     if (parts.isNotEmpty) {
+                                                       setState(() {
+                                                         String? currentName;
+                                                         for (final part in parts) {
+                                                           if (part.startsWith('http://') || part.startsWith('https://')) {
+                                                             if (currentName != null) {
+                                                               mix.items.add(AdminMixSubItemInput()
+                                                                 ..nameController.text = currentName
+                                                                 ..imageController.text = part);
+                                                               currentName = null;
+                                                             } else {
+                                                               mix.items.add(AdminMixSubItemInput()..imageController.text = part);
+                                                             }
+                                                           } else {
+                                                             if (currentName != null) {
+                                                               mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+                                                             }
+                                                             currentName = part;
+                                                           }
+                                                         }
+                                                         if (currentName != null) {
+                                                           mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+                                                         }
+                                                       });
+                                                     }
+                                                   }
+                                                 },
+                                                 icon: const Icon(Icons.paste),
+                                                 label: const Text('Paste Items'),
+                                               ),
+                                               const SizedBox(width: 12),
+                                               TextButton.icon(
+                                                 onPressed: isUploadingImage
+                                                     ? null
+                                                     : () => pickAndUploadMultipleImages(
+                                                           targetMix: mix,
+                                                           folder: 'products/bulk/${mix.nameController.text.trim().isEmpty ? "mix" : mix.nameController.text.trim().toLowerCase()}',
+                                                         ),
+                                                 icon: const Icon(Icons.upload_file),
+                                                 label: Text(
+                                                   isUploadingImage ? 'Uploading...' : 'Upload Images',
+                                                 ),
+                                               ),
+                                             ],
+                                           ),
+                                         ],
                                        ],
                                      ),
                                    ),
@@ -1638,10 +1822,15 @@ class AdminMixItemInput {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ratioController = TextEditingController();
   final List<AdminMixSubItemInput> items = [];
+  
+  bool isCsvMode = false;
+  bool csvTitleFirst = true;
+  final TextEditingController csvController = TextEditingController();
 
   void dispose() {
     nameController.dispose();
     ratioController.dispose();
+    csvController.dispose();
     for (final item in items) {
       item.dispose();
     }

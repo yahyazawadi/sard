@@ -120,12 +120,16 @@ class AdminBulkConfig {
   }
 
   factory AdminBulkConfig.fromJson(Map<String, dynamic> json) {
-    final templates = json['pre_made_templates'] as List<dynamic>? ?? [];
-    final boxesJson = json['boxes'] as List<dynamic>? ?? [];
+    final templatesRaw = json['pre_made_templates'] as List<dynamic>? ?? [];
+    final boxesRaw = json['boxes'] as List<dynamic>? ?? [];
 
     return AdminBulkConfig(
-      boxes: boxesJson.map((e) => AdminBulkBox.fromJson(Map<String, dynamic>.from(e))).toList(),
-      preMadeTemplates: templates
+      boxes: boxesRaw
+          .whereType<Map>()
+          .map((e) => AdminBulkBox.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+      preMadeTemplates: templatesRaw
+          .whereType<Map>()
           .map((item) => Map<String, dynamic>.from(item))
           .toList(),
     );
