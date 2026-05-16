@@ -160,8 +160,34 @@ class WishlistScreen extends ConsumerWidget {
             floating: true,
             pinned: true,
             backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
             elevation: 0,
+            scrolledUnderElevation: 0,
             centerTitle: true,
+            automaticallyImplyLeading: false,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppTheme.getIconColor(theme),
+                size: 20,
+              ),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  final history = ref.read(tabHistoryProvider);
+                  if (history.length > 1) {
+                    final newHistory = List<int>.from(history)
+                      ..removeLast();
+                    ref.read(tabHistoryProvider.notifier).state = newHistory;
+                    ref.read(mainWrapperPageProvider.notifier).state =
+                        newHistory.last;
+                  } else {
+                    context.go(AppRoutes.home);
+                  }
+                }
+              },
+            ),
             title: Text(AppLocalizations.of(context)!.myWishlist, style: theme.textTheme.titleLarge),
           ),
           if (wishlistIds.isEmpty)

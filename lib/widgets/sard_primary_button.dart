@@ -38,7 +38,7 @@ class SardPrimaryButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, color: Colors.white, size: 20),
+              Icon(icon, color: AppTheme.darkCocoa, size: 20),
               const SizedBox(width: 12),
             ],
             Text(
@@ -49,7 +49,7 @@ class SardPrimaryButton extends StatelessWidget {
                 forceStrutHeight: true,
               ),
               style: const TextStyle(
-                color: Colors.white,
+                color: AppTheme.darkCocoa,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
                 fontFamily: 'Tajawal',

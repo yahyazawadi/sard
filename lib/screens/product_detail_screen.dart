@@ -103,65 +103,68 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
       children: [
         _buildSectionHeader(context, l10n.selectSize),
         const SizedBox(height: 12),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: boxes.map((box) {
             final isSelected = state.selectedBulkBox?.name == box.name;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ElevatedButton(
-                  onPressed: () => ref
-                      .read(productBuilderProvider.notifier)
-                      .selectBulkBox(box),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isSelected
-                        ? AppTheme.highContrastGold
-                        : theme.colorScheme.surfaceContainerHighest.withValues(
-                            alpha: 0.5,
-                          ),
-                    foregroundColor: isSelected
-                        ? AppTheme.darkCocoa
-                        : theme.colorScheme.onSurface,
-                    elevation: isSelected ? 4 : 0,
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppTheme.buttonRadius,
-                      ),
-                      side: BorderSide(
-                        color: isSelected
-                            ? AppTheme.highContrastGold
-                            : AppTheme.highContrastGold.withValues(alpha: 0.2),
-                        width: 1.5,
-                      ),
+            // Strip trailing ' Box' / ' box' from the display label
+            final label = box.name
+                .replaceAll(RegExp(r'\s*[Bb]ox\s*$'), '')
+                .trim();
+            return SizedBox(
+              width: 100,
+              height: 64,
+              child: ElevatedButton(
+                onPressed: () =>
+                    ref.read(productBuilderProvider.notifier).selectBulkBox(box),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isSelected
+                      ? AppTheme.highContrastGold
+                      : theme.colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5),
+                  foregroundColor: isSelected
+                      ? AppTheme.darkCocoa
+                      : theme.colorScheme.onSurface,
+                  elevation: isSelected ? 4 : 0,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.buttonRadius),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppTheme.highContrastGold
+                          : AppTheme.highContrastGold.withValues(alpha: 0.2),
+                      width: 1.5,
                     ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        box.name,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          fontSize: 15,
-                        ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 14,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '₪ ${box.price.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          color: isSelected
-                              ? AppTheme.darkCocoa
-                              : AppTheme.highContrastGold,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '\u20aa ${box.price.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        color: isSelected
+                            ? AppTheme.darkCocoa
+                            : AppTheme.highContrastGold,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -674,7 +677,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 child: Container(
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppTheme.darkCocoa,
+                    color: AppTheme.highContrastGold,
                     borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                     boxShadow: AppTheme.goldShadow,
                   ),
@@ -693,7 +696,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                 state.totalPrice.toStringAsFixed(2),
                               ),
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: AppTheme.highContrastGold,
+                          color: AppTheme.darkCocoa,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
                         ),
@@ -748,8 +751,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             children: types.map((type) {
               final isSelected = state.selectedType == type;
               return SizedBox(
-                width: 140,
-                height: 56,
+                width: 100,
+                height: 64,
                 child: ElevatedButton(
                   onPressed: () => notifier.selectType(type),
                   style: ElevatedButton.styleFrom(
@@ -783,7 +786,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                       fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.w500,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -801,8 +804,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             children: sizes.map((size) {
               final isSelected = state.selectedSize == size;
               return SizedBox(
-                width: 140,
-                height: 56,
+                width: 100,
+                height: 64,
                 child: ElevatedButton(
                   onPressed: () => notifier.selectSize(size),
                   style: ElevatedButton.styleFrom(
@@ -836,7 +839,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                       fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.w500,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
                   ),
                 ),

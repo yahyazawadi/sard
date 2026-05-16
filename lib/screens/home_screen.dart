@@ -1230,7 +1230,7 @@ class _SearchResultsGrid extends ConsumerWidget {
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.68,
+              childAspectRatio: 0.62,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
