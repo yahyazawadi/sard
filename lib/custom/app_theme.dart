@@ -104,8 +104,7 @@ class AppTheme {
   }
 
   static Color getFeaturedBorderColor(ThemeData theme) {
-    // For Featured Dark banners, use a solid Gold border (100% opacity)
-    return highContrastGold;
+    return theme.brightness == Brightness.dark ? highContrastGold : primaryTeal;
   }
 
   static Color getIconColor(ThemeData theme) {

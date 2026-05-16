@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../custom/app_theme.dart';
 import 'sard_primary_button.dart';
-import 'package:sard/l10n/app_localizations.dart';
+import 'package:juba/l10n/app_localizations.dart';
 
 class LocationPopup {
   static void show(

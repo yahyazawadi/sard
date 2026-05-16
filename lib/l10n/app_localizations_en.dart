@@ -123,6 +123,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectSize => 'Select Size';
 
   @override
+  String get chocolateType => 'Chocolate Type';
+
+  @override
   String get addedToCart => 'added to cart';
 
   @override

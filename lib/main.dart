@@ -6,7 +6,7 @@ import 'firebase_options.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sard/l10n/app_localizations.dart';
+import 'package:juba/l10n/app_localizations.dart';
 import 'routes/routes.dart';
 import 'routes/app_routes.dart';
 import 'custom/app_theme.dart';
@@ -115,7 +115,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
       String? firebaseLink;
 
-      if (uri.scheme == 'sard') {
+      if (uri.scheme == 'juba') {
         firebaseLink =
             uri.queryParameters['link'] ?? uri.queryParameters['continueUrl'];
         if (firebaseLink == null && linkStr.contains('oobCode')) {
@@ -179,13 +179,13 @@ class _MyAppState extends ConsumerState<MyApp> {
     final fontFamily = settings.fontFamily;
 
     return MaterialApp.router(
-      title: 'Sard - Chocolate Shop',
+      title: 'Juba - Chocolate Shop',
       theme: AppTheme.lightTheme(scale: scale, fontFamily: fontFamily),
       darkTheme: AppTheme.darkTheme(scale: scale, fontFamily: fontFamily),
       themeMode: settings.themeMode,
       locale: settings.locale,
       supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
+      localizationsDelegates: [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

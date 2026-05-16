@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/cart_provider.dart';
 import '../providers/wishlist_provider.dart';
 import '../routes/app_routes.dart';
@@ -11,6 +12,7 @@ import 'main_wrapper_screen.dart';
 import '../widgets/sard_primary_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
+
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
 
@@ -66,8 +68,11 @@ class _CartScreenState extends ConsumerState<CartScreen>
     } else {
       confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) =>
-            _RemoveConfirmationDialog(productName: item.product.getName(AppLocalizations.of(context)!.localeName)),
+        builder: (context) => _RemoveConfirmationDialog(
+          productName: item.product.getName(
+            AppLocalizations.of(context)!.localeName,
+          ),
+        ),
       );
     }
 
@@ -120,257 +125,344 @@ class _CartScreenState extends ConsumerState<CartScreen>
       },
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: CustomScrollView(
-          slivers: [
-            // ── App Bar ──
-            SliverAppBar(
-              pinned: true,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: AppTheme.gradientStart,
-                  size: 20,
-                ),
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    final history = ref.read(tabHistoryProvider);
-                    if (history.length > 1) {
-                      final newHistory = List<int>.from(history)..removeLast();
-                      ref.read(tabHistoryProvider.notifier).state = newHistory;
-                      ref.read(mainWrapperPageProvider.notifier).state =
-                          newHistory.last;
-                    } else {
-                      context.go(AppRoutes.home);
-                    }
-                  }
-                },
-              ),
-              title: Text(AppLocalizations.of(context)!.myCart, style: theme.textTheme.titleLarge),
-              centerTitle: true,
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.shopping_cart_checkout,
-                      color: AppTheme.gradientStart,
-                      size: 26,
+        body: Stack(
+          children: [
+            CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // ── App Bar ──
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  leading: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: AppTheme.getIconColor(theme),
+                      size: 20,
                     ),
-                    onPressed: () => context.push(AppRoutes.checkout),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        final history = ref.read(tabHistoryProvider);
+                        if (history.length > 1) {
+                          final newHistory = List<int>.from(history)
+                            ..removeLast();
+                          ref.read(tabHistoryProvider.notifier).state =
+                              newHistory;
+                          ref.read(mainWrapperPageProvider.notifier).state =
+                              newHistory.last;
+                        } else {
+                          context.go(AppRoutes.home);
+                        }
+                      }
+                    },
                   ),
-                ),
-              ],
-            ),
-
-            if (cartItems.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.shopping_bag_outlined,
-                        size: 80,
-                        color: AppTheme.gradientStart.withValues(alpha: 0.2),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppLocalizations.of(context)!.cartEmpty,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  title: Text(
+                    AppLocalizations.of(context)!.myCart,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.getIconColor(theme),
+                    ),
+                  ),
+                  centerTitle: true,
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.shopping_cart_checkout,
+                          color: AppTheme.getIconColor(theme),
+                          size: 26,
                         ),
+                        onPressed: () => context.push(AppRoutes.checkout),
                       ),
-                      const SizedBox(height: 24),
-                      Material(
-                        color: AppTheme.gradientStart,
-                        borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
-                        child: InkWell(
-                          onTap: () {
-                            ref.read(mainWrapperPageProvider.notifier).state = 0;
-                          },
-                          borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
-                          child: Container(
-                            width: 220,
-                            height: 54,
-                            alignment: Alignment.center,
-                            child: Text(
-                              AppLocalizations.of(context)!.exploreProducts,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                                fontSize: 14,
+                    ),
+                  ],
+                ),
+
+                if (cartItems.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.shopping_bag_outlined,
+                            size: 80,
+                            color: AppTheme.getIconColor(
+                              theme,
+                            ).withValues(alpha: 0.2),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            AppLocalizations.of(context)!.cartEmpty,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
                               ),
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 24),
+                          Material(
+                            color: AppTheme.gradientStart,
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.buttonRadius,
+                            ),
+                            child: InkWell(
+                              onTap: () {
+                                ref
+                                        .read(mainWrapperPageProvider.notifier)
+                                        .state =
+                                    0;
+                              },
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.buttonRadius,
+                              ),
+                              child: Container(
+                                width: 220,
+                                height: 54,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  AppLocalizations.of(context)!.exploreProducts,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              )
-            else ...[
-              SliverToBoxAdapter(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-                    child: Text(
-                      "$totalItems ${totalItems == 1 ? AppLocalizations.of(context)!.item : AppLocalizations.of(context)!.items}",
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.grey.shade500,
+                    ),
+                  )
+                else ...[
+                  SliverToBoxAdapter(
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                        child: Text(
+                          "$totalItems ${totalItems == 1 ? AppLocalizations.of(context)!.item : AppLocalizations.of(context)!.items}",
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.6),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
 
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final item = cartItems[index];
-                    return FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: _slideAnimation,
-                        child: Dismissible(
-                          key: ValueKey(item.id),
-                          direction: DismissDirection.horizontal,
-                          resizeDuration: const Duration(milliseconds: 150),
-                          movementDuration: const Duration(milliseconds: 150),
-                          dismissThresholds: const {
-                            DismissDirection.startToEnd: 0.3,
-                            DismissDirection.endToStart: 0.3,
-                          },
-                          confirmDismiss: (direction) async {
-                            if (direction == DismissDirection.startToEnd) {
-                              // Delete confirmation
-                              final prefs = await SharedPreferences.getInstance();
-                              if (!context.mounted) return false;
-                              if (prefs.getBool('skip_cart_remove_confirm') ?? false) {
-                                return true;
-                              }
-                              return await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => _RemoveConfirmationDialog(
-                                  productName: item.product.getName(AppLocalizations.of(context)!.localeName),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final item = cartItems[index];
+                        return FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: Dismissible(
+                              key: ValueKey(item.id),
+                              direction: DismissDirection.horizontal,
+                              resizeDuration: const Duration(milliseconds: 150),
+                              movementDuration: const Duration(
+                                milliseconds: 150,
+                              ),
+                              dismissThresholds: const {
+                                DismissDirection.startToEnd: 0.3,
+                                DismissDirection.endToStart: 0.3,
+                              },
+                              confirmDismiss: (direction) async {
+                                if (direction == DismissDirection.startToEnd) {
+                                  // Delete confirmation
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  if (!context.mounted) return false;
+                                  if (prefs.getBool(
+                                        'skip_cart_remove_confirm',
+                                      ) ??
+                                      false) {
+                                    return true;
+                                  }
+                                  return await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => _RemoveConfirmationDialog(
+                                      productName: item.product.getName(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.localeName,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  // Add to Favorites (No confirmation needed usually)
+                                  return true;
+                                }
+                              },
+                              onDismissed: (direction) {
+                                if (direction == DismissDirection.startToEnd) {
+                                  // Deleted
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .removeItemById(item.id);
+                                  final lang = AppLocalizations.of(
+                                    context,
+                                  )!.localeName;
+                                  SardSnackBar.show(
+                                    context,
+                                    "${item.product.getName(lang)} ${AppLocalizations.of(context)!.removed}",
+                                    action: SnackBarAction(
+                                      label: AppLocalizations.of(context)!.undo,
+                                      onPressed: () => ref
+                                          .read(cartProvider.notifier)
+                                          .restoreItem(item),
+                                    ),
+                                  );
+                                } else {
+                                  // Moved to Wishlist
+                                  ref
+                                      .read(wishlistProvider.notifier)
+                                      .addToWishlist(item.product.remoteId);
+                                  ref
+                                      .read(cartProvider.notifier)
+                                      .removeItemById(item.id);
+                                  final lang = AppLocalizations.of(
+                                    context,
+                                  )!.localeName;
+                                  SardSnackBar.show(
+                                    context,
+                                    "${item.product.getName(lang)} ${AppLocalizations.of(context)!.movedToWishlist}",
+                                    action: SnackBarAction(
+                                      label: AppLocalizations.of(context)!.undo,
+                                      onPressed: () {
+                                        ref
+                                            .read(wishlistProvider.notifier)
+                                            .toggleWishlist(
+                                              item.product.remoteId,
+                                            );
+                                        ref
+                                            .read(cartProvider.notifier)
+                                            .restoreItem(item);
+                                      },
+                                    ),
+                                  );
+                                }
+                              },
+                              // Swipe Right (Start to End) -> Delete
+                              background: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.cardRadius,
+                                  ),
+                                  border: Border.all(
+                                    color: Colors.red.withValues(alpha: 0.4),
+                                    width: 2,
+                                  ),
                                 ),
-                              );
-                            } else {
-                              // Add to Favorites (No confirmation needed usually)
-                              return true;
-                            }
-                          },
-                          onDismissed: (direction) {
-                            if (direction == DismissDirection.startToEnd) {
-                              // Deleted
-                              ref.read(cartProvider.notifier).removeItemById(item.id);
-                              final lang = AppLocalizations.of(context)!.localeName;
-                              SardSnackBar.show(
-                                context,
-                                "${item.product.getName(lang)} ${AppLocalizations.of(context)!.removed}",
-                                action: SnackBarAction(
-                                  label: AppLocalizations.of(context)!.undo,
-                                  onPressed: () => ref.read(cartProvider.notifier).restoreItem(item),
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(left: 24),
+                                child: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: Colors.red,
+                                  size: 28,
                                 ),
-                              );
-                            } else {
-                              // Moved to Wishlist
-                              ref.read(wishlistProvider.notifier).addToWishlist(item.product.remoteId);
-                              ref.read(cartProvider.notifier).removeItemById(item.id);
-                              final lang = AppLocalizations.of(context)!.localeName;
-                              SardSnackBar.show(
-                                context,
-                                "${item.product.getName(lang)} ${AppLocalizations.of(context)!.movedToWishlist}",
-                                action: SnackBarAction(
-                                  label: AppLocalizations.of(context)!.undo,
-                                  onPressed: () {
-                                    ref.read(wishlistProvider.notifier).toggleWishlist(item.product.remoteId);
-                                    ref.read(cartProvider.notifier).restoreItem(item);
-                                  },
+                              ),
+                              // Swipe Left (End to Start) -> Favorite
+                              secondaryBackground: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.gradientStart.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.cardRadius,
+                                  ),
+                                  border: Border.all(
+                                    color: AppTheme.gradientStart.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                    width: 2,
+                                  ),
                                 ),
-                              );
-                            }
-                          },
-                          // Swipe Right (Start to End) -> Delete
-                          background: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                              border: Border.all(color: Colors.red.withValues(alpha: 0.4), width: 2),
-                            ),
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.only(left: 24),
-                            child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 28),
-                          ),
-                          // Swipe Left (End to Start) -> Favorite
-                          secondaryBackground: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.gradientStart.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-                              border: Border.all(color: AppTheme.gradientStart.withValues(alpha: 0.4), width: 2),
-                            ),
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 24),
-                            child: const Icon(Icons.favorite_rounded, color: Colors.red, size: 28),
-                          ),
-                          child: _CartItemCard(
-                            item: item,
-                            theme: theme,
-                            colorScheme: colorScheme,
-                            onDelete: () => _confirmDelete(context, ref, item),
-                            onDecrement: () {
-                              if (item.quantity > 1) {
-                                cartNotifier.updateQuantity(
-                                  item.id,
-                                  item.quantity - 1,
-                                );
-                              } else {
-                                _confirmDelete(context, ref, item);
-                              }
-                            },
-                            onIncrement: () => cartNotifier.updateQuantity(
-                              item.id,
-                              item.quantity + 1,
-                            ),
-                            onEdit: () {
-                              context.push(
-                                '${AppRoutes.productDetail}?id=${item.product.remoteId}&editCartItemId=${item.id}',
-                                extra: {
-                                  'product': item.product,
-                                  'editingItem': item,
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 24),
+                                child: const Icon(
+                                  Icons.favorite_rounded,
+                                  color: Colors.red,
+                                  size: 28,
+                                ),
+                              ),
+                              child: _CartItemCard(
+                                item: item,
+                                theme: theme,
+                                colorScheme: colorScheme,
+                                onDelete: () =>
+                                    _confirmDelete(context, ref, item),
+                                onDecrement: () {
+                                  if (item.quantity > 1) {
+                                    cartNotifier.updateQuantity(
+                                      item.id,
+                                      item.quantity - 1,
+                                    );
+                                  } else {
+                                    _confirmDelete(context, ref, item);
+                                  }
                                 },
-                              );
-                            },
+                                onIncrement: () => cartNotifier.updateQuantity(
+                                  item.id,
+                                  item.quantity + 1,
+                                ),
+                                onEdit: () {
+                                  context.push(
+                                    '${AppRoutes.productDetail}?id=${item.product.remoteId}&editCartItemId=${item.id}',
+                                    extra: {
+                                      'product': item.product,
+                                      'editingItem': item,
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }, childCount: cartItems.length),
+                        );
+                      }, childCount: cartItems.length),
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 350),
+                  ), // Extra space for floating bar
+                ],
+              ],
+            ),
+            if (cartItems.isNotEmpty)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 105, // Position above the main navbar
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: _CartSummaryBar(
+                    subtotal: subtotal,
+                    total: total,
+                    theme: theme,
+                    colorScheme: colorScheme,
+                    onCheckout: () => context.push(AppRoutes.checkout),
+                  ),
                 ),
               ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 220)),
-            ],
           ],
         ),
-        bottomSheet: cartItems.isEmpty
-            ? null
-            : _CartSummaryBar(
-                subtotal: subtotal,
-                total: total,
-                theme: theme,
-                colorScheme: colorScheme,
-                onCheckout: () => context.push(AppRoutes.checkout),
-              ),
       ),
     );
   }
@@ -407,7 +499,10 @@ class _CartItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.getCardColor(theme),
         borderRadius: BorderRadius.circular(AppTheme.cardRadius),
-        border: Border.all(color: AppTheme.getCardBorderColor(theme), width: 1.5),
+        border: Border.all(
+          color: AppTheme.getCardBorderColor(theme),
+          width: 1.5,
+        ),
         boxShadow: AppTheme.cardShadow,
       ),
       child: ClipRRect(
@@ -425,11 +520,28 @@ class _CartItemCard extends StatelessWidget {
                     SizedBox(
                       width: 110,
                       height: double.infinity,
-                      child: Image.asset(
-                        item.product.imageUrl,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                      ),
+                      child: item.product.imageUrl.startsWith('http')
+                          ? CachedNetworkImage(
+                              imageUrl: item.product.imageUrl,
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: (_, __) => Container(
+                                color: AppTheme.getCardColor(theme),
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                color: AppTheme.getCardColor(theme),
+                                child: Icon(
+                                  Icons.image_not_supported_outlined,
+                                  color: AppTheme.accentGold.withValues(alpha: 0.4),
+                                  size: 28,
+                                ),
+                              ),
+                            )
+                          : Image.asset(
+                              item.product.imageUrl,
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                            ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -479,7 +591,10 @@ class _CartItemCard extends StatelessWidget {
                 onTap: onDelete,
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   child: Icon(
                     Icons.close_rounded,
                     size: 18,
@@ -507,7 +622,11 @@ class _CartItemCard extends StatelessWidget {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Icon(Icons.remove_rounded, size: 14, color: onCardColor),
+                      child: Icon(
+                        Icons.remove_rounded,
+                        size: 14,
+                        color: onCardColor,
+                      ),
                     ),
                     Transform.translate(
                       offset: const Offset(0, 2),
@@ -523,7 +642,11 @@ class _CartItemCard extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Icon(Icons.add_rounded, size: 14, color: onCardColor),
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: 14,
+                        color: onCardColor,
+                      ),
                     ),
                   ],
                 ),
@@ -584,89 +707,86 @@ class _CartSummaryBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
+        color: theme.colorScheme.surface.withValues(alpha: 0.95),
         border: Border.all(
           color: AppTheme.getCardBorderColor(theme),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.circular(32),
       ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.subtotal,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade500,
-                  ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.subtotal,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade500,
                 ),
-                Text(
-                  "₪ ${subtotal.toStringAsFixed(2)}",
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.shipping,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-                Text(
-                  "₪ 5.00",
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Divider(
-                color: theme.colorScheme.outlineVariant,
-                height: 1,
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.total,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              Text(
+                "₪ ${subtotal.toStringAsFixed(2)}",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                Text(
-                  "₪ ${total.toStringAsFixed(2)}",
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: colorScheme.primary,
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.shipping,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade500,
                 ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            SardPrimaryButton(label: AppLocalizations.of(context)!.goToPayment, onTap: onCheckout),
-          ],
-        ),
+              ),
+              Text(
+                "₪ 5.00",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Divider(color: theme.colorScheme.outlineVariant, height: 1),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.total,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                "₪ ${total.toStringAsFixed(2)}",
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24), // Increased spacing
+          SardPrimaryButton(
+            label: AppLocalizations.of(context)!.goToPayment,
+            onTap: onCheckout,
+          ),
+        ],
       ),
     );
   }

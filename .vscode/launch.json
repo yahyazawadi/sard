@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "sard",
+            "name": "juba",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "sard (profile mode)",
+            "name": "juba (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "sard (release mode)",
+            "name": "juba (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

@@ -56,6 +56,16 @@ const FeaturedTemplateSchema = CollectionSchema(
       id: 7,
       name: r'title',
       type: IsarType.string,
+    ),
+    r'titleAr': PropertySchema(
+      id: 8,
+      name: r'titleAr',
+      type: IsarType.string,
+    ),
+    r'titleEn': PropertySchema(
+      id: 9,
+      name: r'titleEn',
+      type: IsarType.string,
     )
   },
   estimateSize: _featuredTemplateEstimateSize,
@@ -120,6 +130,18 @@ int _featuredTemplateEstimateSize(
     }
   }
   bytesCount += 3 + object.title.length * 3;
+  {
+    final value = object.titleAr;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.titleEn;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -137,6 +159,8 @@ void _featuredTemplateSerialize(
   writer.writeString(offsets[5], object.subtitle);
   writer.writeString(offsets[6], object.targetProductId);
   writer.writeString(offsets[7], object.title);
+  writer.writeString(offsets[8], object.titleAr);
+  writer.writeString(offsets[9], object.titleEn);
 }
 
 FeaturedTemplate _featuredTemplateDeserialize(
@@ -155,6 +179,8 @@ FeaturedTemplate _featuredTemplateDeserialize(
   object.subtitle = reader.readString(offsets[5]);
   object.targetProductId = reader.readStringOrNull(offsets[6]);
   object.title = reader.readString(offsets[7]);
+  object.titleAr = reader.readStringOrNull(offsets[8]);
+  object.titleEn = reader.readStringOrNull(offsets[9]);
   return object;
 }
 
@@ -181,6 +207,10 @@ P _featuredTemplateDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 7:
       return (reader.readString(offset)) as P;
+    case 8:
+      return (reader.readStringOrNull(offset)) as P;
+    case 9:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1541,6 +1571,314 @@ extension FeaturedTemplateQueryFilter
       ));
     });
   }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'titleAr',
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'titleAr',
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'titleAr',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'titleAr',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'titleAr',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'titleAr',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'titleAr',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'titleAr',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'titleAr',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'titleAr',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'titleAr',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleArIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'titleAr',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'titleEn',
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'titleEn',
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'titleEn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'titleEn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'titleEn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'titleEn',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'titleEn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'titleEn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'titleEn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'titleEn',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'titleEn',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterFilterCondition>
+      titleEnIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'titleEn',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension FeaturedTemplateQueryObject
@@ -1645,6 +1983,34 @@ extension FeaturedTemplateQuerySortBy
       sortByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      sortByTitleAr() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleAr', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      sortByTitleArDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleAr', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      sortByTitleEn() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleEn', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      sortByTitleEnDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleEn', Sort.desc);
     });
   }
 }
@@ -1760,6 +2126,34 @@ extension FeaturedTemplateQuerySortThenBy
       return query.addSortBy(r'title', Sort.desc);
     });
   }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      thenByTitleAr() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleAr', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      thenByTitleArDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleAr', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      thenByTitleEn() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleEn', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QAfterSortBy>
+      thenByTitleEnDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'titleEn', Sort.desc);
+    });
+  }
 }
 
 extension FeaturedTemplateQueryWhereDistinct
@@ -1821,6 +2215,20 @@ extension FeaturedTemplateQueryWhereDistinct
       return query.addDistinctBy(r'title', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QDistinct> distinctByTitleAr(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'titleAr', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, FeaturedTemplate, QDistinct> distinctByTitleEn(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'titleEn', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension FeaturedTemplateQueryProperty
@@ -1880,6 +2288,18 @@ extension FeaturedTemplateQueryProperty
   QueryBuilder<FeaturedTemplate, String, QQueryOperations> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'title');
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, String?, QQueryOperations> titleArProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'titleAr');
+    });
+  }
+
+  QueryBuilder<FeaturedTemplate, String?, QQueryOperations> titleEnProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'titleEn');
     });
   }
 }

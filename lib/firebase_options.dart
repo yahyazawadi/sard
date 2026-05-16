@@ -65,7 +65,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '313420731986',
     projectId: 'flutter-ai-playground-96a06',
     storageBucket: 'flutter-ai-playground-96a06.firebasestorage.app',
-    iosBundleId: 'com.example.sard',
+    iosBundleId: 'com.example.juba',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -74,7 +74,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '313420731986',
     projectId: 'flutter-ai-playground-96a06',
     storageBucket: 'flutter-ai-playground-96a06.firebasestorage.app',
-    iosBundleId: 'com.example.sard',
+    iosBundleId: 'com.example.juba',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

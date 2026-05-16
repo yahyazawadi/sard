@@ -9,16 +9,27 @@ class FeaturedTemplate {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  late String remoteId; // feat_001
+  late String remoteId;
 
+  String? titleAr;
+  String? titleEn;
+  
+  // Backward compatibility
   late String title;
   late String subtitle;
   late String bannerUrl;
   
   String? targetProductId;
-  String? preselectedVariant; // e.g., 'Medium'
+  String? preselectedVariant;
   
   bool isCustomizable = true;
 
-  List<String>? productIds; // For collections
+  List<String>? productIds;
+
+  String getTitle(String lang) {
+    if (lang == 'ar' && titleAr != null && titleAr!.isNotEmpty) return titleAr!;
+    if (titleEn != null && titleEn!.isNotEmpty) return titleEn!;
+    return title;
+  }
 }
+

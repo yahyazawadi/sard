@@ -1,37 +1,38 @@
 [
   {
-    "id": "icons",
-    "name_en": "Sard Icons",
-    "name_ar": "أيقونات سارد",
-    "image_url": "assets/images/chocophoto.png",
+    "id": "whole",
+    "name_en": "Whole Chocolates",
+    "name_ar": "شوكولاتة كاملة",
+    "image_url": "assets/images/box_nig.png",
     "display_order": 0
   },
+
   {
     "id": "traditional",
     "name_en": "Traditional & Sweets",
     "name_ar": "حلويات تقليدية",
-    "image_url": "assets/images/chocophoto.png",
-    "display_order": 1
+    "image_url": "assets/images/allspoons.jpg",
+    "display_order": 2
   },
   {
     "id": "daily",
     "name_en": "Daily Treats",
     "name_ar": "تسالي يومية",
-    "image_url": "assets/images/chocophoto.png",
-    "display_order": 2
+    "image_url": "assets/images/allchocolatetype3to2.jpg",
+    "display_order": 3
   },
   {
     "id": "gifting",
     "name_en": "Dates & Gifting",
     "name_ar": "تمور وهدايا",
-    "image_url": "assets/images/chocophoto.png",
-    "display_order": 3
+    "image_url": "assets/images/alldates.png",
+    "display_order": 4
   },
   {
     "id": "specialty",
     "name_en": "Specialty & Diet",
     "name_ar": "أصناف خاصة ودايت",
-    "image_url": "assets/images/chocophoto.png",
+    "image_url": "assets/images/allchocolatetype3to2.jpg",
     "display_order": 4
   }
 ]

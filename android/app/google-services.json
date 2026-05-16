@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:313420731986:android:78d96ebd923988dfdd718b",
         "android_client_info": {
-          "package_name": "com.example.sard"
+          "package_name": "com.example.juba"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "313420731986-073umqkad03thbrbhahdcim81t0pelbc.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.sard",
+            "package_name": "com.example.juba",
             "certificate_hash": "6dddcaaaff233632b12e7517393e5b6e3f87d78b"
           }
         }

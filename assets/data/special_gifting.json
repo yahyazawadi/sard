@@ -3,7 +3,7 @@
     "id": "sard_dates",
     "section": "gifting",
     "name": {"ar": "تمر سرد المميز", "en": "Premium Sard Dates"},
-    "image_url": "assets/images/chocophoto.png",
+    "image_url": "assets/images/alldates.png",
     "variants": [
       {"id": "dates_s", "label": "Small", "price": 40},
       {"id": "dates_m", "label": "Medium", "price": 60},
@@ -14,7 +14,7 @@
     "id": "baby_box",
     "section": "gifting",
     "name": {"ar": "بيبي بوكس", "en": "Baby Box"},
-    "image_url": "assets/images/chocophoto.png",
+    "image_url": "assets/images/box.png",
     "price": 80,
     "is_gendered": true,
     "gender_options": ["boy", "girl"]

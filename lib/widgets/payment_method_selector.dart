@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../custom/app_theme.dart';
-import 'package:sard/l10n/app_localizations.dart';
+import 'package:juba/l10n/app_localizations.dart';
 
 class PaymentMethodSelector extends StatelessWidget {
   final String selectedMethod;

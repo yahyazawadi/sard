@@ -326,6 +326,12 @@ abstract class AppLocalizations {
   /// **'Select Size'**
   String get selectSize;
 
+  /// No description provided for @chocolateType.
+  ///
+  /// In en, this message translates to:
+  /// **'Chocolate Type'**
+  String get chocolateType;
+
   /// No description provided for @addedToCart.
   ///
   /// In en, this message translates to:

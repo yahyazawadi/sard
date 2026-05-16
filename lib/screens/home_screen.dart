@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar/isar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/catalog_provider.dart';
 import '../providers/cart_provider.dart';
 import '../screens/main_wrapper_screen.dart';
@@ -17,10 +19,10 @@ import '../providers/wishlist_provider.dart';
 import '../utils/snackbar_utils.dart';
 import '../widgets/search_widgets.dart';
 import '../custom/app_theme.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../providers/isar_provider.dart';
-import 'package:isar/isar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/isar_provider.dart';
+
 final homeResetProvider = StateProvider<int>((ref) => 0);
 final isSearchModeProvider = StateProvider<bool>((ref) => false);
 
@@ -126,8 +128,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final categoriesAsync = ref.watch(categoriesProvider);
     final featuredAsync = ref.watch(featuredTemplatesProvider);
 
-    return CustomScrollView(
+    return RefreshIndicator(
+      color: AppTheme.highContrastGold,
+      backgroundColor: AppTheme.bgDarkTeal,
+      onRefresh: () async {
+        await ref.read(syncProvider).performInitialSeed(forceRemote: true);
+        // We might want to invalidate the providers to force a re-fetch from Isar
+        ref.invalidate(categoriesProvider);
+        ref.invalidate(featuredTemplatesProvider);
+      },
+      child: CustomScrollView(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           // 1, 2, 3. Combined Glassy Top Bar
           SliverAppBar(
@@ -137,8 +149,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             scrolledUnderElevation: 0,
-            expandedHeight: _isSearchMode ? 140 : 180,
-            collapsedHeight: _isSearchMode ? 110 : 140,
+            expandedHeight: _isSearchMode ? 160 : 200,
+            collapsedHeight: _isSearchMode ? 130 : 160,
             toolbarHeight: 60,
             flexibleSpace: ClipRect(
               child: BackdropFilter(
@@ -159,155 +171,178 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   child: FlexibleSpaceBar(
                     background: Padding(
-                      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                      child: Column(
-                        children: [
-                          // Logo / Title Row
-                          SizedBox(
-                            height: 60,
-                            child: Row(
-                              children: [
-                                if (!_isSearchMode)
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.settings_outlined,
-                                      color: AppTheme.getIconColor(theme),
-                                      size: 24,
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top,
+                      ),
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Column(
+                          children: [
+                            // Logo / Title Row
+                            SizedBox(
+                              height: 54,
+                              child: Row(
+                                children: [
+                                  if (!_isSearchMode)
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.settings_outlined,
+                                        color: AppTheme.getIconColor(theme),
+                                        size: 24,
+                                      ),
+                                      onPressed: () =>
+                                          context.push(AppRoutes.settings),
+                                    )
+                                  else
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.arrow_back_ios_new_rounded,
+                                        size: 20,
+                                        color: AppTheme.getIconColor(theme),
+                                      ),
+                                      onPressed: _exitSearchMode,
                                     ),
-                                    onPressed: () => context.push(AppRoutes.settings),
-                                  )
-                                else
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.arrow_back_ios_new_rounded,
-                                      size: 20,
-                                      color: AppTheme.getIconColor(theme),
+                                  Expanded(
+                                    child: Center(
+                                      child: _isSearchMode
+                                          ? Text(
+                                              l10n.search,
+                                              style:
+                                                  theme.textTheme.headlineSmall,
+                                            )
+                                          : const SizedBox(
+                                              height: 40,
+                                            ), // Logo placeholder
                                     ),
-                                    onPressed: _exitSearchMode,
                                   ),
-                                Expanded(
-                                  child: Center(
-                                    child: _isSearchMode
-                                        ? Text(l10n.search,
-                                            style: theme.textTheme.headlineSmall)
-                                        : const SizedBox(height: 45), // Logo placeholder
-                                  ),
-                                ),
-                                if (!_isSearchMode)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.notifications_none_rounded,
-                                            color: AppTheme.getIconColor(theme),
-                                            size: 26,
+                                  if (!_isSearchMode)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.notifications_none_rounded,
+                                              color: AppTheme.getIconColor(
+                                                theme,
+                                              ),
+                                              size: 26,
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        const NotificationsScreen(),
+                                                  ),
+                                                ),
                                           ),
-                                          onPressed: () => Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const NotificationsScreen()),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          right: 12,
-                                          top: 12,
-                                          child: Container(
-                                            width: 8,
-                                            height: 8,
-                                            decoration: const BoxDecoration(
-                                              color: Colors.red,
-                                              shape: BoxShape.circle,
+                                          Positioned(
+                                            right: 12,
+                                            top: 12,
+                                            child: Container(
+                                              width: 8,
+                                              height: 8,
+                                              decoration: const BoxDecoration(
+                                                color: Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                else
-                                  const SizedBox(width: 48),
-                              ],
+                                        ],
+                                      ),
+                                    )
+                                  else
+                                    const SizedBox(width: 48),
+                                ],
+                              ),
                             ),
-                          ),
-                          // Search Bar
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                            child: SardSearchBar(
-                              controller: _searchController,
-                              onTap: _enterSearchMode,
-                              onChanged: (val) {
-                                setState(() {
-                                  _searchQuery = val;
-                                  if (val.isNotEmpty) _isSearchMode = true;
-                                });
-                                _saveSearchHistory();
-                              },
-                              onClear: () {
-                                setState(() {
-                                  _searchQuery = '';
-                                  _searchController.clear();
-                                });
-                                _saveSearchHistory();
-                              },
+                            // Search Bar
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                              child: SardSearchBar(
+                                controller: _searchController,
+                                onTap: _enterSearchMode,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _searchQuery = val;
+                                    if (val.isNotEmpty) _isSearchMode = true;
+                                  });
+                                  _saveSearchHistory();
+                                },
+                                onClear: () {
+                                  setState(() {
+                                    _searchQuery = '';
+                                    _searchController.clear();
+                                  });
+                                  _saveSearchHistory();
+                                },
+                              ),
                             ),
-                          ),
-                          // Categories
-                          categoriesAsync.when(
-                            data: (categories) => SizedBox(
-                              height: 40,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                physics: const AlwaysScrollableScrollPhysics(
-                                  parent: ClampingScrollPhysics(),
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                itemCount: categories.length + 1,
-                                itemBuilder: (context, index) {
-                                  if (index == 0) {
-                                    final isAllSelected = _selectedCategoryIds.isEmpty;
+                            // Categories
+                            categoriesAsync.when(
+                              data: (categories) => SizedBox(
+                                height: 40,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const AlwaysScrollableScrollPhysics(
+                                    parent: ClampingScrollPhysics(),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  itemCount: categories.length + 1,
+                                  itemBuilder: (context, index) {
+                                    if (index == 0) {
+                                      final isAllSelected =
+                                          _selectedCategoryIds.isEmpty;
+                                      return SardCategoryChip(
+                                        label: l10n.all,
+                                        isSelected: isAllSelected,
+                                        onSelected: (_) {
+                                          setState(() {
+                                            _selectedCategoryIds.clear();
+                                            _isSearchMode = true;
+                                          });
+                                          _saveSearchHistory();
+                                        },
+                                      );
+                                    }
+                                    final category = categories[index - 1];
+                                    final isSelected = _selectedCategoryIds
+                                        .contains(category.remoteId);
                                     return SardCategoryChip(
-                                      label: l10n.all,
-                                      isSelected: isAllSelected,
-                                      onSelected: (_) {
+                                      label: languageCode == 'ar'
+                                          ? category.nameAr
+                                          : category.nameEn,
+                                      isSelected: isSelected,
+                                      onSelected: (selected) {
                                         setState(() {
-                                          _selectedCategoryIds.clear();
-                                          _isSearchMode = true;
+                                          if (selected) {
+                                            _selectedCategoryIds.add(
+                                              category.remoteId,
+                                            );
+                                            _isSearchMode = true;
+                                          } else {
+                                            _selectedCategoryIds.remove(
+                                              category.remoteId,
+                                            );
+                                          }
                                         });
                                         _saveSearchHistory();
                                       },
                                     );
-                                  }
-                                  final category = categories[index - 1];
-                                  final isSelected = _selectedCategoryIds.contains(
-                                    category.remoteId,
-                                  );
-                                  return SardCategoryChip(
-                                    label: languageCode == 'ar'
-                                        ? category.nameAr
-                                        : category.nameEn,
-                                    isSelected: isSelected,
-                                    onSelected: (selected) {
-                                      setState(() {
-                                        if (selected) {
-                                          _selectedCategoryIds.add(category.remoteId);
-                                          _isSearchMode = true;
-                                        } else {
-                                          _selectedCategoryIds
-                                              .remove(category.remoteId);
-                                        }
-                                      });
-                                      _saveSearchHistory();
-                                    },
-                                  );
-                                },
+                                  },
+                                ),
                               ),
+                              loading: () => const SizedBox(height: 40),
+                              error: (error, stackTrace) =>
+                                  const SizedBox.shrink(),
                             ),
-                            loading: () => const SizedBox(height: 40),
-                            error: (error, stackTrace) => const SizedBox.shrink(),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -319,184 +354,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 4. Content (Featured & Catalog OR Search Results)
           if (!_isSearchMode) ...[
             // Default View: Featured Section
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-                child: Text(AppLocalizations.of(context)!.featured, style: theme.textTheme.headlineSmall),
-              ),
-            ),
             featuredAsync.when(
               data: (templates) {
-                /*
-                final showAll = templates.length > 2;
-                final itemHeight = 220.0;
-                final itemMargin = 16.0;
-                final totalItemBlock = itemHeight + itemMargin;
-                final collapsedHeight = (itemHeight * 1.3) + itemMargin;
-                final expandedHeight = (totalItemBlock * templates.length);
-                final currentHeight = _isFeaturedExpanded
-                    ? expandedHeight
-                    : collapsedHeight;
-                const buttonHeight = 64.0;
-                */
+                debugPrint('!!! HomeScreen: templates.length = ${templates.length}');
+                if (templates.isEmpty) {
+                  return const SliverToBoxAdapter(child: SizedBox.shrink());
+                }
+                
                 const itemHeight = 220.0;
-
                 return SliverToBoxAdapter(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /*
-                      SizedBox(
-                        key: _featuredKey,
-                        height:
-                            (templates.length <= 2
-                                ? (totalItemBlock * templates.length)
-                                : currentHeight) +
-                            8.0,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.topCenter,
-                          children: [
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 600),
-                              curve: Curves.fastLinearToSlowEaseIn,
-                              height: templates.length <= 2
-                                  ? (totalItemBlock * templates.length)
-                                  : currentHeight,
-                              clipBehavior: Clip.hardEdge,
-                              decoration: const BoxDecoration(),
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: OverflowBox(
-                                alignment: Alignment.topCenter,
-                                minHeight: 0,
-                                maxHeight: double.infinity,
-                                child: Column(
-                                  children: [
-                                    ...templates.map(
-                                      (t) => Container(
-                                        height: itemHeight,
-                                        width: double.infinity,
-                                        margin: EdgeInsets.only(bottom: itemMargin),
-                                        child: _FeaturedCard(template: t),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            if (showAll)
-                              Positioned(
-                                top:
-                                    (templates.length <= 2
-                                        ? (totalItemBlock * templates.length)
-                                        : currentHeight) -
-                                    (buttonHeight / 2),
-                                left: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (!_scrollController.hasClients) return;
-                                    final wasExpanded = _isFeaturedExpanded;
-                                    double? targetOffset;
-                                    if (wasExpanded) {
-                                      final RenderBox? renderBox =
-                                          _featuredKey.currentContext
-                                                  ?.findRenderObject()
-                                              as RenderBox?;
-                                      if (renderBox != null) {
-                                        final position = renderBox.localToGlobal(
-                                          Offset.zero,
-                                        );
-                                        targetOffset =
-                                            _scrollController.offset +
-                                            position.dy -
-                                            20;
-                                      }
-                                    }
-                                    setState(
-                                      () => _isFeaturedExpanded =
-                                          !_isFeaturedExpanded,
-                                    );
-                                    if (wasExpanded && targetOffset != null) {
-                                      _scrollController.animateTo(
-                                        targetOffset.clamp(
-                                          0,
-                                          _scrollController
-                                              .position
-                                              .maxScrollExtent,
-                                        ),
-                                        duration: const Duration(milliseconds: 600),
-                                        curve: Curves.fastLinearToSlowEaseIn,
-                                      );
-                                    }
-                                  },
-                                  behavior: HitTestBehavior.opaque,
-                                  child: Container(
-                                    height: buttonHeight,
-                                    color: Colors.transparent,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Positioned(
-                                          top: buttonHeight / 2,
-                                          left: 0,
-                                          right: 0,
-                                          height: buttonHeight / 2,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              border: Border(
-                                                top: BorderSide(
-                                                  color: AppTheme.accentGold
-                                                      .withValues(alpha: 0.3),
-                                                  width: 2,
-                                                ),
-                                              ),
-                                              borderRadius:
-                                                  const BorderRadius.vertical(
-                                                    top: Radius.circular(20),
-                                                  ),
-                                            ),
-                                          ),
-                                        ),
-                                        AnimatedRotation(
-                                          turns: _isFeaturedExpanded ? 0.5 : 0,
-                                          duration: const Duration(
-                                            milliseconds: 600,
-                                          ),
-                                          curve: Curves.easeOutBack,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.textPrimaryDark,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: AppTheme.accentGold.withValues(alpha: 0.3),
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black.withValues(
-                                                    alpha: 0.08,
-                                                  ),
-                                                  blurRadius: 6,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                              Icons.keyboard_arrow_down_rounded,
-                                              color: AppTheme.bgDarkTeal,
-                                              size: 24,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+                        child: Text(AppLocalizations.of(context)!.featured, style: theme.textTheme.headlineSmall),
                       ),
-                      */
                       SizedBox(
                         height: itemHeight,
                         child: ListView.separated(
@@ -522,7 +395,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Center(child: CircularProgressIndicator()),
                 ),
               ),
-              error: (e, s) => const SliverToBoxAdapter(child: SizedBox()),
+              error: (e, s) => SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text('Featured Error: $e', style: const TextStyle(color: Colors.red)),
+                ),
+              ),
             ),
 
             // 5. Dynamic Categories & Products
@@ -551,9 +429,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
 
-          const SliverToBoxAdapter(child: SizedBox(height: 50)),
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
-      );
+      ),
+    );
   }
 }
 
@@ -590,10 +469,30 @@ class _FeaturedCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(template.bannerUrl, fit: BoxFit.cover),
+              template.bannerUrl.startsWith('http')
+                  ? CachedNetworkImage(
+                      imageUrl: template.bannerUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Colors.black12,
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Image.asset(
+                        'assets/images/allchocolatetype3to2.jpg',
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(template.bannerUrl, fit: BoxFit.cover),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.7),
+                    ],
+                  ),
                 ),
               ),
               Padding(
@@ -603,7 +502,9 @@ class _FeaturedCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      template.title,
+                      template.getTitle(
+                        AppLocalizations.of(context)!.localeName,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.displaySmall?.copyWith(
@@ -611,7 +512,19 @@ class _FeaturedCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    if (template.subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        template.subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
                     // "try now" chip
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -626,7 +539,9 @@ class _FeaturedCard extends StatelessWidget {
                               AppTheme.buttonRadius,
                             ),
                             border: Border.all(
-                              color: AppTheme.getOnCardColor(theme).withValues(alpha: 0.3),
+                              color: AppTheme.getOnCardColor(
+                                theme,
+                              ).withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                             boxShadow: AppTheme.cardShadow,
@@ -703,7 +618,7 @@ class _CategorySection extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Text(
-                    l10n.localeName == 'ar' ? category.nameAr : category.nameEn,
+                l10n.localeName == 'ar' ? category.nameAr : category.nameEn,
                 style: theme.textTheme.headlineSmall,
               ),
             ),
@@ -804,7 +719,11 @@ class ProductCard extends ConsumerWidget {
                           "${product.getName(AppLocalizations.of(context)!.localeName)} ${AppLocalizations.of(context)!.addedToCart}",
                           action: SnackBarAction(
                             label: AppLocalizations.of(context)!.viewCart,
-                            onPressed: () => ref.read(mainWrapperPageProvider.notifier).state = 2,
+                            onPressed: () =>
+                                ref
+                                        .read(mainWrapperPageProvider.notifier)
+                                        .state =
+                                    2,
                           ),
                         );
                       },
@@ -861,6 +780,12 @@ class ProductCard extends ConsumerWidget {
         },
       );
       displayPrice = smallVariant.price;
+    } else if (product.isBulkProduct && (product.bulkBoxes?.isNotEmpty ?? false)) {
+      // For bulk products, show the cheapest box price
+      final nonZeroBoxes = product.bulkBoxes!.where((b) => b.price > 0).toList();
+      if (nonZeroBoxes.isNotEmpty) {
+        displayPrice = nonZeroBoxes.reduce((a, b) => a.price < b.price ? a : b).price;
+      }
     }
 
     final gender = product.gender;
@@ -868,7 +793,10 @@ class ProductCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        context.push('${AppRoutes.productDetail}?id=${product.remoteId}', extra: product);
+        context.push(
+          '${AppRoutes.productDetail}?id=${product.remoteId}',
+          extra: product,
+        );
       },
       child: RepaintBoundary(
         child: Container(
@@ -899,14 +827,31 @@ class ProductCard extends ConsumerWidget {
                       clipBehavior: Clip.antiAlias,
                       child: Hero(
                         tag: 'product_${product.remoteId}',
-                        child: Image.asset(
-                          product.imageUrl,
-                          fit: BoxFit.cover,
-                          height: double.infinity,
-                          width: double.infinity,
-                          cacheWidth:
-                              300, // Optimize image memory and decoding time
-                        ),
+                        child: product.imageUrl.startsWith('http')
+                            ? CachedNetworkImage(
+                                imageUrl: product.imageUrl,
+                                fit: BoxFit.cover,
+                                height: double.infinity,
+                                width: double.infinity,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.black12,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    Image.asset(
+                                      'assets/images/allchocolatetype3to2.jpg',
+                                      fit: BoxFit.cover,
+                                    ),
+                              )
+                            : Image.asset(
+                                product.imageUrl,
+                                fit: BoxFit.cover,
+                                height: double.infinity,
+                                width: double.infinity,
+                                cacheWidth: 300,
+                              ),
                       ),
                     ),
                     if (gender != null)
@@ -939,12 +884,18 @@ class ProductCard extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.7),
+                              color: theme.scaffoldBackgroundColor.withValues(
+                                alpha: 0.7,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isWishlisted ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                              color: isWishlisted ? Colors.red : AppTheme.highContrastGold,
+                              isWishlisted
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_outline_rounded,
+                              color: isWishlisted
+                                  ? Colors.red
+                                  : AppTheme.highContrastGold,
                               size: 18,
                             ),
                           ),
@@ -954,16 +905,22 @@ class ProductCard extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
-                                  final wasWishlisted = ref.read(wishlistProvider).contains(product.remoteId);
-                                  ref.read(wishlistProvider.notifier).toggleWishlist(product.remoteId);
-                                  
+                                  final wasWishlisted = ref
+                                      .read(wishlistProvider)
+                                      .contains(product.remoteId);
+                                  ref
+                                      .read(wishlistProvider.notifier)
+                                      .toggleWishlist(product.remoteId);
+
                                   if (wasWishlisted) {
                                     SardSnackBar.show(
                                       context,
                                       "${product.getName(languageCode)} ${l10n.removed}",
                                       action: SnackBarAction(
                                         label: l10n.undo,
-                                        onPressed: () => ref.read(wishlistProvider.notifier).toggleWishlist(product.remoteId),
+                                        onPressed: () => ref
+                                            .read(wishlistProvider.notifier)
+                                            .toggleWishlist(product.remoteId),
                                       ),
                                     );
                                   } else {
@@ -972,7 +929,14 @@ class ProductCard extends ConsumerWidget {
                                       "${product.getName(languageCode)} ${l10n.addedToCart}",
                                       action: SnackBarAction(
                                         label: l10n.myWishlist,
-                                        onPressed: () => ref.read(mainWrapperPageProvider.notifier).state = 1,
+                                        onPressed: () =>
+                                            ref
+                                                    .read(
+                                                      mainWrapperPageProvider
+                                                          .notifier,
+                                                    )
+                                                    .state =
+                                                1,
                                       ),
                                     );
                                   }
@@ -988,9 +952,12 @@ class ProductCard extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 child: SizedBox(
-                  height: 128, // Adjusted to 128 to fix 3px overflow
+                  height: 80, // Further reduced to maximize image space
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1006,15 +973,6 @@ class ProductCard extends ConsumerWidget {
                               fontWeight: FontWeight.bold,
                               height: 1.2,
                               color: onCardColor,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            product.getSection(languageCode),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: onCardColor.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -1044,7 +1002,9 @@ class ProductCard extends ConsumerWidget {
                                       AppTheme.buttonRadius / 2,
                                     ),
                                     border: Border.all(
-                                      color: AppTheme.getButtonBorderColor(theme),
+                                      color: AppTheme.getButtonBorderColor(
+                                        theme,
+                                      ),
                                       width: 1,
                                     ),
                                   ),
@@ -1089,7 +1049,9 @@ class ProductCard extends ConsumerWidget {
                                       AppTheme.buttonRadius / 2,
                                     ),
                                     border: Border.all(
-                                      color: AppTheme.getButtonBorderColor(theme),
+                                      color: AppTheme.getButtonBorderColor(
+                                        theme,
+                                      ),
                                       width: 1,
                                     ),
                                   ),
@@ -1097,7 +1059,9 @@ class ProductCard extends ConsumerWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
                                         child: Icon(
                                           Icons.remove_rounded,
                                           color: onCardColor,
@@ -1110,16 +1074,19 @@ class ProductCard extends ConsumerWidget {
                                         child: Text(
                                           '$totalQty',
                                           style: TextStyle(
-                                          color: onCardColor,
-                                          fontWeight: FontWeight.w900,
+                                            color: onCardColor,
+                                            fontWeight: FontWeight.w900,
                                             fontSize: 13,
                                             height: 1.0,
-                                            leadingDistribution: TextLeadingDistribution.even,
+                                            leadingDistribution:
+                                                TextLeadingDistribution.even,
                                           ),
                                         ),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
                                         child: Icon(
                                           Icons.add_rounded,
                                           color: onCardColor,
@@ -1139,7 +1106,9 @@ class ProductCard extends ConsumerWidget {
                                   child: GestureDetector(
                                     onTap: () {
                                       final target = productItems.last;
-                                      ref.read(cartProvider.notifier).updateQuantity(
+                                      ref
+                                          .read(cartProvider.notifier)
+                                          .updateQuantity(
                                             target.id,
                                             target.quantity - 1,
                                           );
@@ -1147,14 +1116,17 @@ class ProductCard extends ConsumerWidget {
                                     behavior: HitTestBehavior.opaque,
                                   ),
                                 ),
-                                // Plus Button (Right half)
+                                // Plus Button (Right half) → navigate to detail
                                 Positioned(
                                   right: -10,
                                   top: -10,
                                   bottom: -10,
                                   width: 50,
                                   child: GestureDetector(
-                                    onTap: () => _handleAdd(context, ref),
+                                    onTap: () => context.push(
+                                      '${AppRoutes.productDetail}?id=${product.remoteId}',
+                                      extra: product,
+                                    ),
                                     behavior: HitTestBehavior.opaque,
                                   ),
                                 ),

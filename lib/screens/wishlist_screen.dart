@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/wishlist_provider.dart';
 import '../providers/catalog_provider.dart';
@@ -406,6 +407,11 @@ class _WishlistItemCard extends StatelessWidget {
         },
       );
       displayPrice = smallVariant.price;
+    } else if (product.isBulkProduct && (product.bulkBoxes?.isNotEmpty ?? false)) {
+      final nonZeroBoxes = product.bulkBoxes!.where((b) => b.price > 0).toList();
+      if (nonZeroBoxes.isNotEmpty) {
+        displayPrice = nonZeroBoxes.reduce((a, b) => a.price < b.price ? a : b).price;
+      }
     }
 
     final gender = product.gender;
@@ -442,13 +448,31 @@ class _WishlistItemCard extends StatelessWidget {
                       clipBehavior: Clip.antiAlias,
                       child: Hero(
                         tag: 'product_wish_${product.remoteId}',
-                        child: Image.asset(
-                          product.imageUrl,
-                          fit: BoxFit.cover,
-                          height: double.infinity,
-                          width: double.infinity,
-                          cacheWidth: 600,
-                        ),
+                        child: product.imageUrl.startsWith('http')
+                            ? CachedNetworkImage(
+                                imageUrl: product.imageUrl,
+                                fit: BoxFit.cover,
+                                height: double.infinity,
+                                width: double.infinity,
+                                placeholder: (_, __) => Container(
+                                  color: AppTheme.getCardColor(theme),
+                                ),
+                                errorWidget: (_, __, ___) => Container(
+                                  color: AppTheme.getCardColor(theme),
+                                  child: Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: AppTheme.accentGold.withValues(alpha: 0.4),
+                                    size: 32,
+                                  ),
+                                ),
+                              )
+                            : Image.asset(
+                                product.imageUrl,
+                                fit: BoxFit.cover,
+                                height: double.infinity,
+                                width: double.infinity,
+                                cacheWidth: 600,
+                              ),
                       ),
                     ),
                     if (gender != null)
@@ -511,34 +535,20 @@ class _WishlistItemCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: SizedBox(
-                  height: 128,
+                  height: 80,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            product.getName(languageCode),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              height: 1.2,
-                              color: onCardColor,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            product.getSection(languageCode),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: onCardColor.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        product.getName(languageCode),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                          color: onCardColor,
+                        ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

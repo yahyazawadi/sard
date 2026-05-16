@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../custom/app_theme.dart';
 import 'sard_primary_button.dart';
-import 'package:sard/l10n/app_localizations.dart';
+import 'package:juba/l10n/app_localizations.dart';
 
 class PhoneNumberPopup extends StatefulWidget {
   final String? initialNumber;

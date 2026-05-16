@@ -41,10 +41,17 @@ class CollectionScreen extends ConsumerWidget {
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.asset(
-                      template.bannerUrl,
-                      fit: BoxFit.cover,
-                    ),
+                    template.bannerUrl.startsWith('http')
+                        ? Image.network(
+                            template.bannerUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Image.asset('assets/images/allchocolatetype3to2.jpg', fit: BoxFit.cover),
+                          )
+                        : Image.asset(
+                            template.bannerUrl,
+                            fit: BoxFit.cover,
+                          ),
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.4),
@@ -58,7 +65,7 @@ class CollectionScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            template.title,
+                            template.getTitle(AppLocalizations.of(context)!.localeName),
                             style: Theme.of(context).textTheme.displaySmall?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

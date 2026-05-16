@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
@@ -91,112 +92,121 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-              color: theme.colorScheme.primary,
-            ),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(AppRoutes.home);
-              }
-            },
-          ),
-          title: Text(l10n.checkout, style: theme.textTheme.titleLarge),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.shopping_cart_outlined,
-                color: AppTheme.gradientStart,
-                size: 24,
-              ),
-              onPressed: () {
-                ref.read(mainWrapperPageProvider.notifier).state = 1;
-                context.go(AppRoutes.home);
-              },
-            ),
-          ],
-        ),
+        extendBody: true,
         body: SardBackground(
-          child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              const SizedBox(height: 40),
-
-              _buildSectionLabel(l10n.shippingAddress),
-              SardInfoCard(
-                icon: Icons.location_on_outlined,
-                title: l10n.shippingAddress,
-                subtitle: _currentAddress.contains('\n')
-                    ? _currentAddress.split('\n').last
-                    : _currentAddress,
-                onTap: () => LocationPopup.show(
-                  context,
-                  currentAddress: _currentAddress,
-                  onAddressChanged: (newAddress) {
-                    setState(() => _currentAddress = newAddress);
-                    ref
-                        .read(userProfileProvider.notifier)
-                        .updateAddress(newAddress);
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                pinned: true,
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                    color: AppTheme.getIconColor(theme),
+                  ),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go(AppRoutes.home);
+                    }
                   },
                 ),
+                title: Text(
+                  l10n.checkout,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getIconColor(theme),
+                  ),
+                ),
+                centerTitle: true,
+                actions: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.shopping_cart_outlined,
+                      color: AppTheme.getIconColor(theme),
+                      size: 24,
+                    ),
+                    onPressed: () {
+                      ref.read(mainWrapperPageProvider.notifier).state = 1;
+                      context.go(AppRoutes.home);
+                    },
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 20),
-              _buildSectionLabel(l10n.phoneNumber),
-              SardInfoCard(
-                icon: Icons.phone_android_outlined,
-                title: l10n.phoneNumber,
-                subtitle: _phoneController.text.isEmpty
-                    ? l10n.notSet
-                    : _phoneController.text,
-                onTap: () => PhoneNumberPopup.show(
-                  context,
-                  initialNumber: _phoneController.text,
-                  onConfirm: (newNumber) {
-                    setState(() => _phoneController.text = newNumber);
-                    ref
-                        .read(userProfileProvider.notifier)
-                        .updatePhoneNumber(newNumber);
-                  },
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      _buildSectionLabel(l10n.shippingAddress),
+                      SardInfoCard(
+                        icon: Icons.location_on_outlined,
+                        title: l10n.shippingAddress,
+                        subtitle: _currentAddress.contains('\n')
+                            ? _currentAddress.split('\n').last
+                            : _currentAddress,
+                        onTap: () => LocationPopup.show(
+                          context,
+                          currentAddress: _currentAddress,
+                          onAddressChanged: (newAddress) {
+                            setState(() => _currentAddress = newAddress);
+                            ref
+                                .read(userProfileProvider.notifier)
+                                .updateAddress(newAddress);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSectionLabel(l10n.phoneNumber),
+                      SardInfoCard(
+                        icon: Icons.phone_android_outlined,
+                        title: l10n.phoneNumber,
+                        subtitle: _phoneController.text.isEmpty
+                            ? l10n.notSet
+                            : _phoneController.text,
+                        onTap: () => PhoneNumberPopup.show(
+                          context,
+                          initialNumber: _phoneController.text,
+                          onConfirm: (newNumber) {
+                            setState(() => _phoneController.text = newNumber);
+                            ref
+                                .read(userProfileProvider.notifier)
+                                .updatePhoneNumber(newNumber);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      PaymentMethodSelector(
+                        selectedMethod: _selectedPayment,
+                        onSelected: (method) {
+                          setState(() => _selectedPayment = method);
+                          ref
+                              .read(userProfileProvider.notifier)
+                              .updatePreferredPayment(method);
+                          if (method == 'Credit') {
+                            _showCreditCardSheet(context, total);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 32),
-              PaymentMethodSelector(
-                selectedMethod: _selectedPayment,
-                onSelected: (method) {
-                  setState(() => _selectedPayment = method);
-                  ref
-                      .read(userProfileProvider.notifier)
-                      .updatePreferredPayment(method);
-                  if (method == 'Credit') {
-                    _showCreditCardSheet(context, total);
-                  }
-                },
-              ),
-              const SizedBox(height: 32),
+              const SliverToBoxAdapter(child: SizedBox(height: 250)),
             ],
           ),
         ),
-        ),
-        bottomNavigationBar: _buildBottomSummary(
-          theme,
-          cartItems,
-          subtotal,
-          total,
-        ),
+        bottomNavigationBar: cartItems.isNotEmpty
+            ? _buildBottomSummary(theme, cartItems, subtotal, total)
+            : null,
       ),
     );
   }
@@ -208,62 +218,66 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double total,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
-        border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.4),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface.withValues(alpha: 0.85),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(
+              color: AppTheme.getCardBorderColor(theme),
+              width: 1.5,
+            ),
           ),
-        ],
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildSummaryRow(
-              theme,
-              l10n.subtotal,
-              '₪ ${subtotal.toStringAsFixed(2)}',
-            ),
-            const SizedBox(height: 8),
-            _buildSummaryRow(theme, l10n.shipping, '₪ 5.00'),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Divider(color: theme.colorScheme.outlineVariant, height: 1),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.total,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildSummaryRow(
+                    theme,
+                    l10n.subtotal,
+                    '₪ ${subtotal.toStringAsFixed(2)}',
                   ),
-                ),
-                Text(
-                  "₪ ${total.toStringAsFixed(2)}",
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: theme.colorScheme.primary,
+                  const SizedBox(height: 8),
+                  _buildSummaryRow(theme, l10n.shipping, '₪ 5.00'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Divider(
+                      color: theme.colorScheme.outlineVariant,
+                      height: 1,
+                    ),
                   ),
-                ),
-              ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.total,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "₪ ${total.toStringAsFixed(2)}",
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  SardPrimaryButton(
+                    label: l10n.placeOrder,
+                    onTap: () => _handlePlaceOrder(total),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 18),
-            SardPrimaryButton(
-              label: l10n.placeOrder,
-              onTap: () => _handlePlaceOrder(total),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -276,7 +290,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         Text(
           label,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: Colors.grey.shade700,
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -295,10 +309,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 15,
-          color: Colors.grey,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );
@@ -409,7 +423,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ),
                           const SizedBox(height: 24),
                           SardPrimaryButton(
-                            label: '${l10n.payNow}  |  ₪ ${total.toStringAsFixed(2)}',
+                            label:
+                                '${l10n.payNow}  |  ₪ ${total.toStringAsFixed(2)}',
                             onTap: () {
                               TextInput.finishAutofillContext();
                               Navigator.pop(context);
@@ -418,7 +433,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.bottom + 20,
+                    ),
                   ],
                 ),
               ),
@@ -454,7 +471,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             children: [
               Icon(
                 Icons.wifi_rounded,
-                color: Colors.white.withValues(alpha: 0.5),
+                color: AppTheme.getIconColor(theme).withValues(alpha: 0.2),
                 size: 20,
               ),
               const Text(

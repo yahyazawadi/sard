@@ -123,6 +123,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectSize => 'اختر الحجم';
 
   @override
+  String get chocolateType => 'نوع الشوكولاتة';
+
+  @override
   String get addedToCart => 'أضيف إلى السلة';
 
   @override

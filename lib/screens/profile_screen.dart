@@ -233,7 +233,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 theme: theme,
                 isDestructive: true,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 120),
                   ]),
                 ),
               ),
