@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,13 +24,15 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   final ImagePicker imagePicker = ImagePicker();
   final CloudflareProductApi imageApi = CloudflareProductApi();
 
-  final titleController = TextEditingController();
+  final titleArController = TextEditingController();
+  final titleEnController = TextEditingController();
   final descriptionArController = TextEditingController();
   final descriptionEnController = TextEditingController();
   final mainImageController = TextEditingController();
   final caloriesController = TextEditingController(text: '0');
   final List<AdminBulkBoxInput> bulkBoxInputs = [];
-  final bulkTemplateNameController = TextEditingController();
+  final bulkTemplateNameArController = TextEditingController();
+  final bulkTemplateNameEnController = TextEditingController();
   final List<AdminMixItemInput> mixItemInputs = [];
 
   String? selectedCategory;
@@ -38,6 +41,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   bool isCustomizable = false;
   bool isNewArrival = false;
   bool isUploadingImage = false;
+  List<Map<String, dynamic>> allPreMadeTemplates = [];
+  int selectedTemplateIndex = 0;
 
   final List<AdminOptionInput> optionInputs = [];
   final List<AdminVariantInput> variantInputs = [];
@@ -59,22 +64,64 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   bool get needsBulkConfig =>
       selectedCategory == 'bulk' || selectedCategory == 'mix' || isCustomizable;
 
-  @override
-  void initState() {
-    super.initState();
-
-    final product = widget.existingProduct;
+  void _loadProduct(AdminProductModel? product) {
+    // Reset lists
+    bulkBoxInputs.clear();
+    mixItemInputs.clear();
+    optionInputs.clear();
+    variantInputs.clear();
 
     if (product == null) {
-      bulkTemplateNameController.text = '1/3 Mix Template';
-      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Small Box'..weightController.text = '500'..priceController.text = '50');
-      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Medium Box'..weightController.text = '1000'..priceController.text = '90');
-      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Large Box'..weightController.text = '2000'..priceController.text = '160');
+      bulkBoxInputs.add(AdminBulkBoxInput()
+        ..nameArController.text = 'صندوق صغير'
+        ..nameEnController.text = 'Small Box'
+        ..weightController.text = '500'
+        ..priceController.text = '50');
+      bulkBoxInputs.add(AdminBulkBoxInput()
+        ..nameArController.text = 'صندوق متوسط'
+        ..nameEnController.text = 'Medium Box'
+        ..weightController.text = '1000'
+        ..priceController.text = '90');
+      bulkBoxInputs.add(AdminBulkBoxInput()
+        ..nameArController.text = 'صندوق كبير'
+        ..nameEnController.text = 'Large Box'
+        ..weightController.text = '2000'
+        ..priceController.text = '160');
+      
+      allPreMadeTemplates = [{
+        'name': 'Default Mix',
+        'name_ar': 'ميكس افتراضي',
+        'name_en': 'Default Mix',
+        'partitions': {
+          'mix': {
+            'name_ar': 'ميكس',
+            'name_en': 'Mix',
+            'ratio': 1.0,
+            'items': []
+          },
+        }
+      }];
+      selectedTemplateIndex = 0;
+      
+      final template = allPreMadeTemplates[0];
+      bulkTemplateNameArController.text = template['name_ar'];
+      bulkTemplateNameEnController.text = template['name_en'];
+      
+      mixItemInputs.clear();
+      final partitions = template['partitions'] as Map<String, dynamic>;
+      partitions.forEach((key, val) {
+        mixItemInputs.add(AdminMixItemInput()
+          ..nameEnController.text = val['name_en']
+          ..nameArController.text = val['name_ar']
+          ..ratioController.text = val['ratio'].toString());
+      });
+
       optionInputs.add(AdminOptionInput());
       return;
     }
 
-    titleController.text = product.title;
+    titleArController.text = product.titleAr;
+    titleEnController.text = product.titleEn.isNotEmpty ? product.titleEn : product.title;
     descriptionArController.text = product.descriptionAr;
     descriptionEnController.text = product.descriptionEn.isNotEmpty
         ? product.descriptionEn
@@ -94,19 +141,46 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       for (final box in boxes) {
         bulkBoxInputs.add(
           AdminBulkBoxInput()
-            ..nameController.text = box.title
+            ..nameArController.text = box.titleAr
+            ..nameEnController.text = box.titleEn
             ..weightController.text = box.weightG.toString()
             ..priceController.text = box.price.toString()
         );
       }
 
-      if (bulkConfig.preMadeTemplates.isNotEmpty) {
-        final template = bulkConfig.preMadeTemplates.first;
+      // Load templates and ensure at least one exists
+      final templatesFromConfig = bulkConfig.preMadeTemplates;
+      allPreMadeTemplates = templatesFromConfig.isNotEmpty 
+          ? List<Map<String, dynamic>>.from(templatesFromConfig)
+          : [{
+              'name': 'Default Mix',
+              'name_ar': 'ميكس افتراضي',
+              'name_en': 'Default Mix',
+              'partitions': {
+                'mix': {'name_ar': 'ميكس', 'name_en': 'Mix', 'ratio': 1.0, 'items': []},
+              }
+            }];
+    } else if (selectedCategory == 'bulk') {
+      // Fallback for bulk category without specific config
+      allPreMadeTemplates = [{
+        'name': 'Default Mix',
+        'name_ar': 'ميكس افتراضي',
+        'name_en': 'Default Mix',
+        'partitions': {
+          'mix': {'name_ar': 'ميكس', 'name_en': 'Mix', 'ratio': 1.0, 'items': []},
+        }
+      }];
+    }
+
+    if (selectedCategory == 'bulk') {
+      selectedTemplateIndex = 0;
+      final template = allPreMadeTemplates[selectedTemplateIndex];
         final partitions = Map<String, dynamic>.from(
           template['partitions'] ?? {},
         );
 
-        bulkTemplateNameController.text = template['name']?.toString() ?? '';
+        bulkTemplateNameArController.text = template['name_ar']?.toString() ?? '';
+        bulkTemplateNameEnController.text = template['name_en']?.toString() ?? template['name']?.toString() ?? '';
         
         partitions.forEach((key, value) {
           double ratio = 0;
@@ -120,50 +194,50 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
               final itemsList = value['items'] as List<dynamic>;
               for (final item in itemsList) {
                 if (item is Map) {
+                  final subItemAr = item['name_ar']?.toString() ?? '';
+                  final subItemEn = item['name_en']?.toString() ?? '';
+                  final subItemName = item['name']?.toString() ?? '';
+
                   parsedItems.add(
                     AdminMixSubItemInput()
-                      ..nameController.text = item['name']?.toString() ?? ''
+                      ..nameArController.text = subItemAr.isNotEmpty ? subItemAr : (_isArabic(subItemName) ? subItemName : '')
+                      ..nameEnController.text = subItemEn.isNotEmpty ? subItemEn : (!_isArabic(subItemName) ? subItemName : '')
                       ..imageController.text = item['image']?.toString() ?? ''
                   );
                 }
               }
-            } else if (value['images'] != null) {
-              final imagesList = List<String>.from(value['images'] ?? []);
-              for (final img in imagesList) {
-                parsedItems.add(AdminMixSubItemInput()..imageController.text = img);
-              }
             }
           }
-
           mixItemInputs.add(
             AdminMixItemInput()
-              ..nameController.text = key
+              ..nameEnController.text = (value is Map ? value['name_en']?.toString() : null) ?? key
+              ..nameArController.text = (value is Map ? value['name_ar']?.toString() : null) ?? ''
               ..ratioController.text = ratio.toString()
               ..items.addAll(parsedItems),
           );
         });
       }
-    }
 
     if (mixItemInputs.isEmpty) {
-      mixItemInputs.add(AdminMixItemInput()..nameController.text = 'dark'..ratioController.text = '0.33');
-      mixItemInputs.add(AdminMixItemInput()..nameController.text = 'milk'..ratioController.text = '0.33');
-      mixItemInputs.add(AdminMixItemInput()..nameController.text = 'white'..ratioController.text = '0.34');
+      mixItemInputs.add(AdminMixItemInput()
+        ..nameEnController.text = 'Mix'
+        ..nameArController.text = 'ميكس'
+        ..ratioController.text = '1.0');
     }
 
     if (bulkBoxInputs.isEmpty) {
-      bulkBoxInputs.add(AdminBulkBoxInput()..nameController.text = 'Small Box'..weightController.text = '500'..priceController.text = '50');
-    }
-
-    if (bulkTemplateNameController.text.trim().isEmpty) {
-      bulkTemplateNameController.text = '1/3 Mix Template';
+      bulkBoxInputs.add(AdminBulkBoxInput()..nameEnController.text = 'Small Box'..nameArController.text = 'صندوق صغير'..weightController.text = '500'..priceController.text = '50');
     }
 
     for (final option in product.options) {
       optionInputs.add(
         AdminOptionInput()
-          ..nameController.text = option.name
-          ..valuesController.text = option.values.join(', '),
+          ..nameArController.text = option.nameAr
+          ..nameEnController.text = option.nameEn
+          ..valuesArController.text = option.valuesAr.join(', ')
+          ..valuesEnController.text = option.valuesEn.isNotEmpty 
+              ? option.valuesEn.join(', ') 
+              : option.values.join(', '),
       );
     }
 
@@ -171,7 +245,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       variantInputs.add(
         _buildVariantInput(
           existingId: variant.id,
-          title: variant.title,
+          titleAr: variant.titleAr,
+          titleEn: variant.titleEn,
           attributes: variant.attributes,
           price: variant.price.toString(),
           weight: variant.weightG.toString(),
@@ -187,15 +262,120 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     }
   }
 
+  void _saveCurrentTemplateToState() {
+    if (allPreMadeTemplates.isEmpty) {
+       allPreMadeTemplates.add({});
+       selectedTemplateIndex = 0;
+    }
+    
+    if (selectedTemplateIndex < 0 || selectedTemplateIndex >= allPreMadeTemplates.length) return;
+
+    allPreMadeTemplates[selectedTemplateIndex] = {
+      'name': bulkTemplateNameEnController.text.trim(),
+      'name_ar': bulkTemplateNameArController.text.trim(),
+      'name_en': bulkTemplateNameEnController.text.trim(),
+      'partitions': {
+        for (final mix in mixItemInputs)
+          mix.nameEnController.text.trim().toLowerCase(): {
+            'name_ar': mix.nameArController.text.trim(),
+            'name_en': mix.nameEnController.text.trim(),
+            'ratio': double.tryParse(mix.ratioController.text.trim()) ?? 0,
+            'items': mix.items.map((subItem) => {
+              'name': subItem.nameEnController.text.trim().isNotEmpty 
+                      ? subItem.nameEnController.text.trim() 
+                      : subItem.nameArController.text.trim(),
+              'name_ar': subItem.nameArController.text.trim(),
+              'name_en': subItem.nameEnController.text.trim(),
+              'image': subItem.imageController.text.trim(),
+            }).where((item) => (item['image'] as String).isNotEmpty).toList(),
+          }
+      },
+    };
+  }
+
+  List<Map<String, dynamic>> _getUpdatedTemplatesList() {
+    _saveCurrentTemplateToState();
+    return allPreMadeTemplates;
+  }
+
+  void _loadTemplateAtIndex(int index) {
+    if (index < 0 || index >= allPreMadeTemplates.length) return;
+    
+    _saveCurrentTemplateToState(); // Save current before switching
+    
+    setState(() {
+      selectedTemplateIndex = index;
+      final template = allPreMadeTemplates[selectedTemplateIndex];
+      final partitions = Map<String, dynamic>.from(template['partitions'] ?? {});
+
+      bulkTemplateNameArController.text = template['name_ar']?.toString() ?? '';
+      bulkTemplateNameEnController.text = template['name_en']?.toString() ?? template['name']?.toString() ?? '';
+      
+      mixItemInputs.clear();
+      partitions.forEach((key, value) {
+        double ratio = 0;
+        List<AdminMixSubItemInput> parsedItems = [];
+        
+        if (value is num) {
+          ratio = value.toDouble();
+        } else if (value is Map) {
+          ratio = (value['ratio'] as num?)?.toDouble() ?? 0;
+          if (value['items'] != null) {
+            final itemsList = value['items'] as List<dynamic>;
+            for (final item in itemsList) {
+              if (item is Map) {
+                final subItemAr = item['name_ar']?.toString() ?? '';
+                final subItemEn = item['name_en']?.toString() ?? '';
+                final subItemName = item['name']?.toString() ?? '';
+
+                parsedItems.add(
+                  AdminMixSubItemInput()
+                    ..nameArController.text = subItemAr.isNotEmpty ? subItemAr : (_isArabic(subItemName) ? subItemName : '')
+                    ..nameEnController.text = subItemEn.isNotEmpty ? subItemEn : (!_isArabic(subItemName) ? subItemName : '')
+                    ..imageController.text = item['image']?.toString() ?? ''
+                );
+              }
+            }
+          }
+        }
+
+        mixItemInputs.add(
+          AdminMixItemInput()
+            ..nameEnController.text = (value is Map ? value['name_en']?.toString() : null) ?? key
+            ..nameArController.text = (value is Map ? value['name_ar']?.toString() : null) ?? ''
+            ..ratioController.text = ratio.toString()
+            ..items.addAll(parsedItems),
+        );
+      });
+
+      if (mixItemInputs.isEmpty) {
+        mixItemInputs.add(AdminMixItemInput()..nameEnController.text = 'Mix'..nameArController.text = 'ميكس'..ratioController.text = '1.0');
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProduct(widget.existingProduct);
+    
+    // Add listener to mainImageController to update preview in real-time
+    mainImageController.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
   @override
   void dispose() {
-    titleController.dispose();
+    titleArController.dispose();
+    titleEnController.dispose();
     descriptionArController.dispose();
     descriptionEnController.dispose();
     categoryController.dispose();
     mainImageController.dispose();
     caloriesController.dispose();
-    bulkTemplateNameController.dispose();
+    bulkTemplateNameArController.dispose();
+    bulkTemplateNameEnController.dispose();
     for (final box in bulkBoxInputs) {
       box.dispose();
     }
@@ -220,7 +400,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
   AdminVariantInput _buildVariantInput({
     String? existingId,
-    required String title,
+    required String titleAr,
+    required String titleEn,
     required Map<String, String> attributes,
     String price = '',
     String weight = '',
@@ -230,7 +411,8 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   }) {
     final input = AdminVariantInput(
       existingId: existingId,
-      title: title,
+      titleAr: titleAr,
+      titleEn: titleEn,
       attributes: attributes,
     );
 
@@ -244,9 +426,20 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   }
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    if (!mounted) return;
+    try {
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          width: 400,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error showing message: $e');
+    }
   }
 
   Future<String?> pickAndUploadImage({String folder = 'products'}) async {
@@ -256,7 +449,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       );
 
       if (pickedFile == null) {
-        return null;
+        return null; // User cancelled
       }
 
       if (mounted) {
@@ -267,11 +460,17 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
       final bytes = await pickedFile.readAsBytes();
 
-      return await imageApi.uploadImageBytes(
+      final url = await imageApi.uploadImageBytes(
         bytes: bytes,
         filename: pickedFile.name,
         folder: folder,
       );
+
+      if (url.isEmpty) {
+        throw Exception('Server returned an empty image URL');
+      }
+
+      return url;
     } catch (error) {
       if (mounted) {
         showMessage('Image upload failed: $error');
@@ -328,19 +527,26 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     }
   }
 
+  bool _isArabic(String s) => RegExp(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]').hasMatch(s);
+
   void _syncMixItemsToCsv(AdminMixItemInput mix) {
     final buffer = StringBuffer();
     for (final item in mix.items) {
-      final n = item.nameController.text.trim();
+      final ar = item.nameArController.text.trim();
+      final en = item.nameEnController.text.trim();
       final u = item.imageController.text.trim();
-      if (n.isNotEmpty && u.isNotEmpty) {
+      
+      // Use whichever name is available, prioritize EN for the "Link, Name" format if both exist
+      final name = en.isNotEmpty ? en : ar;
+      
+      if (name.isNotEmpty && u.isNotEmpty) {
         if (mix.csvTitleFirst) {
-          buffer.writeln('$n, $u');
+          buffer.writeln('$name, $u');
         } else {
-          buffer.writeln('$u, $n');
+          buffer.writeln('$u, $name');
         }
-      } else if (n.isNotEmpty) {
-        buffer.writeln(n);
+      } else if (name.isNotEmpty) {
+        buffer.writeln(name);
       } else if (u.isNotEmpty) {
         buffer.writeln(u);
       }
@@ -355,27 +561,42 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
     final parts = text.split(RegExp(r'[,\n]+')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
     
+
     if (mix.csvTitleFirst) {
       String? currentName;
       for (final part in parts) {
         if (part.startsWith('http://') || part.startsWith('https://')) {
+          final subItem = AdminMixSubItemInput()..imageController.text = part;
           if (currentName != null) {
-            mix.items.add(AdminMixSubItemInput()
-              ..nameController.text = currentName
-              ..imageController.text = part);
+            if (_isArabic(currentName)) {
+              subItem.nameArController.text = currentName;
+            } else {
+              subItem.nameEnController.text = currentName;
+            }
             currentName = null;
-          } else {
-            mix.items.add(AdminMixSubItemInput()..imageController.text = part);
           }
+          mix.items.add(subItem);
         } else {
           if (currentName != null) {
-            mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+             final subItem = AdminMixSubItemInput();
+             if (_isArabic(currentName)) {
+               subItem.nameArController.text = currentName;
+             } else {
+               subItem.nameEnController.text = currentName;
+             }
+             mix.items.add(subItem);
           }
           currentName = part;
         }
       }
       if (currentName != null) {
-        mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+        final subItem = AdminMixSubItemInput();
+        if (_isArabic(currentName)) {
+          subItem.nameArController.text = currentName;
+        } else {
+          subItem.nameEnController.text = currentName;
+        }
+        mix.items.add(subItem);
       }
     } else {
       // Link then Title
@@ -387,14 +608,17 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
           }
           currentUrl = part;
         } else {
-          if (currentUrl != null) {
-            mix.items.add(AdminMixSubItemInput()
-              ..nameController.text = part
-              ..imageController.text = currentUrl);
-            currentUrl = null;
+          final subItem = AdminMixSubItemInput();
+          if (_isArabic(part)) {
+            subItem.nameArController.text = part;
           } else {
-            mix.items.add(AdminMixSubItemInput()..nameController.text = part);
+            subItem.nameEnController.text = part;
           }
+          if (currentUrl != null) {
+            subItem.imageController.text = currentUrl;
+            currentUrl = null;
+          }
+          mix.items.add(subItem);
         }
       }
       if (currentUrl != null) {
@@ -413,37 +637,82 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   List<AdminProductOption> getOptions() {
     return optionInputs
         .map((input) {
-          final name = input.nameController.text.trim();
-          final values = input.valuesController.text
+          final nameAr = input.nameArController.text.trim();
+          final nameEn = input.nameEnController.text.trim();
+          
+          final valuesAr = input.valuesArController.text
+              .split(',')
+              .map((value) => value.trim())
+              .where((value) => value.isNotEmpty)
+              .toList();
+              
+          final valuesEn = input.valuesEnController.text
               .split(',')
               .map((value) => value.trim())
               .where((value) => value.isNotEmpty)
               .toList();
 
-          return AdminProductOption(name: name, values: values);
+          return AdminProductOption(
+            name: nameEn.isNotEmpty ? nameEn : nameAr,
+            nameAr: nameAr,
+            nameEn: nameEn,
+            values: valuesEn.isNotEmpty ? valuesEn : valuesAr,
+            valuesAr: valuesAr,
+            valuesEn: valuesEn,
+          );
         })
-        .where((option) => option.name.isNotEmpty && option.values.isNotEmpty)
+        .where((option) => (option.nameEn.isNotEmpty || option.nameAr.isNotEmpty) && (option.valuesAr.isNotEmpty || option.valuesEn.isNotEmpty))
         .toList();
   }
 
-  List<Map<String, String>> generateCombinations(
+  List<Map<String, dynamic>> generateCombinations(
     List<AdminProductOption> options,
   ) {
-    List<Map<String, String>> result = [{}];
+    List<Map<String, dynamic>> result = [
+      {'attributes': <String, String>{}, 'strAr': '', 'strEn': ''}
+    ];
 
     for (final option in options) {
-      final List<Map<String, String>> newResult = [];
+      final List<Map<String, dynamic>> newResult = [];
 
       for (final existing in result) {
-        for (final value in option.values) {
+        final existingAttrs = Map<String, String>.from(existing['attributes']);
+        final existingStrAr = existing['strAr'] as String;
+        final existingStrEn = existing['strEn'] as String;
+
+        // Ensure we have same number of values if possible, otherwise fallback
+        final count = option.valuesEn.length;
+        for (int i = 0; i < count; i++) {
+          final valEn = option.valuesEn[i];
+          final valAr = (i < option.valuesAr.length) ? option.valuesAr[i] : valEn;
+          
+          final newAttrs = Map<String, String>.from(existingAttrs);
+          newAttrs[option.name.toLowerCase().replaceAll(' ', '_')] = valEn;
+
           newResult.add({
-            ...existing,
-            option.name.toLowerCase().replaceAll(' ', '_'): value,
+            'attributes': newAttrs,
+            'strAr': existingStrAr.isEmpty ? valAr : '$existingStrAr $valAr',
+            'strEn': existingStrEn.isEmpty ? valEn : '$existingStrEn $valEn',
           });
+        }
+        
+        // Handle case where valuesEn is empty but values is not (legacy)
+        if (count == 0 && option.values.isNotEmpty) {
+           for (final val in option.values) {
+              final newAttrs = Map<String, String>.from(existingAttrs);
+              newAttrs[option.name.toLowerCase().replaceAll(' ', '_')] = val;
+              newResult.add({
+                'attributes': newAttrs,
+                'strAr': existingStrAr.isEmpty ? val : '$existingStrAr $val',
+                'strEn': existingStrEn.isEmpty ? val : '$existingStrEn $val',
+              });
+           }
         }
       }
 
-      result = newResult;
+      if (newResult.isNotEmpty) {
+        result = newResult;
+      }
     }
 
     return result;
@@ -486,14 +755,17 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       optionInputs.clear();
       optionInputs.add(
         AdminOptionInput()
-          ..nameController.text = 'Size'
-          ..valuesController.text = 'Small, Medium, Large',
+          ..nameArController.text = 'الحجم'
+          ..nameEnController.text = 'Size'
+          ..valuesEnController.text = 'Small, Medium, Large'
+          ..valuesArController.text = 'صغير، متوسط، كبير',
       );
-      optionInputs.add(
-        AdminOptionInput()
-          ..nameController.text = 'Flavor'
-          ..valuesController.text = 'Milk, Dark, White',
-      );
+      final flavorOption = AdminOptionInput();
+      flavorOption.nameEnController.text = 'Flavor';
+      flavorOption.nameArController.text = 'النكهة';
+      flavorOption.valuesEnController.text = 'Mix, Dark, Milk, White';
+      flavorOption.valuesArController.text = 'ميكس، داكن، بالحليب، أبيض';
+      optionInputs.add(flavorOption);
     });
   }
 
@@ -511,7 +783,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
     for (final variant in variantInputs) {
       existingDrafts[getVariantKey(
-        title: variant.title,
+        title: variant.titleEn,
         attributes: variant.attributes,
       )] = _AdminVariantDraft(
         existingId: variant.existingId,
@@ -526,13 +798,23 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
     variantInputs.clear();
 
-    final baseTitle = titleController.text.trim();
+    final baseTitleAr = titleArController.text.trim();
+    final baseTitleEn = titleEnController.text.trim();
 
     for (final combination in combinations) {
-      final generatedTitle = combination.isEmpty
-          ? (baseTitle.isNotEmpty ? baseTitle : 'Default Variant')
-          : combination.values.join(' ');
-      final key = getVariantKey(title: generatedTitle, attributes: combination);
+      final attributes = Map<String, String>.from(combination['attributes'] ?? {});
+      final combinationStrAr = combination['strAr'] as String? ?? '';
+      final combinationStrEn = combination['strEn'] as String? ?? '';
+      
+      final generatedTitleAr = attributes.isEmpty
+          ? (baseTitleAr.isNotEmpty ? baseTitleAr : 'Default Variant')
+          : (baseTitleAr.isNotEmpty ? '$baseTitleAr - $combinationStrAr' : combinationStrAr);
+          
+      final generatedTitleEn = attributes.isEmpty
+          ? (baseTitleEn.isNotEmpty ? baseTitleEn : 'Default Variant')
+          : (baseTitleEn.isNotEmpty ? '$baseTitleEn - $combinationStrEn' : combinationStrEn);
+
+      final key = getVariantKey(title: generatedTitleEn, attributes: attributes);
       final draft = existingDrafts[key];
 
       final dPrice = defaultPriceController.text.trim();
@@ -542,8 +824,9 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       variantInputs.add(
         _buildVariantInput(
           existingId: draft?.existingId,
-          title: generatedTitle,
-          attributes: combination,
+          titleAr: generatedTitleAr,
+          titleEn: generatedTitleEn,
+          attributes: Map<String, String>.from(combination['attributes'] ?? {}),
           price: (draft?.price.isNotEmpty ?? false) ? draft!.price : dPrice,
           weight: (draft?.weight.isNotEmpty ?? false) ? draft!.weight : dWeight,
           stock: (draft?.stock.isNotEmpty ?? false) ? draft!.stock : dStock,
@@ -560,6 +843,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     if (selectedCategory == 'bulk') return true;
 
     if (variantInputs.isEmpty) {
+      debugPrint('Validation failed: No variants generated');
       showMessage('Generate variants before saving');
       return false;
     }
@@ -570,17 +854,16 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       final stock = int.tryParse(variant.stockController.text.trim());
 
       if (price == null || price <= 0) {
-        showMessage('${variant.title} needs a valid price');
+        showMessage('${variant.titleEn} needs a valid price');
         return false;
       }
 
       if (weight == null || weight <= 0) {
-        showMessage('${variant.title} needs a valid weight');
+        showMessage('${variant.titleEn} needs a valid weight');
         return false;
       }
-
       if (stock == null || stock < 0) {
-        showMessage('${variant.title} needs valid stock quantity');
+        showMessage('${variant.titleEn} needs valid stock quantity');
         return false;
       }
     }
@@ -589,72 +872,90 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
   }
 
   bool validateBulkConfig() {
-    if (!needsBulkConfig) {
-      return true;
-    }
-
-    if (bulkBoxInputs.isEmpty) {
-      showMessage('Bulk products need at least one box size');
-      return false;
-    }
-
-    for (final box in bulkBoxInputs) {
-      if (box.nameController.text.trim().isEmpty) {
-        showMessage('All boxes must have a name');
-        return false;
-      }
-      final price = double.tryParse(box.priceController.text.trim());
-      if (price == null || price <= 0) {
-        showMessage('All boxes must have a valid price');
-        return false;
-      }
-      final weight = double.tryParse(box.weightController.text.trim());
-      if (weight == null || weight <= 0) {
-        showMessage('All boxes must have a valid weight');
-        return false;
-      }
-    }
-
-    final templateName = bulkTemplateNameController.text.trim();
-    
-    double total = 0;
-    for (final mix in mixItemInputs) {
-      final ratio = double.tryParse(mix.ratioController.text.trim());
-      if (ratio == null || ratio < 0) {
-        showMessage('All mix ratios must be valid positive numbers');
-        return false;
-      }
-      total += ratio;
-    }
-
-    if (templateName.isEmpty) {
-      showMessage('Bulk template name is required');
-      return false;
-    }
-
-    if ((total - 1.0).abs() > 0.01) {
-      showMessage(
-        'Bulk template ratios must add up to 1.0. Current total: ${total.toStringAsFixed(2)}',
-      );
-      return false;
-    }
-
-    return true;
+    if (!needsBulkConfig) return true;
+    final errors = _collectValidationErrors();
+    return !errors.any((e) => e.contains('Bulk') || e.contains('box'));
   }
 
-  void saveProduct() {
-    if (!formKey.currentState!.validate()) {
-      return;
+  List<String> _collectValidationErrors() {
+    final errors = <String>[];
+    
+    // Form fields validation
+    if (titleArController.text.trim().isEmpty) errors.add('Arabic Title is missing');
+    if (titleEnController.text.trim().isEmpty) errors.add('English Title is missing');
+    if (selectedCategory == null || selectedCategory!.trim().isEmpty) errors.add('Category is not selected');
+    if (mainImageController.text.trim().isEmpty) errors.add('Main Image URL is missing');
+    
+    // Variant validation
+    if (selectedCategory != 'bulk') {
+      if (variantInputs.isEmpty) {
+        errors.add('No variants have been generated');
+      } else {
+        for (final variant in variantInputs) {
+          final price = double.tryParse(variant.priceController.text.trim());
+          final weight = double.tryParse(variant.weightController.text.trim());
+          if (price == null || price <= 0) errors.add('Variant "${variant.titleEn}" needs a valid price');
+          if (weight == null || weight <= 0) errors.add('Variant "${variant.titleEn}" needs a valid weight');
+        }
+      }
     }
+    
+    // Bulk validation
+    if (needsBulkConfig) {
+      if (bulkBoxInputs.isEmpty) {
+        errors.add('Bulk products need at least one box size');
+      }
+      for (final box in bulkBoxInputs) {
+        if (box.nameArController.text.trim().isEmpty && box.nameEnController.text.trim().isEmpty) {
+          errors.add('All bulk boxes must have a name');
+        }
+        final price = double.tryParse(box.priceController.text.trim());
+        if (price == null || price <= 0) errors.add('Box "${box.nameEnController.text}" needs a valid price');
+      }
+      
+      final templateNameEn = bulkTemplateNameEnController.text.trim();
+      if (templateNameEn.isEmpty && bulkTemplateNameArController.text.trim().isEmpty) {
+        errors.add('Bulk template name is missing');
+      }
+      
+      double total = 0;
+      for (final mix in mixItemInputs) {
+        final ratio = double.tryParse(mix.ratioController.text.trim());
+        if (ratio == null || ratio < 0) {
+          errors.add('Mix ratio for "${mix.nameEnController.text}" is invalid');
+        } else {
+          total += ratio;
+        }
+      }
+      if ((total - 1.0).abs() > 0.01) {
+        errors.add('Bulk template ratios must add up to 1.0 (Current: ${total.toStringAsFixed(2)})');
+      }
+    }
+    
+    return errors;
+  }
 
-    if (!validateVariants() || !validateBulkConfig()) {
-      return;
+  AdminProductModel? _getCurrentProduct({bool validate = true}) {
+    if (validate) {
+      if (!formKey.currentState!.validate()) {
+        debugPrint('Form validation failed');
+        return null;
+      }
+      if (!validateVariants()) {
+        debugPrint('Variant validation failed');
+        return null;
+      }
+      if (!validateBulkConfig()) {
+        debugPrint('Bulk config validation failed');
+        return null;
+      }
     }
 
     final category = selectedCategory;
-    if (category == null || category.trim().isEmpty) {
+    if (validate && (category == null || category.trim().isEmpty)) {
+      debugPrint('Validation failed: Category is missing');
       showMessage('Category is required');
-      return;
+      return null;
     }
 
     final options = getOptions();
@@ -667,15 +968,17 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 
       return AdminProductVariant(
         id: input.existingId ?? generateAdminId(),
-        title: input.title,
-        price: double.parse(input.priceController.text.trim()),
-        weightG: double.parse(input.weightController.text.trim()),
+        title: input.titleEn,
+        titleAr: input.titleAr,
+        titleEn: input.titleEn,
+        price: double.tryParse(input.priceController.text.trim()) ?? 0,
+        weightG: double.tryParse(input.weightController.text.trim()) ?? 0,
         image: input.imageController.text.trim().isEmpty
             ? null
             : input.imageController.text.trim(),
         images: additionalImages,
         attributes: input.attributes,
-        stockQuantity: int.parse(input.stockController.text.trim()),
+        stockQuantity: int.tryParse(input.stockController.text.trim()) ?? 0,
       );
     }).toList();
 
@@ -690,32 +993,22 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
     final bulkConfig = needsBulkConfig
         ? AdminBulkConfig(
             boxes: bulkBoxInputs.map((box) => AdminBulkBox(
-              title: box.nameController.text.trim(),
-              weightG: double.parse(box.weightController.text.trim()),
-              price: double.parse(box.priceController.text.trim()),
+              title: box.nameEnController.text.trim(),
+              titleAr: box.nameArController.text.trim(),
+              titleEn: box.nameEnController.text.trim(),
+              weightG: double.tryParse(box.weightController.text.trim()) ?? 0,
+              price: double.tryParse(box.priceController.text.trim()) ?? 0,
             )).toList(),
-            preMadeTemplates: [
-              {
-                'name': bulkTemplateNameController.text.trim(),
-                'partitions': {
-                   for (final mix in mixItemInputs)
-                     mix.nameController.text.trim().toLowerCase(): {
-                        'ratio': double.parse(mix.ratioController.text.trim()),
-                        'items': mix.items.map((subItem) => {
-                          'name': subItem.nameController.text.trim(),
-                          'image': subItem.imageController.text.trim(),
-                        }).where((item) => (item['image'] as String).isNotEmpty).toList(),
-                     }
-                },
-              },
-            ],
+            preMadeTemplates: _getUpdatedTemplatesList(),
           )
         : null;
 
-    final product = AdminProductModel(
+    return AdminProductModel(
       id: widget.existingProduct?.id ?? generateAdminId(),
-      title: titleController.text.trim(),
-      category: category,
+      title: titleEnController.text.trim(),
+      titleAr: titleArController.text.trim(),
+      titleEn: titleEnController.text.trim(),
+      category: category ?? '',
       description: descriptionEnController.text.trim(),
       descriptionAr: descriptionArController.text.trim(),
       descriptionEn: descriptionEnController.text.trim(),
@@ -730,8 +1023,176 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
         caloriesPer100g: double.tryParse(caloriesController.text.trim()) ?? 0,
       ),
     );
+  }
 
-    Navigator.pop(context, product);
+  void saveProduct() {
+    final errors = _collectValidationErrors();
+    
+    if (errors.isEmpty) {
+      final product = _getCurrentProduct(validate: false); // We already validated
+      if (product != null) {
+        Navigator.pop(context, product);
+      }
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange.shade800),
+              const SizedBox(width: 10),
+              const Text('Missing Information'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Please fix the following issues before saving:'),
+              const SizedBox(height: 16),
+              ...errors.map((err) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Expanded(child: Text(err)),
+                  ],
+                ),
+              )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showJsonView() {
+    final product = _getCurrentProduct(validate: false);
+    if (product == null) return;
+
+    final jsonStr = const JsonEncoder.withIndent('  ').convert(product.toJson());
+    final controller = TextEditingController(text: jsonStr);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Product JSON'),
+        content: SizedBox(
+          width: 800,
+          height: 600,
+          child: TextField(
+            controller: controller,
+            maxLines: null,
+            expands: true,
+            style: const TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 12,
+            ),
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.all(12),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: controller.text));
+              showMessage('Copied to clipboard');
+            },
+            icon: const Icon(Icons.copy, size: 18),
+            label: const Text('Copy'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              try {
+                final Map<String, dynamic> decoded = jsonDecode(controller.text);
+                final Map<String, dynamic> productData = decoded.containsKey('product') 
+                    ? decoded['product'] 
+                    : decoded;
+                
+                final newProduct = AdminProductModel.fromJson(productData);
+                
+                setState(() {
+                  _loadProduct(newProduct);
+                });
+                
+                Navigator.pop(context);
+                showMessage('Changes applied to form');
+              } catch (e) {
+                showMessage('Invalid JSON: ${e.toString()}');
+              }
+            },
+            icon: const Icon(Icons.check),
+            label: const Text('Apply Changes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _importJson() {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import Product JSON'),
+        content: SizedBox(
+          width: 600,
+          child: TextField(
+            controller: controller,
+            maxLines: 15,
+            decoration: const InputDecoration(
+              hintText: 'Paste JSON here...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              try {
+                final String jsonStr = controller.text;
+                if (jsonStr.trim().isEmpty) return;
+                
+                final Map<String, dynamic> decoded = jsonDecode(jsonStr);
+                final Map<String, dynamic> productData = decoded.containsKey('product') 
+                    ? decoded['product'] 
+                    : decoded;
+                
+                final newProduct = AdminProductModel.fromJson(productData);
+                
+                setState(() {
+                  _loadProduct(newProduct);
+                });
+                
+                Navigator.pop(context);
+                showMessage('Product imported successfully');
+              } catch (e) {
+                showMessage('Invalid JSON: ${e.toString()}');
+              }
+            },
+            child: const Text('Import'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -743,6 +1204,16 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
       appBar: AppBar(
         title: Text(isEditMode ? 'Edit Product' : 'Product Creator'),
         actions: [
+          IconButton(
+            onPressed: _importJson,
+            icon: const Icon(Icons.file_download),
+            tooltip: 'Import JSON',
+          ),
+          IconButton(
+            onPressed: _showJsonView,
+            icon: const Icon(Icons.code),
+            tooltip: 'View JSON',
+          ),
           Padding(
             padding: const EdgeInsetsDirectional.only(end: 16),
             child: FilledButton.icon(
@@ -762,17 +1233,66 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
               title: 'Basic Information',
               child: Column(
                 children: [
-                  TextFormField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Product Title',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Product title is required';
-                      }
-                      return null;
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: titleArController,
+                          textAlign: TextAlign.end,
+                          decoration: const InputDecoration(
+                            labelText: 'Title (Arabic) | العنوان بالعربي',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              debugPrint('Validation failed: Arabic Title is missing');
+                              return 'Arabic title is required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: titleEnController,
+                          decoration: const InputDecoration(
+                            labelText: 'Title (English)',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              debugPrint('Validation failed: English Title is missing');
+                              return 'English title is required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: descriptionArController,
+                          textAlign: TextAlign.end,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            labelText: 'Description (Arabic) | الوصف بالعربي',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: descriptionEnController,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            labelText: 'Description (English)',
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
                   Autocomplete<String>(
@@ -884,11 +1404,41 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: mainImageController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Main Image URL',
+                      hintText: 'https://...',
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (mainImageController.text.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                mainImageController.clear();
+                                setState(() {});
+                              },
+                            ),
+                          IconButton(
+                            icon: const Icon(Icons.content_paste),
+                            tooltip: 'Paste URL',
+                            onPressed: () async {
+                              final data = await Clipboard.getData(Clipboard.kTextPlain);
+                              if (data?.text != null) {
+                                mainImageController.text = data!.text!.trim();
+                                setState(() {});
+                                showMessage('URL Pasted');
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
+                    onChanged: (value) {
+                      setState(() {});
+                    },
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
+                        debugPrint('Validation failed: Main Image URL is empty');
                         return 'Main image is required';
                       }
                       return null;
@@ -901,15 +1451,58 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                       padding: const EdgeInsets.only(bottom: 14),
                       child: Stack(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              mainImageController.text.trim(),
-                              height: 250,
-                              width: double.infinity,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Center(child: Text('Invalid Image URL')),
+                          GestureDetector(
+                            onTap: isUploadingImage
+                                ? null
+                                : () async {
+                                    final imageUrl = await pickAndUploadImage(
+                                      folder: 'products/main',
+                                    );
+
+                                    if (imageUrl != null && mounted) {
+                                      mainImageController.text = imageUrl;
+                                      setState(() {});
+                                    }
+                                  },
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      mainImageController.text.trim(),
+                                      height: 250,
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          const Center(child: Text('Invalid Image URL')),
+                                    ),
+                                  ),
+                                  if (isUploadingImage)
+                                    const CircularProgressIndicator(),
+                                  Positioned(
+                                    bottom: 8,
+                                    right: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.edit, size: 14, color: Colors.white),
+                                          SizedBox(width: 4),
+                                          Text('Click to Change', style: TextStyle(color: Colors.white, fontSize: 12)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           Positioned(
@@ -1045,18 +1638,44 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                             ],
                           ),
                           const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: option.nameArController,
+                                  textAlign: TextAlign.end,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Name (Arabic) | الاسم بالعربي',
+                                    hintText: 'الحجم، نوع الشوكولاتة...',
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: option.nameEnController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Name (English)',
+                                    hintText: 'Size, Chocolate Type...',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
                           TextFormField(
-                            controller: option.nameController,
+                            controller: option.valuesArController,
+                            textAlign: TextAlign.end,
                             decoration: const InputDecoration(
-                              labelText: 'Option Name',
-                              hintText: 'Size, Chocolate Type, Inclusions',
+                              labelText: 'Values (Arabic) | القيم بالعربي',
+                              hintText: 'صغير، متوسط، كبير',
                             ),
                           ),
                           const SizedBox(height: 10),
                           TextFormField(
-                            controller: option.valuesController,
+                            controller: option.valuesEnController,
                             decoration: const InputDecoration(
-                              labelText: 'Values separated by commas',
+                              labelText: 'Values (English)',
                               hintText: 'Small, Medium, Large',
                             ),
                           ),
@@ -1136,12 +1755,24 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            variant.title,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                variant.titleAr,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                variant.titleEn,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                           if (variant.attributes.isNotEmpty) ...[
                             const SizedBox(height: 10),
@@ -1397,12 +2028,25 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                           children: [
                             Expanded(
                               flex: 2,
-                              child: TextFormField(
-                                controller: box.nameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Box Name',
-                                  hintText: 'e.g., Small Box',
-                                ),
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    controller: box.nameArController,
+                                    textAlign: TextAlign.end,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Box (Arabic) | الصندوق بالعربي',
+                                      hintText: 'صندوق صغير',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    controller: box.nameEnController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Box (English)',
+                                      hintText: 'Small Box',
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -1451,17 +2095,120 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                       padding: EdgeInsets.symmetric(vertical: 20),
                       child: Divider(),
                     ),
-                    const Text(
-                      'Default Mix Template',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Bulk Templates Management',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.brown),
+                        ),
+                        if (allPreMadeTemplates.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.brown.withValues(alpha: 0.2)),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int>(
+                                value: (selectedTemplateIndex >= 0 && selectedTemplateIndex < allPreMadeTemplates.length) 
+                                    ? selectedTemplateIndex 
+                                    : 0,
+                                isExpanded: false,
+                                icon: const Icon(Icons.arrow_drop_down, color: Colors.brown),
+                                items: allPreMadeTemplates.asMap().entries.map((e) {
+                                  final name = e.value['name_ar']?.toString().isNotEmpty == true 
+                                      ? e.value['name_ar'] 
+                                      : (e.value['name_en'] ?? e.value['name'] ?? 'Template ${e.key + 1}');
+                                  return DropdownMenuItem(
+                                    value: e.key,
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 200),
+                                      child: Text(
+                                        name.toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setState(() {
+                                      _loadTemplateAtIndex(val);
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline, color: Colors.green),
+                              tooltip: 'Add New Template',
+                              onPressed: () {
+                                 setState(() {
+                                    _saveCurrentTemplateToState();
+                                    allPreMadeTemplates.add({
+                                      'name': 'New Template',
+                                      'name_ar': 'قالب جديد',
+                                      'name_en': 'New Template',
+                                      'partitions': {
+                                        'mix': {
+                                          'name_ar': 'ميكس',
+                                          'name_en': 'Mix',
+                                          'ratio': 1.0,
+                                          'items': []
+                                        }
+                                      }
+                                    });
+                                    _loadTemplateAtIndex(allPreMadeTemplates.length - 1);
+                                 });
+                              },
+                            ),
+                            if (allPreMadeTemplates.length > 1)
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                tooltip: 'Delete Current Template',
+                                onPressed: () {
+                                  setState(() {
+                                    allPreMadeTemplates.removeAt(selectedTemplateIndex);
+                                    selectedTemplateIndex = 0;
+                                    _loadTemplateAtIndex(0);
+                                  });
+                                },
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: bulkTemplateNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Template Name',
-                        hintText: 'e.g., Signature Mix, Dark Lovers...',
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: bulkTemplateNameArController,
+                            textAlign: TextAlign.end,
+                            decoration: const InputDecoration(
+                                labelText: 'Template (Arabic) | القالب بالعربي',
+                                hintText: 'ميكس كلاسيك...',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: bulkTemplateNameEnController,
+                            decoration: const InputDecoration(
+                              labelText: 'Template (English)',
+                              hintText: 'Signature Mix...',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     Container(
@@ -1484,13 +2231,26 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                    Row(
                                      children: [
                                        Expanded(
-                                         flex: 2,
-                                         child: TextFormField(
-                                           controller: mix.nameController,
-                                           decoration: const InputDecoration(
-                                             labelText: 'Type Name',
-                                             hintText: 'e.g. Dark',
-                                           ),
+                                         flex: 3,
+                                         child: Column(
+                                           children: [
+                                             TextFormField(
+                                               controller: mix.nameArController,
+                                               textAlign: TextAlign.end,
+                                               decoration: const InputDecoration(
+                                                  labelText: 'Type (Arabic) | النوع بالعربي',
+                                                  hintText: 'داكن',
+                                               ),
+                                             ),
+                                             const SizedBox(height: 8),
+                                             TextFormField(
+                                               controller: mix.nameEnController,
+                                               decoration: const InputDecoration(
+                                                 labelText: 'Type (English)',
+                                                 hintText: 'Dark',
+                                               ),
+                                             ),
+                                           ],
                                          ),
                                        ),
                                        const SizedBox(width: 12),
@@ -1501,7 +2261,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                            onChanged: (_) => setState(() {}),
                                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                            decoration: const InputDecoration(
-                                             labelText: 'Ratio (0.0-1.0)',
+                                             labelText: 'Ratio',
                                              hintText: '0.33',
                                            ),
                                          ),
@@ -1528,7 +2288,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                            children: [
                                              Text(
-                                               '${mix.nameController.text.trim().isEmpty ? "Type" : mix.nameController.text} Items',
+                                               '${mix.nameEnController.text.trim().isEmpty ? "Type" : mix.nameEnController.text} Items',
                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                              ),
                                              Row(
@@ -1639,13 +2399,26 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                                        ),
                                                      ),
                                                    Expanded(
-                                                     flex: 2,
-                                                     child: TextFormField(
-                                                       controller: subItem.nameController,
-                                                       decoration: const InputDecoration(
-                                                         labelText: 'Item Name',
-                                                         hintText: 'e.g. Dark Almond',
-                                                       ),
+                                                     flex: 3,
+                                                     child: Column(
+                                                       children: [
+                                                         TextFormField(
+                                                           controller: subItem.nameArController,
+                                                           textAlign: TextAlign.end,
+                                                           decoration: const InputDecoration(
+                                                             labelText: 'Item (Arabic)',
+                                                              hintText: 'لوز داكن',
+                                                           ),
+                                                         ),
+                                                         const SizedBox(height: 8),
+                                                         TextFormField(
+                                                           controller: subItem.nameEnController,
+                                                           decoration: const InputDecoration(
+                                                             labelText: 'Item (English)',
+                                                             hintText: 'Dark Almond',
+                                                           ),
+                                                         ),
+                                                       ],
                                                      ),
                                                    ),
                                                    const SizedBox(width: 8),
@@ -1692,25 +2465,40 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                                      if (parts.isNotEmpty) {
                                                        setState(() {
                                                          String? currentName;
+                                                         
                                                          for (final part in parts) {
                                                            if (part.startsWith('http://') || part.startsWith('https://')) {
+                                                             final newItem = AdminMixSubItemInput()..imageController.text = part;
                                                              if (currentName != null) {
-                                                               mix.items.add(AdminMixSubItemInput()
-                                                                 ..nameController.text = currentName
-                                                                 ..imageController.text = part);
+                                                               if (_isArabic(currentName)) {
+                                                                 newItem.nameArController.text = currentName;
+                                                               } else {
+                                                                 newItem.nameEnController.text = currentName;
+                                                               }
                                                                currentName = null;
-                                                             } else {
-                                                               mix.items.add(AdminMixSubItemInput()..imageController.text = part);
                                                              }
+                                                             mix.items.add(newItem);
                                                            } else {
                                                              if (currentName != null) {
-                                                               mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+                                                               final newItem = AdminMixSubItemInput();
+                                                               if (_isArabic(currentName)) {
+                                                                 newItem.nameArController.text = currentName;
+                                                               } else {
+                                                                 newItem.nameEnController.text = currentName;
+                                                               }
+                                                               mix.items.add(newItem);
                                                              }
                                                              currentName = part;
                                                            }
                                                          }
                                                          if (currentName != null) {
-                                                           mix.items.add(AdminMixSubItemInput()..nameController.text = currentName);
+                                                           final newItem = AdminMixSubItemInput();
+                                                           if (_isArabic(currentName)) {
+                                                             newItem.nameArController.text = currentName;
+                                                           } else {
+                                                             newItem.nameEnController.text = currentName;
+                                                           }
+                                                           mix.items.add(newItem);
                                                          }
                                                        });
                                                      }
@@ -1725,7 +2513,7 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
                                                      ? null
                                                      : () => pickAndUploadMultipleImages(
                                                            targetMix: mix,
-                                                           folder: 'products/bulk/${mix.nameController.text.trim().isEmpty ? "mix" : mix.nameController.text.trim().toLowerCase()}',
+                                                           folder: 'products/bulk/${mix.nameEnController.text.trim().isEmpty ? "mix" : mix.nameEnController.text.trim().toLowerCase()}',
                                                          ),
                                                  icon: const Icon(Icons.upload_file),
                                                  label: Text(
@@ -1797,29 +2585,34 @@ class _AdminProductCreatorScreenState extends State<AdminProductCreatorScreen> {
 }
 
 class AdminBulkBoxInput {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController nameArController = TextEditingController();
+  final TextEditingController nameEnController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
 
   void dispose() {
-    nameController.dispose();
+    nameArController.dispose();
+    nameEnController.dispose();
     weightController.dispose();
     priceController.dispose();
   }
 }
 
 class AdminMixSubItemInput {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController nameArController = TextEditingController();
+  final TextEditingController nameEnController = TextEditingController();
   final TextEditingController imageController = TextEditingController();
 
   void dispose() {
-    nameController.dispose();
+    nameArController.dispose();
+    nameEnController.dispose();
     imageController.dispose();
   }
 }
 
 class AdminMixItemInput {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController nameArController = TextEditingController();
+  final TextEditingController nameEnController = TextEditingController();
   final TextEditingController ratioController = TextEditingController();
   final List<AdminMixSubItemInput> items = [];
   
@@ -1828,7 +2621,8 @@ class AdminMixItemInput {
   final TextEditingController csvController = TextEditingController();
 
   void dispose() {
-    nameController.dispose();
+    nameArController.dispose();
+    nameEnController.dispose();
     ratioController.dispose();
     csvController.dispose();
     for (final item in items) {
@@ -1838,18 +2632,23 @@ class AdminMixItemInput {
 }
 
 class AdminOptionInput {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController valuesController = TextEditingController();
+  final TextEditingController nameArController = TextEditingController();
+  final TextEditingController nameEnController = TextEditingController();
+  final TextEditingController valuesArController = TextEditingController();
+  final TextEditingController valuesEnController = TextEditingController();
 
   void dispose() {
-    nameController.dispose();
-    valuesController.dispose();
+    nameArController.dispose();
+    nameEnController.dispose();
+    valuesArController.dispose();
+    valuesEnController.dispose();
   }
 }
 
 class AdminVariantInput {
   final String? existingId;
-  final String title;
+  final String titleAr;
+  final String titleEn;
   final Map<String, String> attributes;
 
   final TextEditingController priceController = TextEditingController();
@@ -1860,7 +2659,8 @@ class AdminVariantInput {
 
   AdminVariantInput({
     this.existingId,
-    required this.title,
+    required this.titleAr,
+    required this.titleEn,
     required this.attributes,
   });
 

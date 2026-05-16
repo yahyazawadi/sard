@@ -1,0 +1,409 @@
+{
+  "product": {
+    "id": "1778869234463_114441",
+    "title": "Luxury Chocolate Box Collection",
+    "title_ar": "تشكيلة صناديق الشوكولاتة الفاخرة",
+    "title_en": "Luxury Chocolate Box Collection",
+    "category": "bulk",
+    "description": "A premium assortment of chocolates featuring dark, white, diet, and filled variations including biscuits, nuts, caramel, pistachio, and other delicious fillings. Carefully crafted for gifts, hospitality, and special occasions with elegant presentation and luxurious taste.",
+    "description_ar": "تشكيلة فاخرة من الشوكولاتة الداكنة والبيضاء والدايت والمحشية بنكهات متنوعة تشمل البسكوت، المكسرات، الكراميل، الفستق، وغيرها. مصممة بعناية لتناسب الهدايا، الضيافة، والمناسبات الخاصة بتغليف أنيق وطعم فاخر.",
+    "description_en": "A premium assortment of chocolates featuring dark, white, diet, and filled variations including biscuits, nuts, caramel, pistachio, and other delicious fillings. Carefully crafted for gifts, hospitality, and special occasions with elegant presentation and luxurious taste.",
+    "main_image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778867664695-88de9214-WhatsApp-Image-2026-05-15-at-8.48.17-PM-1-.jpeg",
+    "is_diet_friendly": true,
+    "is_customizable": true,
+    "options": [],
+    "variants": [],
+    "bulk_config": {
+      "boxes": [
+        {
+          "title": "Small Box",
+          "title_ar": "صندوق صغير",
+          "title_en": "Small Box",
+          "weight_g": 500.0,
+          "price": 50.0
+        },
+        {
+          "title": "Medium Box",
+          "title_ar": "صندوق متوسط",
+          "title_en": "Medium Box",
+          "weight_g": 1000.0,
+          "price": 90.0
+        },
+        {
+          "title": "Large Box",
+          "title_ar": "صندوق كبير",
+          "title_en": "Large Box",
+          "weight_g": 2000.0,
+          "price": 160.0
+        }
+      ],
+      "pre_made_templates": [
+        {
+          "name": "Ultimate Mix Template",
+          "name_ar": "قالب التشكيلة الشاملة",
+          "name_en": "Ultimate Mix Template",
+          "partitions": {
+            "dark chocolate": {
+              "name_ar": "شوكولاتة داكنة",
+              "name_en": "Dark Chocolate",
+              "ratio": 0.15,
+              "items": [
+                {
+                  "name": "دارك/بسكوت",
+                  "name_ar": "دارك/بسكوت",
+                  "name_en": "Dark / Biscuit",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/dark/1778867915861-3d615b52-.png"
+                },
+                {
+                  "name": "دارك/ شوكولاتة دبي",
+                  "name_ar": "دارك / شوكولاتة دبي",
+                  "name_en": "Dark / Dubai Chocolate",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/dark/1778867985096-110ceffb-.png"
+                },
+                {
+                  "name": "دارك /جوز هند محمص",
+                  "name_ar": "دارك / جوز هند محمص",
+                  "name_en": "Dark / Toasted Coconut",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/dark/1778868098927-9d068d73-z.png"
+                },
+                {
+                  "name": "دارك/ لوز مكسر",
+                  "name_ar": "دارك / لوز مكسر",
+                  "name_en": "Dark / Crushed Almond",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/dark/1778868127724-817e572d-a.png"
+                },
+                {
+                  "name": "دارك/توت ولوز",
+                  "name_ar": "دارك / توت ولوز",
+                  "name_en": "Dark / Berry & Almond",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/dark/1778868153975-38bac282-x.png"
+                },
+                {
+                  "name": "دارك/قهوة",
+                  "name_ar": "دارك / قهوة",
+                  "name_en": "Dark / Coffee",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/dark/1778868181956-48f6d7ad-d.png"
+                },
+                {
+                  "name": "دارك/ زبيب",
+                  "name_ar": "دارك / زبيب",
+                  "name_en": "Dark / Raisins",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/dark/1778868202865-8542c308-e.png"
+                },
+                {
+                  "name": "دبل دارك %70",
+                  "name_ar": "دبل دارك %70",
+                  "name_en": "Double Dark 70%",
+                  "image": "https://ibb.co/rKL0JM06"
+                },
+                {
+                  "name": "دارك / برتقال",
+                  "name_ar": "دارك / برتقال",
+                  "name_en": "Dark / Orange",
+                  "image": "https://ibb.co/5hXPpTBc"
+                },
+                {
+                  "name": "دارك/ساده",
+                  "name_ar": "دارك / ساده",
+                  "name_en": "Dark / Plain",
+                  "image": "https://ibb.co/v6wdc2Nf"
+                }
+              ]
+            },
+            "classic chocolate": {
+              "name_ar": "شوكولاتة كلاسيك",
+              "name_en": "Classic Chocolate",
+              "ratio": 0.15,
+              "items": [
+                {
+                  "name": "ساده حلوة أزرق",
+                  "name_ar": "ساده حلوة أزرق",
+                  "name_en": "Plain Sweet Blue",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/classic-chocolate/1778868346820-048e3681-qq.png"
+                },
+                {
+                  "name": "ساده حلوة زهري",
+                  "name_ar": "ساده حلوة زهري",
+                  "name_en": "Plain Sweet Pink",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/classic-chocolate/1778868376766-86993661-aaaa.png"
+                },
+                {
+                  "name": "ساده حلوة غلاف ذهبي",
+                  "name_ar": "ساده حلوة غلاف ذهبي",
+                  "name_en": "Plain Sweet Gold Wrapper",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/classic-chocolate/1778868420213-d0d69abe-aaaaaaaaaaaaaaaaa.png"
+                },
+                {
+                  "name": "ساده حلوة غلاف فضي",
+                  "name_ar": "ساده حلوة غلاف فضي",
+                  "name_en": "Plain Sweet Silver Wrapper",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/classic-chocolate/1778868441599-460a1690-aaaaaaaaaaaaaaaaaaaaaaaaaaaa.png"
+                }
+              ]
+            },
+            "filled chocolate": {
+              "name_ar": "شوكولاتة محشية",
+              "name_en": "Filled Chocolate",
+              "ratio": 0.2,
+              "items": [
+                {
+                  "name": "ليكوي (نوتيلا )",
+                  "name_ar": "ليكوي (نوتيلا)",
+                  "name_en": "Liquid (Nutella)",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778868553277-5e9421e1-ggggg.png"
+                },
+                {
+                  "name": "جوز هند محمص",
+                  "name_ar": "جوز هند محمص",
+                  "name_en": "Toasted Coconut",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778868757713-1dac12b4-yy.png"
+                },
+                {
+                  "name": "زبدة الفستق",
+                  "name_ar": "زبدة الفستق",
+                  "name_en": "Pistachio Butter",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778868786057-f92ef06b-tt.png"
+                },
+                {
+                  "name": "بندق",
+                  "name_ar": "بندق",
+                  "name_en": "Hazelnut",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778868811528-b60256b1-ff.png"
+                },
+                {
+                  "name": "زبيب",
+                  "name_ar": "زبيب",
+                  "name_en": "Raisins",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778868843884-9ee91977-jj.png"
+                },
+                {
+                  "name": "قهوة",
+                  "name_ar": "قهوة",
+                  "name_en": "Coffee",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778868962866-f602817a-.png"
+                },
+                {
+                  "name": "لوز",
+                  "name_ar": "لوز",
+                  "name_en": "Almond",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778868992733-f8cb5b96-.png"
+                },
+                {
+                  "name": "كيك",
+                  "name_ar": "كيك",
+                  "name_en": "Cake",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/bulk/filled-chocolate/1778869046729-8989521f-.png"
+                }
+              ]
+            },
+            "assorted chocolate mix": {
+              "name_ar": "مكس شوكولاتة متنوعة",
+              "name_en": "Assorted Chocolate Mix",
+              "ratio": 0.2,
+              "items": [
+                {
+                  "name": "مكس بيضاء و حلوة",
+                  "name_ar": "مكس بيضاء و حلوة",
+                  "name_en": "Mix White & Sweet",
+                  "image": "https://ibb.co/Gv9z4qBX"
+                },
+                {
+                  "name": "لوز وبندق",
+                  "name_ar": "لوز وبندق",
+                  "name_en": "Almond & Hazelnut",
+                  "image": "https://ibb.co/svZ3Y2j2"
+                },
+                {
+                  "name": "بسكوت",
+                  "name_ar": "بسكوت",
+                  "name_en": "Biscuit",
+                  "image": "https://ibb.co/2732dRv0"
+                },
+                {
+                  "name": "جوز هند محمص",
+                  "name_ar": "جوز هند محمص",
+                  "name_en": "Toasted Coconut",
+                  "image": "https://ibb.co/cc9MBLK8"
+                },
+                {
+                  "name": "بسكوت بيبي جيرل",
+                  "name_ar": "بسكوت بيبي جيرل",
+                  "name_en": "Baby Girl Biscuit",
+                  "image": "https://ibb.co/TB2cMWwm"
+                },
+                {
+                  "name": "بسكوت بيبي بوي",
+                  "name_ar": "بسكوت بيبي بوي",
+                  "name_en": "Baby Boy Biscuit",
+                  "image": "https://ibb.co/wqVXkz2"
+                },
+                {
+                  "name": "كريمة البرتقال",
+                  "name_ar": "كريمة البرتقال",
+                  "name_en": "Orange Cream",
+                  "image": "https://ibb.co/Cc5XvMr"
+                },
+                {
+                  "name": "لوز وبندق تخرج",
+                  "name_ar": "لوز وبندق تخرج",
+                  "name_en": "Almond & Hazelnut Graduation",
+                  "image": "https://ibb.co/HTjj3z79"
+                },
+                {
+                  "name": "شوكلاتة دبي",
+                  "name_ar": "شوكلاتة دبي",
+                  "name_en": "Dubai Chocolate",
+                  "image": "https://ibb.co/hFfzR0Nx"
+                },
+                {
+                  "name": "فستق حلبي",
+                  "name_ar": "فستق حلبي",
+                  "name_en": "Pistachio",
+                  "image": "https://ibb.co/rf0sfMBC"
+                },
+                {
+                  "name": "توت ولوز",
+                  "name_ar": "توت ولوز",
+                  "name_en": "Berry & Almond",
+                  "image": "https://ibb.co/zVhKVWkP"
+                },
+                {
+                  "name": "كراميل",
+                  "name_ar": "كراميل",
+                  "name_en": "Caramel",
+                  "image": "https://ibb.co/ZptWMXJJ"
+                },
+                {
+                  "name": "معجون اللوتس",
+                  "name_ar": "معجون اللوتس",
+                  "name_en": "Lotus Paste",
+                  "image": "https://ibb.co/mr6pyDKL"
+                },
+                {
+                  "name": "رافييلو",
+                  "name_ar": "رافييلو",
+                  "name_en": "Raffaello",
+                  "image": "https://ibb.co/353Ht3qj"
+                },
+                {
+                  "name": "كوكيز",
+                  "name_ar": "كوكيز",
+                  "name_en": "Cookies",
+                  "image": "https://ibb.co/zLfP4TJ"
+                },
+                {
+                  "name": "حلاوة",
+                  "name_ar": "حلاوة",
+                  "name_en": "Halawa",
+                  "image": "https://ibb.co/RkmDwB8w"
+                },
+                {
+                  "name": "بيجلا",
+                  "name_ar": "بيجلا",
+                  "name_en": "Pretzel",
+                  "image": "https://ibb.co/RkNyDfWw"
+                },
+                {
+                  "name": "بيسكو بسكوت لوتس مع نوتيلا",
+                  "name_ar": "بيسكو بسكوت لوتس مع نوتيلا",
+                  "name_en": "Biscoff Lotus with Nutella",
+                  "image": "https://ibb.co/4gn5cMc3"
+                }
+              ]
+            },
+            "diet chocolate": {
+              "name_ar": "شوكولاتة دايت",
+              "name_en": "Diet Chocolate",
+              "ratio": 0.15,
+              "items": [
+                {
+                  "name": "دايت / ساده",
+                  "name_ar": "دايت / ساده",
+                  "name_en": "Diet / Plain",
+                  "image": "https://ibb.co/PvhZgTbd"
+                },
+                {
+                  "name": "دايت / توت",
+                  "name_ar": "دايت / توت",
+                  "name_en": "Diet / Berry",
+                  "image": "https://ibb.co/Z6smBgqV"
+                },
+                {
+                  "name": "دايت / زبيب",
+                  "name_ar": "دايت / زبيب",
+                  "name_en": "Diet / Raisins",
+                  "image": "https://ibb.co/Dfbp5km5"
+                },
+                {
+                  "name": "دايت / بندق",
+                  "name_ar": "دايت / بندق",
+                  "name_en": "Diet / Hazelnut",
+                  "image": "https://ibb.co/nMH8WJb6"
+                },
+                {
+                  "name": "دايت / لوز",
+                  "name_ar": "دايت / لوز",
+                  "name_en": "Diet / Almond",
+                  "image": "https://ibb.co/JRnYL65Q"
+                }
+              ]
+            },
+            "white chocolate": {
+              "name_ar": "شوكولاتة بيضاء",
+              "name_en": "White Chocolate",
+              "ratio": 0.15,
+              "items": [
+                {
+                  "name": "بيضاء / ساده",
+                  "name_ar": "بيضاء / ساده",
+                  "name_en": "White / Plain",
+                  "image": "https://ibb.co/FqBF00nb"
+                },
+                {
+                  "name": "بيضاء/ فستق",
+                  "name_ar": "بيضاء / فستق",
+                  "name_en": "White / Pistachio",
+                  "image": "https://ibb.co/cXb7JvQf"
+                },
+                {
+                  "name": "بيضاء / نوتيلا",
+                  "name_ar": "بيضاء / نوتيلا",
+                  "name_en": "White / Nutella",
+                  "image": "https://ibb.co/SXvvV9Vb"
+                },
+                {
+                  "name": "بيضاء / كراميل",
+                  "name_ar": "بيضاء / كراميل",
+                  "name_en": "White / Caramel",
+                  "image": "https://ibb.co/XZS29JRT"
+                },
+                {
+                  "name": "بيضاء / توت",
+                  "name_ar": "بيضاء / توت",
+                  "name_en": "White / Berry",
+                  "image": "https://ibb.co/PvNDxRvR"
+                },
+                {
+                  "name": "بيضاء / بندق",
+                  "name_ar": "بيضاء / بندق",
+                  "name_en": "White / Hazelnut",
+                  "image": "https://ibb.co/svf85kvc"
+                },
+                {
+                  "name": "بيضاء / زبيب",
+                  "name_ar": "بيضاء / زبيب",
+                  "name_en": "White / Raisins",
+                  "image": "https://ibb.co/wryHh3jX"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "is_new_arrival": true,
+      "calories_per_100g": 530.0
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "product": {
+    "id": "1778888155580_bars_collection",
+    "title": "Chocolate Bars Collection",
+    "title_ar": "تجميعة ألواح الشوكولاتة",
+    "title_en": "Chocolate Bars Collection",
+    "category": "bulk",
+    "description": "A premium collection of our finest chocolate bars, available in various exquisite flavors including Dubai Milk Chocolate, Pretzel, Coconut, Cranberry, and Choco Rolls. Perfect for customizing your own sweet selection.",
+    "description_ar": "تجميعة فاخرة من ألواح الشوكولاتة لدينا، متوفرة بنكهات رائعة تشمل شوكولاتة دبي بالحليب، بريتزل، جوز الهند، كرانبيري، وشوكو رولز. مثالية لتخصيص تشكيلتك المفضلة.",
+    "description_en": "A premium collection of our finest chocolate bars, available in various exquisite flavors including Dubai Milk Chocolate, Pretzel, Coconut, Cranberry, and Choco Rolls.",
+    "main_image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778888155580-f62eb20f-allbars.png",
+    "is_diet_friendly": false,
+    "is_customizable": true,
+    "options": [],
+    "variants": [],
+    "bulk_config": {
+      "boxes": [
+        {
+          "title": "Small Box",
+          "title_ar": "بوكس صغير",
+          "title_en": "Small Box",
+          "weight_g": 500.0,
+          "price": 50.0
+        },
+        {
+          "title": "Medium Box",
+          "title_ar": "بوكس متوسط",
+          "title_en": "Medium Box",
+          "weight_g": 1000.0,
+          "price": 90.0
+        },
+        {
+          "title": "Large Box",
+          "title_ar": "بوكس كبير",
+          "title_en": "Large Box",
+          "weight_g": 2000.0,
+          "price": 160.0
+        }
+      ],
+      "pre_made_templates": [
+        {
+          "name": "Whole Choco Rolls",
+          "name_ar": "شوكو رولز",
+          "name_en": "Whole Choco Rolls",
+          "partitions": {
+            "Choco Rolls": {
+              "name_ar": "شوكو رولز",
+              "name_en": "Choco Rolls",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Choco Rolls",
+                  "name_ar": "شوكو رولز",
+                  "name_en": "Choco Rolls",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778888183143-e1dca9da-1bdeca5b-2a35-4bb6-b00b-3d394d74aaa2.jpg"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Cranberry",
+          "name_ar": "كرانبيري",
+          "name_en": "Whole Cranberry",
+          "partitions": {
+            "Cranberry": {
+              "name_ar": "كرانبيري",
+              "name_en": "Cranberry",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Cranberry",
+                  "name_ar": "كرانبيري",
+                  "name_en": "Cranberry",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778888219753-6d72dcd4-2b2e07fc-bc92-4644-99c7-92d68a276973.jpg"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Dubai Milk Chocolate",
+          "name_ar": "شوكولاتة دبي بالحليب",
+          "name_en": "Whole Dubai Milk Chocolate",
+          "partitions": {
+            "Dubai Milk Chocolate": {
+              "name_ar": "شوكولاتة دبي بالحليب",
+              "name_en": "Dubai Milk Chocolate",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Dubai Milk Chocolate",
+                  "name_ar": "شوكولاتة دبي بالحليب",
+                  "name_en": "Dubai Milk Chocolate",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778888297540-e9d779a7-c26d0d74-9dab-462c-bc46-0c0ddc48696f.jpg"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Pretzel",
+          "name_ar": "بريتزل",
+          "name_en": "Whole Pretzel",
+          "partitions": {
+            "Pretzel": {
+              "name_ar": "بريتزل",
+              "name_en": "Pretzel",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Pretzel",
+                  "name_ar": "بريتزل",
+                  "name_en": "Pretzel",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778888344483-2584fff8-d7baa71d-5ed9-472e-ba3d-eff7aa408d30.jpg"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Coconut",
+          "name_ar": "جوز الهند",
+          "name_en": "Whole Coconut",
+          "partitions": {
+            "Coconut": {
+              "name_ar": "جوز الهند",
+              "name_en": "Coconut",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Coconut",
+                  "name_ar": "جوز الهند",
+                  "name_en": "Coconut",
+                  "image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778888418464-f00ea206-32526a75-ed42-4441-91c4-83e06bd96eb9.jpg"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "is_new_arrival": true
+    }
+  }
+}

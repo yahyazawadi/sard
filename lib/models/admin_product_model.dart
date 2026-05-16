@@ -1,17 +1,43 @@
 class AdminProductOption {
   final String name;
+  final String nameAr;
+  final String nameEn;
   final List<String> values;
+  final List<String> valuesAr;
+  final List<String> valuesEn;
 
-  AdminProductOption({required this.name, required this.values});
+  AdminProductOption({
+    required this.name,
+    required this.nameAr,
+    required this.nameEn,
+    required this.values,
+    this.valuesAr = const [],
+    this.valuesEn = const [],
+  });
 
   Map<String, dynamic> toJson() {
-    return {'name': name, 'values': values};
+    return {
+      'name': nameEn,
+      'name_ar': nameAr,
+      'name_en': nameEn,
+      'values': valuesEn.isNotEmpty ? valuesEn : values,
+      'values_ar': valuesAr,
+      'values_en': valuesEn,
+    };
   }
 
   factory AdminProductOption.fromJson(Map<String, dynamic> json) {
+    final vAr = List<String>.from(json['values_ar'] ?? []);
+    final vEn = List<String>.from(json['values_en'] ?? []);
+    final vLegacy = List<String>.from(json['values'] ?? []);
+
     return AdminProductOption(
-      name: json['name'] ?? '',
-      values: List<String>.from(json['values'] ?? []),
+      name: json['name'] ?? json['name_en'] ?? '',
+      nameAr: json['name_ar'] ?? '',
+      nameEn: json['name_en'] ?? json['name'] ?? '',
+      values: vLegacy,
+      valuesAr: vAr,
+      valuesEn: vEn,
     );
   }
 }
@@ -19,6 +45,8 @@ class AdminProductOption {
 class AdminProductVariant {
   final String id;
   final String title;
+  final String titleAr;
+  final String titleEn;
   double price;
   double weightG;
   String? image;
@@ -29,6 +57,8 @@ class AdminProductVariant {
   AdminProductVariant({
     required this.id,
     required this.title,
+    required this.titleAr,
+    required this.titleEn,
     required this.price,
     required this.weightG,
     this.image,
@@ -40,7 +70,9 @@ class AdminProductVariant {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
+      'title': titleEn,
+      'title_ar': titleAr,
+      'title_en': titleEn,
       'price': price,
       'weight_g': weightG,
       'image': image,
@@ -55,7 +87,9 @@ class AdminProductVariant {
 
     return AdminProductVariant(
       id: json['id'] ?? '',
-      title: json['title'] ?? '',
+      title: json['title'] ?? json['title_en'] ?? '',
+      titleAr: json['title_ar'] ?? '',
+      titleEn: json['title_en'] ?? json['title'] ?? '',
       price: (json['price'] as num? ?? 0).toDouble(),
       weightG: (json['weight_g'] as num? ?? 0).toDouble(),
       image: json['image']?.toString(),
@@ -75,28 +109,62 @@ class AdminProductVariant {
       stockQuantity: (json['stock_quantity'] as num? ?? 0).toInt(),
     );
   }
+
+  AdminProductVariant copyWith({
+    String? id,
+    String? title,
+    String? titleAr,
+    String? titleEn,
+    double? price,
+    double? weightG,
+    String? image,
+    List<String>? images,
+    Map<String, String>? attributes,
+    int? stockQuantity,
+  }) {
+    return AdminProductVariant(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      titleAr: titleAr ?? this.titleAr,
+      titleEn: titleEn ?? this.titleEn,
+      price: price ?? this.price,
+      weightG: weightG ?? this.weightG,
+      image: image ?? this.image,
+      images: images ?? this.images,
+      attributes: attributes ?? this.attributes,
+      stockQuantity: stockQuantity ?? this.stockQuantity,
+    );
+  }
 }
 
 class AdminBulkBox {
   final String title;
+  final String titleAr;
+  final String titleEn;
   final double weightG;
   final double price;
 
   AdminBulkBox({
     required this.title,
+    required this.titleAr,
+    required this.titleEn,
     required this.weightG,
     required this.price,
   });
 
   Map<String, dynamic> toJson() => {
-    'title': title,
+    'title': titleEn,
+    'title_ar': titleAr,
+    'title_en': titleEn,
     'weight_g': weightG,
     'price': price,
   };
 
   factory AdminBulkBox.fromJson(Map<String, dynamic> json) {
     return AdminBulkBox(
-      title: json['title']?.toString() ?? '',
+      title: json['title'] ?? json['title_en'] ?? '',
+      titleAr: json['title_ar'] ?? '',
+      titleEn: json['title_en'] ?? json['title'] ?? '',
       weightG: (json['weight_g'] as num?)?.toDouble() ?? 0,
       price: (json['price'] as num?)?.toDouble() ?? 0,
     );
@@ -120,8 +188,8 @@ class AdminBulkConfig {
   }
 
   factory AdminBulkConfig.fromJson(Map<String, dynamic> json) {
-    final templatesRaw = json['pre_made_templates'] as List<dynamic>? ?? [];
-    final boxesRaw = json['boxes'] as List<dynamic>? ?? [];
+    final templatesRaw = (json['pre_made_templates'] ?? json['preMadeTemplates']) as List<dynamic>? ?? [];
+    final boxesRaw = (json['boxes'] ?? []) as List<dynamic>;
 
     return AdminBulkConfig(
       boxes: boxesRaw
@@ -163,6 +231,8 @@ class AdminProductMetadata {
 class AdminProductModel {
   final String id;
   final String title;
+  final String titleAr;
+  final String titleEn;
   final String category;
   final String description;
   final String descriptionAr;
@@ -178,6 +248,8 @@ class AdminProductModel {
   AdminProductModel({
     required this.id,
     required this.title,
+    required this.titleAr,
+    required this.titleEn,
     required this.category,
     required this.description,
     required this.descriptionAr,
@@ -195,7 +267,9 @@ class AdminProductModel {
     return {
       'product': {
         'id': id,
-        'title': title,
+        'title': titleEn,
+        'title_ar': titleAr,
+        'title_en': titleEn,
         'category': category,
         'description': descriptionEn,
         'description_ar': descriptionAr,
@@ -215,11 +289,15 @@ class AdminProductModel {
     final productJson = json.containsKey('product')
         ? Map<String, dynamic>.from(json['product'])
         : json;
+    
+    final oldTitle = productJson['title'] ?? '';
     final oldDescription = productJson['description'] ?? '';
 
     return AdminProductModel(
       id: productJson['id'] ?? '',
-      title: productJson['title'] ?? '',
+      title: productJson['title'] ?? productJson['title_en'] ?? '',
+      titleAr: productJson['title_ar'] ?? '',
+      titleEn: productJson['title_en'] ?? oldTitle,
       category: productJson['category'] ?? '',
       description: productJson['description'] ?? productJson['description_en'] ?? '',
       descriptionAr: productJson['description_ar'] ?? '',
@@ -239,14 +317,50 @@ class AdminProductModel {
                 AdminProductVariant.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList(),
-      bulkConfig: productJson['bulk_config'] == null
+      bulkConfig: (productJson['bulk_config'] ?? productJson['bulkConfig']) == null
           ? null
           : AdminBulkConfig.fromJson(
-              Map<String, dynamic>.from(productJson['bulk_config']),
+              Map<String, dynamic>.from(productJson['bulk_config'] ?? productJson['bulkConfig']),
             ),
       metadata: AdminProductMetadata.fromJson(
         Map<String, dynamic>.from(productJson['metadata'] ?? {}),
       ),
+    );
+  }
+
+  AdminProductModel copyWith({
+    String? id,
+    String? title,
+    String? titleAr,
+    String? titleEn,
+    String? category,
+    String? description,
+    String? descriptionAr,
+    String? descriptionEn,
+    String? mainImage,
+    bool? isDietFriendly,
+    bool? isCustomizable,
+    List<AdminProductOption>? options,
+    List<AdminProductVariant>? variants,
+    AdminBulkConfig? bulkConfig,
+    AdminProductMetadata? metadata,
+  }) {
+    return AdminProductModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      titleAr: titleAr ?? this.titleAr,
+      titleEn: titleEn ?? this.titleEn,
+      category: category ?? this.category,
+      description: description ?? this.description,
+      descriptionAr: descriptionAr ?? this.descriptionAr,
+      descriptionEn: descriptionEn ?? this.descriptionEn,
+      mainImage: mainImage ?? this.mainImage,
+      isDietFriendly: isDietFriendly ?? this.isDietFriendly,
+      isCustomizable: isCustomizable ?? this.isCustomizable,
+      options: options ?? this.options,
+      variants: variants ?? this.variants,
+      bulkConfig: bulkConfig ?? this.bulkConfig,
+      metadata: metadata ?? this.metadata,
     );
   }
 }
@@ -291,6 +405,41 @@ class AdminSaleEvent {
       amount: (json['amount'] as num? ?? 0).toDouble(),
       quantity: (json['quantity'] as num? ?? 1).toInt(),
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+    );
+  }
+}
+class AdminFeaturedSection {
+  final String id;
+  final String titleAr;
+  final String titleEn;
+  final String imageUrl;
+  final List<String> productIds;
+
+  AdminFeaturedSection({
+    required this.id,
+    required this.titleAr,
+    required this.titleEn,
+    required this.imageUrl,
+    required this.productIds,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title_ar': titleAr,
+      'title_en': titleEn,
+      'image_url': imageUrl,
+      'product_ids': productIds,
+    };
+  }
+
+  factory AdminFeaturedSection.fromJson(Map<String, dynamic> json) {
+    return AdminFeaturedSection(
+      id: json['id'] ?? '',
+      titleAr: json['title_ar'] ?? '',
+      titleEn: json['title_en'] ?? '',
+      imageUrl: json['image_url'] ?? '',
+      productIds: List<String>.from(json['product_ids'] ?? []),
     );
   }
 }

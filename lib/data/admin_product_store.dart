@@ -1,6 +1,8 @@
 import 'dart:convert';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img_pkg;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/admin_product_model.dart';
@@ -12,6 +14,7 @@ class AdminProductProvider extends ChangeNotifier {
   static const String _revenueByCategoryKey = 'admin_revenue_by_category';
   static const String _customizationTrendsKey = 'admin_customization_trends';
   static const String _salesEventsKey = 'admin_sales_events';
+  static const String _featuredSectionsKey = 'admin_featured_sections';
 
   final List<AdminProductModel> products = [];
 
@@ -22,6 +25,7 @@ class AdminProductProvider extends ChangeNotifier {
   final Map<String, int> customizationTrends = {};
 
   final List<AdminSaleEvent> salesEvents = [];
+  final List<AdminFeaturedSection> featuredSections = [];
 
   final CloudflareProductApi _api = CloudflareProductApi();
 
@@ -165,6 +169,17 @@ class AdminProductProvider extends ChangeNotifier {
       );
     }
 
+    final featuredSectionsJson = prefs.getString(_featuredSectionsKey);
+    featuredSections.clear();
+    if (featuredSectionsJson != null && featuredSectionsJson.isNotEmpty) {
+      final decodedFeatured = jsonDecode(featuredSectionsJson) as List<dynamic>;
+      featuredSections.addAll(
+        decodedFeatured.map(
+          (item) => AdminFeaturedSection.fromJson(Map<String, dynamic>.from(item)),
+        ),
+      );
+    }
+
     notifyListeners();
 
     if (!backendSyncEnabled) {
@@ -209,6 +224,11 @@ class AdminProductProvider extends ChangeNotifier {
       jsonEncode(customizationTrends),
     );
     await prefs.setString(_salesEventsKey, salesEventsJson);
+
+    final featuredJson = jsonEncode(
+      featuredSections.map((s) => s.toJson()).toList(),
+    );
+    await prefs.setString(_featuredSectionsKey, featuredJson);
   }
 
   Future<void> addProduct(AdminProductModel product) async {
@@ -295,5 +315,99 @@ class AdminProductProvider extends ChangeNotifier {
     salesEvents.clear();
 
     notifyListeners();
+  }
+
+  Future<void> addFeaturedSection(AdminFeaturedSection section) async {
+    featuredSections.add(section);
+    await saveData();
+    notifyListeners();
+  }
+
+  Future<void> updateFeaturedSection(AdminFeaturedSection section) async {
+    final index = featuredSections.indexWhere((s) => s.id == section.id);
+    if (index != -1) {
+      featuredSections[index] = section;
+      await saveData();
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteFeaturedSection(String id) async {
+    featuredSections.removeWhere((s) => s.id == id);
+    await saveData();
+    notifyListeners();
+  }
+
+  Future<void> optimizeToWebP(AdminProductModel product) async {
+    try {
+      // 1. Optimize Main Image
+      String newMainImage = product.mainImage;
+      if (newMainImage.isNotEmpty && !newMainImage.contains('.webp')) {
+        newMainImage = await _optimizeSingleImage(product.mainImage, 'main_${product.id}');
+      }
+
+      // 2. Optimize Variant Images
+      List<AdminProductVariant> newVariants = [];
+      for (var variant in product.variants) {
+        String? newVariantImage = variant.image;
+        if (newVariantImage != null && 
+            newVariantImage.isNotEmpty && 
+            !newVariantImage.contains('.webp')) {
+          newVariantImage = await _optimizeSingleImage(newVariantImage, 'variant_${product.id}_${variant.id}');
+        }
+        newVariants.add(variant.copyWith(image: newVariantImage));
+      }
+
+      // 3. Update the product in backend
+      final updatedProduct = product.copyWith(
+        mainImage: newMainImage,
+        variants: newVariants,
+      );
+      await updateProduct(oldProduct: product, newProduct: updatedProduct);
+      
+      notifyListeners();
+    } catch (e) {
+      lastBackendError = 'Optimization failed: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<String> _optimizeSingleImage(String url, String namePrefix) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download image from $url');
+      }
+      
+      // Decode image using pure Dart (no native dependency)
+      final image = img_pkg.decodeImage(response.bodyBytes);
+      if (image == null) {
+        throw Exception('Failed to decode image data from $url');
+      }
+
+      Uint8List finalBytes;
+      String extension;
+
+      // The `image` package does NOT have a WebP encoder, only a decoder.
+      // So we must use JPG for compression, but PNG if the image needs transparency.
+      if (image.hasAlpha) {
+        // Keep as PNG to preserve transparent backgrounds
+        finalBytes = Uint8List.fromList(img_pkg.encodePng(image));
+        extension = 'png';
+      } else {
+        // Compress as JPG (quality 85 is a good balance of size and quality)
+        finalBytes = Uint8List.fromList(img_pkg.encodeJpg(image, quality: 85));
+        extension = 'jpg';
+      }
+
+      final fileName = '${namePrefix}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      return await _api.uploadImageBytes(
+        bytes: finalBytes,
+        filename: fileName,
+      );
+    } catch (e) {
+      throw Exception('Error optimizing $namePrefix: $e');
+    }
   }
 }

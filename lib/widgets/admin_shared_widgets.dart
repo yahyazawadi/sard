@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../data/admin_product_store.dart';
 import '../models/admin_product_model.dart';
 
 class AdminMetricCard extends StatelessWidget {
@@ -260,6 +262,40 @@ class AdminProductCard extends StatelessWidget {
                 onPressed: onEdit,
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Edit'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final provider = context.read<AdminProductProvider>();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Optimizing image to WebP...')),
+                  );
+                  try {
+                    await provider.optimizeToWebP(product);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Successfully converted to WebP!')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Optimization failed: $e'),
+                          backgroundColor: Colors.redAccent,
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  }
+                },
+                icon: const Icon(Icons.bolt_outlined, color: Colors.orange),
+                label: const Text('Optimize WebP'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.orange.shade800,
+                  side: BorderSide(color: Colors.orange.shade200),
+                ),
               ),
               const SizedBox(width: 10),
               OutlinedButton.icon(

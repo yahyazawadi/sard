@@ -1,0 +1,348 @@
+{
+  "product": {
+    "id": "17788692sd63_114441",
+    "title": "Chocolate Box Collection",
+    "title_ar": "تجميعة شوكولاتة جوبا",
+    "title_en": "Chocolate Box Collection",
+    "category": "bulk",
+    "description": "Luxury chocolate boxes featuring a variety of rich flavors and premium fillings, elegantly wrapped for gifts, graduations, newborn celebrations, and special occasions. A delicious experience that combines fine taste with elegant presentation.",
+    "description_ar": ".بوكسات شوكولاتة فاخرة بتشكيلة متنوعة من النكهات والحشوات المميزة، مغلفة بأناقة لتناسب الهدايا، التخرج، المواليد، والمناسبات الخاصة. تجربة غنية تجمع بين الطعم الفاخر والتقديم الراقي",
+    "description_en": "Luxury chocolate boxes featuring a variety of rich flavors and premium fillings, elegantly wrapped for gifts, graduations, newborn celebrations, and special occasions.",
+    "main_image": "https://sard-products-api.s12219814.workers.dev/images/products/main/1778880288651-bb54818d-box.png",
+    "is_diet_friendly": false,
+    "is_customizable": true,
+    "options": [],
+    "variants": [],
+    "bulk_config": {
+      "boxes": [
+        {
+          "title": "Small Box",
+          "title_ar": "بوكس صغير",
+          "title_en": "Small Box",
+          "weight_g": 500.0,
+          "price": 50.0
+        },
+        {
+          "title": "Medium Box",
+          "title_ar": "بوكس متوسط",
+          "title_en": "Medium Box",
+          "weight_g": 1000.0,
+          "price": 90.0
+        },
+        {
+          "title": "Large Box",
+          "title_ar": "بوكس كبير",
+          "title_en": "Large Box",
+          "weight_g": 2000.0,
+          "price": 160.0
+        }
+      ],
+      "pre_made_templates": [
+        {
+          "name": "Whole Diet Plain",
+          "name_ar": "دايت / ساده",
+          "name_en": "Whole Diet Plain",
+          "partitions": {
+            "Diet Plain": {
+              "name_ar": "دايت / ساده",
+              "name_en": "Diet / Plain",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Diet / Plain",
+                  "name_ar": "دايت / ساده",
+                  "name_en": "Diet / Plain",
+                  "image": "https://ibb.co/PvhZgTbd"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Double Dark 70%",
+          "name_ar": "دبل دارك %70",
+          "name_en": "Whole Double Dark 70%",
+          "partitions": {
+            "Double Dark 70%": {
+              "name_ar": "دبل دارك %70",
+              "name_en": "Double Dark 70%",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Double Dark 70%",
+                  "name_ar": "دبل دارك %70",
+                  "name_en": "Double Dark 70%",
+                  "image": "https://ibb.co/rKL0JM06"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Dark Orange",
+          "name_ar": "دارك / برتقال",
+          "name_en": "Whole Dark Orange",
+          "partitions": {
+            "Dark Orange": {
+              "name_ar": "دارك / برتقال",
+              "name_en": "Dark / Orange",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Dark / Orange",
+                  "name_ar": "دارك / برتقال",
+                  "name_en": "Dark / Orange",
+                  "image": "https://ibb.co/5hXPpTBc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Dark Plain",
+          "name_ar": "دارك / ساده",
+          "name_en": "Whole Dark Plain",
+          "partitions": {
+            "Dark Plain": {
+              "name_ar": "دارك/ساده",
+              "name_en": "Dark / Plain",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Dark / Plain",
+                  "name_ar": "دارك/ساده",
+                  "name_en": "Dark / Plain",
+                  "image": "https://ibb.co/v6wdc2Nf"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Diet Berries",
+          "name_ar": "دايت / توت",
+          "name_en": "Whole Diet Berries",
+          "partitions": {
+            "Diet Berries": {
+              "name_ar": "دايت / توت",
+              "name_en": "Diet / Berries",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Diet / Berries",
+                  "name_ar": "دايت / توت",
+                  "name_en": "Diet / Berries",
+                  "image": "https://ibb.co/Z6smBgqV"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Diet Raisins",
+          "name_ar": "دايت / زبيب",
+          "name_en": "Whole Diet Raisins",
+          "partitions": {
+            "Diet Raisins": {
+              "name_ar": "دايت / زبيب",
+              "name_en": "Diet / Raisins",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Diet / Raisins",
+                  "name_ar": "دايت / زبيب",
+                  "name_en": "Diet / Raisins",
+                  "image": "https://ibb.co/Dfbp5km5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Diet Hazelnut",
+          "name_ar": "دايت / بندق",
+          "name_en": "Whole Diet Hazelnut",
+          "partitions": {
+            "Diet Hazelnut": {
+              "name_ar": "دايت / بندق",
+              "name_en": "Diet / Hazelnut",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Diet / Hazelnut",
+                  "name_ar": "دايت / بندق",
+                  "name_en": "Diet / Hazelnut",
+                  "image": "https://ibb.co/nMH8WJb6"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole Diet Almond",
+          "name_ar": "دايت / لوز",
+          "name_en": "Whole Diet Almond",
+          "partitions": {
+            "Diet Almond": {
+              "name_ar": "دايت / لوز",
+              "name_en": "Diet / Almond",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "Diet / Almond",
+                  "name_ar": "دايت / لوز",
+                  "name_en": "Diet / Almond",
+                  "image": "https://ibb.co/JRnYL65Q"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole White Plain",
+          "name_ar": "بيضاء / ساده",
+          "name_en": "Whole White Plain",
+          "partitions": {
+            "White Plain": {
+              "name_ar": "بيضاء / ساده",
+              "name_en": "White / Plain",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "White / Plain",
+                  "name_ar": "بيضاء / ساده",
+                  "name_en": "White / Plain",
+                  "image": "https://ibb.co/FqBF00nb"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole White Pistachio",
+          "name_ar": "بيضاء / فستق",
+          "name_en": "Whole White Pistachio",
+          "partitions": {
+            "White Pistachio": {
+              "name_ar": "بيضاء/ فستق",
+              "name_en": "White / Pistachio",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "White / Pistachio",
+                  "name_ar": "بيضاء/ فستق",
+                  "name_en": "White / Pistachio",
+                  "image": "https://ibb.co/cXb7JvQf"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole White Nutella",
+          "name_ar": "بيضاء / نوتيلا",
+          "name_en": "Whole White Nutella",
+          "partitions": {
+            "White Nutella": {
+              "name_ar": "بيضاء / نوتيلا",
+              "name_en": "White / Nutella",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "White / Nutella",
+                  "name_ar": "بيضاء / نوتيلا",
+                  "name_en": "White / Nutella",
+                  "image": "https://ibb.co/SXvvV9Vb"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole White Caramel",
+          "name_ar": "بيضاء / كراميل",
+          "name_en": "Whole White Caramel",
+          "partitions": {
+            "White Caramel": {
+              "name_ar": "بيضاء / كراميل",
+              "name_en": "White / Caramel",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "White / Caramel",
+                  "name_ar": "بيضاء / كراميل",
+                  "name_en": "White / Caramel",
+                  "image": "https://ibb.co/XZS29JRT"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole White Berries",
+          "name_ar": "بيضاء / توت",
+          "name_en": "Whole White Berries",
+          "partitions": {
+            "White Berries": {
+              "name_ar": "بيضاء / توت",
+              "name_en": "White / Berries",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "White / Berries",
+                  "name_ar": "بيضاء / توت",
+                  "name_en": "White / Berries",
+                  "image": "https://ibb.co/PvNDxRvR"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole White Hazelnut",
+          "name_ar": "بيضاء / بندق",
+          "name_en": "Whole White Hazelnut",
+          "partitions": {
+            "White Hazelnut": {
+              "name_ar": "بيضاء / بندق",
+              "name_en": "White / Hazelnut",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "White / Hazelnut",
+                  "name_ar": "بيضاء / بندق",
+                  "name_en": "White / Hazelnut",
+                  "image": "https://ibb.co/svf85kvc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Whole White Raisins",
+          "name_ar": "بيضاء / زبيب",
+          "name_en": "Whole White Raisins",
+          "partitions": {
+            "White Raisins": {
+              "name_ar": "بيضاء / زبيب",
+              "name_en": "White / Raisins",
+              "ratio": 1.0,
+              "items": [
+                {
+                  "name": "White / Raisins",
+                  "name_ar": "بيضاء / زبيب",
+                  "name_en": "White / Raisins",
+                  "image": "https://ibb.co/wryHh3jX"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "is_new_arrival": true,
+      "calories_per_100g": 520.0
+    }
+  }
+}
