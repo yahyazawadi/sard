@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../custom/app_theme.dart';
@@ -28,11 +29,18 @@ class SardBackground extends StatelessWidget {
             ),
           ),
         ),
-        // Optional overlay to make content more readable if needed
+        // Standard blur mask for all screens
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+        // Optional color overlay to make content more readable
         if (applyOpacity)
           Positioned.fill(
             child: Container(
-              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
+              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
             ),
           ),
         // The actual screen content
