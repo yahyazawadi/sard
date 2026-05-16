@@ -884,9 +884,9 @@ class ProductCard extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: theme.scaffoldBackgroundColor.withValues(
-                                alpha: 0.7,
-                              ),
+                              color: theme.brightness == Brightness.dark
+                                  ? Colors.black.withValues(alpha: 0.5)
+                                  : AppTheme.gradientStart.withValues(alpha: 0.85),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(

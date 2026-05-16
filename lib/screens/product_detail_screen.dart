@@ -81,9 +81,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         style: theme.textTheme.titleSmall?.copyWith(
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
-          color: theme.brightness == Brightness.dark
-              ? AppTheme.highContrastGold
-              : AppTheme.textPrimaryLight,
+          color: AppTheme.getIconColor(theme),
         ),
       ),
     );
@@ -120,11 +118,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ref.read(productBuilderProvider.notifier).selectBulkBox(box),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isSelected
-                      ? AppTheme.highContrastGold
+                      ? AppTheme.getIconColor(theme)
                       : theme.colorScheme.surfaceContainerHighest
                             .withValues(alpha: 0.5),
                   foregroundColor: isSelected
-                      ? AppTheme.darkCocoa
+                      ? (theme.brightness == Brightness.dark
+                          ? AppTheme.darkCocoa
+                          : AppTheme.highContrastGold)
                       : theme.colorScheme.onSurface,
                   elevation: isSelected ? 4 : 0,
                   padding: EdgeInsets.zero,
@@ -133,8 +133,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                         BorderRadius.circular(AppTheme.buttonRadius),
                     side: BorderSide(
                       color: isSelected
-                          ? AppTheme.highContrastGold
-                          : AppTheme.highContrastGold.withValues(alpha: 0.2),
+                          ? AppTheme.getIconColor(theme)
+                          : AppTheme.getIconColor(theme).withValues(alpha: 0.2),
                       width: 1.5,
                     ),
                   ),
@@ -155,11 +155,15 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '\u20aa ${box.price.toStringAsFixed(0)}',
+                      '₪ ${box.price.toStringAsFixed(0)}',
                       style: TextStyle(
                         color: isSelected
-                            ? AppTheme.darkCocoa
-                            : AppTheme.highContrastGold,
+                            ? (theme.brightness == Brightness.dark
+                                ? AppTheme.darkCocoa
+                                : AppTheme.highContrastGold)
+                            : (theme.brightness == Brightness.dark
+                                ? AppTheme.getIconColor(theme)
+                                : AppTheme.darkCocoa),
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -239,7 +243,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                   borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                   border: Border.all(
                     color: isSelected
-                        ? AppTheme.highContrastGold
+                        ? AppTheme.getIconColor(theme)
                         : AppTheme.getCardBorderColor(theme),
                     width: 1.5,
                   ),
@@ -249,7 +253,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                   v.size,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: isSelected
-                        ? Colors.white
+                        ? (theme.brightness == Brightness.dark
+                            ? AppTheme.darkCocoa
+                            : AppTheme.highContrastGold)
                         : theme.colorScheme.onSurface,
                     fontWeight: isSelected
                         ? FontWeight.bold
@@ -429,7 +435,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               '₪ ${state.totalPrice.toStringAsFixed(2)}',
                               style: theme.textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.w900,
-                                color: AppTheme.highContrastGold,
+                                color: theme.brightness == Brightness.dark
+                                    ? AppTheme.getIconColor(theme)
+                                    : AppTheme.darkCocoa,
                               ),
                             ),
                           ],
@@ -534,7 +542,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     : Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                 border: Border.all(
-                  color: AppTheme.highContrastGold.withValues(alpha: 0.3),
+                  color: AppTheme.getIconColor(theme).withValues(alpha: 0.3),
                   width: 1.5,
                 ),
               ),
@@ -556,8 +564,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               Icons.remove_rounded,
                               size: 22,
                               color: state.quantity > 1
-                                  ? AppTheme.highContrastGold
-                                  : AppTheme.highContrastGold.withValues(alpha: 0.3),
+                                  ? AppTheme.getIconColor(theme)
+                                  : AppTheme.getIconColor(theme).withValues(alpha: 0.3),
                             ),
                           ),
                         ),
@@ -567,11 +575,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           onTap: () => ref
                               .read(productBuilderProvider.notifier)
                               .setQuantity(state.quantity + 1),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.add_rounded,
                               size: 22,
-                              color: AppTheme.highContrastGold,
+                              color: AppTheme.getIconColor(theme),
                             ),
                           ),
                         ),
@@ -677,7 +685,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 child: Container(
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppTheme.highContrastGold,
+                    color: AppTheme.getIconColor(theme),
                     borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                     boxShadow: AppTheme.goldShadow,
                   ),
@@ -696,7 +704,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                 state.totalPrice.toStringAsFixed(2),
                               ),
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: AppTheme.darkCocoa,
+                          color: theme.brightness == Brightness.dark
+                              ? AppTheme.darkCocoa
+                              : AppTheme.highContrastGold,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
                         ),
@@ -757,11 +767,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                   onPressed: () => notifier.selectType(type),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isSelected
-                        ? AppTheme.highContrastGold
+                        ? AppTheme.getIconColor(theme)
                         : theme.colorScheme.surfaceContainerHighest
                               .withValues(alpha: 0.5),
                     foregroundColor: isSelected
-                        ? AppTheme.darkCocoa
+                        ? (theme.brightness == Brightness.dark
+                            ? AppTheme.darkCocoa
+                            : AppTheme.highContrastGold)
                         : theme.colorScheme.onSurface,
                     elevation: isSelected ? 4 : 0,
                     padding: EdgeInsets.zero,
@@ -771,8 +783,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                       ),
                       side: BorderSide(
                         color: isSelected
-                            ? AppTheme.highContrastGold
-                            : AppTheme.highContrastGold.withValues(alpha: 0.2),
+                            ? AppTheme.getIconColor(theme)
+                            : AppTheme.getIconColor(theme).withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -810,11 +822,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                   onPressed: () => notifier.selectSize(size),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isSelected
-                        ? AppTheme.highContrastGold
+                        ? AppTheme.getIconColor(theme)
                         : theme.colorScheme.surfaceContainerHighest
                               .withValues(alpha: 0.5),
                     foregroundColor: isSelected
-                        ? AppTheme.darkCocoa
+                        ? (theme.brightness == Brightness.dark
+                            ? AppTheme.darkCocoa
+                            : AppTheme.highContrastGold)
                         : theme.colorScheme.onSurface,
                     elevation: isSelected ? 4 : 0,
                     padding: EdgeInsets.zero,
@@ -824,8 +838,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                       ),
                       side: BorderSide(
                         color: isSelected
-                            ? AppTheme.highContrastGold
-                            : AppTheme.highContrastGold.withValues(alpha: 0.2),
+                            ? AppTheme.getIconColor(theme)
+                            : AppTheme.getIconColor(theme).withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -863,7 +877,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.highContrastGold.withValues(alpha: 0.2),
+                    color: AppTheme.getIconColor(theme).withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                   image: DecorationImage(
@@ -883,10 +897,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
   }
 
   Widget _buildDetailSectionHeader(BuildContext context, String title) {
+    final theme = Theme.of(context);
     return Text(
       title.toUpperCase(),
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        color: AppTheme.highContrastGold,
+      style: theme.textTheme.labelLarge?.copyWith(
+        color: AppTheme.getIconColor(theme),
         fontWeight: FontWeight.w900,
         letterSpacing: 1.5,
       ),
@@ -961,14 +976,12 @@ class _TemplateLineState extends State<_TemplateLine>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: widget.isSelected
-                  ? (theme.brightness == Brightness.dark
-                      ? AppTheme.darkCocoa
-                      : AppTheme.primaryTeal)
+                  ? AppTheme.getIconColor(theme)
                   : theme.scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: widget.isSelected
-                    ? AppTheme.highContrastGold
+                    ? AppTheme.getIconColor(theme)
                     : AppTheme.getCardBorderColor(theme),
                 width: widget.isSelected ? 2 : 1.5,
               ),
@@ -983,20 +996,26 @@ class _TemplateLineState extends State<_TemplateLine>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: widget.isSelected
-                        ? AppTheme.highContrastGold
+                        ? (theme.brightness == Brightness.dark
+                            ? AppTheme.darkCocoa
+                            : AppTheme.highContrastGold)
                         : Colors.transparent,
                     border: Border.all(
                       color: widget.isSelected
-                          ? AppTheme.highContrastGold
+                          ? (theme.brightness == Brightness.dark
+                              ? AppTheme.darkCocoa
+                              : AppTheme.highContrastGold)
                           : AppTheme.getCardBorderColor(theme),
                       width: 2,
                     ),
                   ),
                   child: widget.isSelected
-                      ? const Icon(
+                      ? Icon(
                           Icons.check_rounded,
                           size: 14,
-                          color: Colors.white,
+                          color: theme.brightness == Brightness.dark
+                              ? AppTheme.highContrastGold
+                              : AppTheme.darkCocoa,
                         )
                       : null,
                 ),
@@ -1006,9 +1025,11 @@ class _TemplateLineState extends State<_TemplateLine>
                     name,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: widget.isSelected
-                          ? AppTheme.highContrastGold
+                          ? (theme.brightness == Brightness.dark
+                              ? AppTheme.darkCocoa
+                              : AppTheme.highContrastGold)
                           : (theme.brightness == Brightness.dark
-                              ? AppTheme.highContrastGold
+                              ? AppTheme.getIconColor(theme)
                               : AppTheme.textPrimaryLight),
                       fontWeight: widget.isSelected
                           ? FontWeight.bold
@@ -1022,9 +1043,11 @@ class _TemplateLineState extends State<_TemplateLine>
                     child: Icon(
                       Icons.keyboard_arrow_down_rounded,
                       color: widget.isSelected
-                          ? AppTheme.highContrastGold
+                          ? (theme.brightness == Brightness.dark
+                              ? AppTheme.darkCocoa
+                              : AppTheme.highContrastGold)
                           : (theme.brightness == Brightness.dark
-                              ? AppTheme.highContrastGold.withValues(alpha: 0.6)
+                              ? AppTheme.getIconColor(theme).withValues(alpha: 0.6)
                               : AppTheme.primaryTeal.withValues(alpha: 0.6)),
                     ),
                   ),
@@ -1140,7 +1163,7 @@ class _PartitionLineState extends State<_PartitionLine>
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: _expanded
-                ? AppTheme.highContrastGold.withValues(alpha: 0.5)
+                ? AppTheme.getIconColor(theme).withValues(alpha: 0.5)
                 : AppTheme.getCardBorderColor(theme),
             width: 1,
           ),
@@ -1164,7 +1187,7 @@ class _PartitionLineState extends State<_PartitionLine>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.highContrastGold,
+                        color: AppTheme.getIconColor(theme),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -1177,7 +1200,9 @@ class _PartitionLineState extends State<_PartitionLine>
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
                               style: theme.textTheme.titleMedium?.copyWith(
-                                color: AppTheme.darkCocoa,
+                                color: theme.brightness == Brightness.dark
+                                    ? AppTheme.darkCocoa
+                                    : AppTheme.highContrastGold,
                                 fontWeight: FontWeight.bold,
                               ),
                               decoration: const InputDecoration(
@@ -1193,7 +1218,9 @@ class _PartitionLineState extends State<_PartitionLine>
                           Text(
                             '%',
                             style: theme.textTheme.titleMedium?.copyWith(
-                              color: AppTheme.darkCocoa,
+                              color: theme.brightness == Brightness.dark
+                                  ? AppTheme.darkCocoa
+                                  : AppTheme.highContrastGold,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -1215,7 +1242,9 @@ class _PartitionLineState extends State<_PartitionLine>
                         turns: Tween(begin: 0.0, end: 0.5).animate(_expandAnim),
                         child: Icon(
                           Icons.keyboard_arrow_down_rounded,
-                          color: theme.brightness == Brightness.dark ? Colors.white70 : Colors.black54,
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.white70
+                              : AppTheme.primaryTeal,
                           size: 24,
                         ),
                       ),
@@ -1254,7 +1283,7 @@ class _PartitionLineState extends State<_PartitionLine>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: AppTheme.highContrastGold.withValues(
+                                  color: AppTheme.getIconColor(theme).withValues(
                                     alpha: 0.3,
                                   ),
                                   width: 1.5,
@@ -1357,13 +1386,21 @@ class _GenderButton extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? Colors.white : color, size: 32),
+            Icon(icon,
+                color: isSelected
+                    ? (theme.brightness == Brightness.dark
+                        ? AppTheme.darkCocoa
+                        : AppTheme.highContrastGold)
+                    : color,
+                size: 32),
             const SizedBox(height: 8),
             Text(
               label,
               style: theme.textTheme.titleSmall?.copyWith(
                 color: isSelected
-                    ? Colors.white
+                    ? (theme.brightness == Brightness.dark
+                        ? AppTheme.darkCocoa
+                        : AppTheme.highContrastGold)
                     : AppTheme.getOnCardColor(theme),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
